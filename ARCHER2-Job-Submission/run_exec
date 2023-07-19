@@ -380,5 +380,5 @@ echo "Entering temporary directory..."
 echo "Launching the job..."
 
 export SLURM_WORKING_DIR=${JOBTMPDIR}
-${EXECOMMAND} >> ${OUTDIR}/${OUTPUT} 2>&1
+echo "${EXECOMMAND} >> ${OUTDIR}/${OUTPUT} 2>&1" | bash
 
