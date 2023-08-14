@@ -214,10 +214,10 @@ function set_settings {
 
     LINE_EXE=`grep -nw 'EXE_TABLE' ${SETFILE}`
     LINE_EXE=`echo "scale=0;${LINE_EXE%:*}+3" | bc`
-    sed -i "${LINE_EXE}a\pp         srun --hint=nomultithread --distribution=block:block         pp.x < [job].in                                              Parallel data postprocessing" ${SETFILE}
-    sed -i "${LINE_EXE}a\cp         srun --hint=nomultithread --distribution=block:block         cp.x < [job].in                                              Parallel Car-Parrinello MD" ${SETFILE}
-    sed -i "${LINE_EXE}a\ph         srun --hint=nomultithread --distribution=block:block         ph.x < [job].in                                              Parallel Phonon (DFPT) calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\pw         srun --hint=nomultithread --distribution=block:block         pw.x < [job].in                                              Parallel PWscf calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\pp         srun --hint=nomultithread --distribution=block:block         pp.x -i [job].in                                             Parallel data postprocessing" ${SETFILE}
+    sed -i "${LINE_EXE}a\cp         srun --hint=nomultithread --distribution=block:block         cp.x -i [job].in                                             Parallel Car-Parrinello MD" ${SETFILE}
+    sed -i "${LINE_EXE}a\ph         srun --hint=nomultithread --distribution=block:block         ph.x -i [job].in                                             Parallel Phonon (DFPT) calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\pw         srun --hint=nomultithread --distribution=block:block         pw.x -i [job].in                                             Parallel PWscf calculation" ${SETFILE}
 
     # Use QE's built-in temporary file management commands
     # # Input file table

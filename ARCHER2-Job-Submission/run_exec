@@ -15,7 +15,7 @@ function get_input_ {
     eval set -- "${param_list}"
     COMMAND=""
     REFNAME=""
-    echo "Parameter list: ${param_list}"
+    # echo "Parameter list: ${param_list}"
     while [[ true ]]; do
         case $1 in
         --set )
@@ -380,5 +380,5 @@ echo "Entering temporary directory..."
 echo "Launching the job..."
 
 export SLURM_WORKING_DIR=${JOBTMPDIR}
-${EXECOMMAND} >> ${OUTDIR}/${OUTPUT} 2>&1
+echo "${EXECOMMAND} >> ${OUTDIR}/${OUTPUT} 2>&1" | bash
 
