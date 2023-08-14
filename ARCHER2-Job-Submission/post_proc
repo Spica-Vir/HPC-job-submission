@@ -60,9 +60,10 @@ fi
 # Create temporary copy of the script for execution
 
 POSTSCRIPT="Post_script_${SLURM_JOB_ID}"
-sed '1,/^#tag_copy/d' $0 > ${JOBTMPDIR}/${POSTSCRIPT}
+sed '1,/^#tag_copy_begin/d;/^#tag_copy_end/,$d' $0 > ${JOBTMPDIR}/${POSTSCRIPT}
 
 # Start post-processing
+
 cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
 ============================================
 Post Processing Report
@@ -74,16 +75,75 @@ EOF
 
 source ${JOBTMPDIR}/${POSTSCRIPT}
 
+# Check file sync status across all nodes - JOBTMPDIR = node only. source is disabled when srun is used.
+
+CHECKSCRIPT="checkfile_${SLURM_JOB_ID}"
+if [[ ${srun_flag} != '' ]]; then
+    cat << EOF > ${JOBTMPDIR}/${CHECKSCRIPT}
+#!/bin/bash
+JOBNAME=${JOBNAME}
+JOBTMPDIR=${JOBTMPDIR}
+OUTDIR=${OUTDIR}
+OUTPUT=${OUTPUT}
+SETFILE=${SETFILE}
+move_file=${move_file}
+EOF
+    sed '1,/^#tag_check_begin/d;/^#tag_check_end/,$d' $0 >> ${JOBTMPDIR}/${CHECKSCRIPT}
+    sbcast --force ${JOBTMPDIR}/${CHECKSCRIPT} ${JOBTMPDIR}/${CHECKSCRIPT}
+    ${srun_flag}chmod 777 ${JOBTMPDIR}/${CHECKSCRIPT}
+    ${srun_flag}bash ${JOBTMPDIR}/${CHECKSCRIPT}
+fi
+
+# Calculation summary
+
+cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
+--------------------------------------------
+
+Temporary Directory Disk Info
+--------------------------------------------
+  Temporary directory      : ${JOBTMPDIR}
+
+  Disk usage (df -h)
+$(df -h ${JOBTMPDIR} 2>&1)
+
+  Usage by folders (du -m)
+$(du -m ${JOBTMPDIR} 2>&1)
+
+  Detailed file list of Node 0(ls -l .)
+    see ${OUTDIR}/${JOBNAME}.log file
+EOF
+
+cat << EOF
+$(ls -l ${JOBTMPDIR} 2>&1)
+EOF
+
+cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
+--------------------------------------------
+
+EOF
+
 cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
 End of post processing : $(date)
 Script post_proc done.
 ===========================================
 EOF
+
+# Remove temporary directory
+
+cd ${OUTDIR}
+if [[ ${move_file} == true ]]; then
+    ${srun_flag}rm -fr ${JOBTMPDIR}
+else
+    ${srun_flag}rm ${JOBTMPDIR}/Job_script_${SLURM_JOB_ID} ${JOBTMPDIR}/Post_script_${SLURM_JOB_ID}
+fi
+
+mv slurm-${SLURM_JOB_ID}.out ${JOBNAME}.log
+
 exit
 
-# Copied content: Between #tag_start_copy and #tag_end_copy are copied in temporary directory
+# Copied content: After #tag_copy is are copied in temporary directory
 
-#tag_copy
+#tag_copy_begin
 # Read POST_CALC list
 
 LINE_POSTCALC=`grep -nw 'POST_CALC' ${SETFILE}`
@@ -153,41 +213,80 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
     TMP_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,22,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
 done
+#tag_copy_end
 
-# Calculation summary
+#tag_check_begin
 
-cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
---------------------------------------------
+echo "start checking: $(hostname)"
+cd ${JOBTMPDIR}
 
-Temporary Directory Disk Info
---------------------------------------------
-  Temporary directory      : ${JOBTMPDIR}
+# Read POST_CALC list
 
-  Disk usage (df -h)
-$(df -h ${JOBTMPDIR} 2>&1)
+LINE_POSTCALC=`grep -nw 'POST_CALC' ${SETFILE}`
+LINE_POSTCALC=`echo "scale=0;${LINE_POSTCALC%%:*}+4" | bc`
 
-  Usage by folders (du -m)
-$(du -m ${JOBTMPDIR} 2>&1)
+# Read table, substitute variable flags and spaces for saved name in JOBTMPDIR
 
-  Detailed file list of Node 0(ls -l .)
-    see ${OUTDIR}/${JOBNAME}.log file
-EOF
-cat << EOF
-$(ls -l ${JOBTMPDIR} 2>&1)
-EOF
-cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
---------------------------------------------
+SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
 
-EOF
+# Read table, substitute variable flags and spaces for temporary name in JOBTMPDIR
 
-# Remove temporary directory
+TMP_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,22,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
 
-cd ${OUTDIR}
-if [[ ${move_file} == true ]]; then
-    ${srun_flag}rm -fr ${JOBTMPDIR}
-else
-    ${srun_flag}rm ${JOBTMPDIR}/Job_script_${SLURM_JOB_ID} ${JOBTMPDIR}/Post_script_${SLURM_JOB_ID}
-fi
+while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
 
-mv slurm-${SLURM_JOB_ID}.out ${JOBNAME}.log
+    # List files, to get all matched files in 'TMP_NAME' settings
+
+    if [[ ${TMP_NAME: -1} == '/' ]]; then
+        filelist=($(ls ${TMP_NAME}))
+        for ((i=0; i<${#filelist[@]}; i++)); do
+            filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
+        done
+    else
+        filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
+        filelist=(${filelist//${JOBTMPDIR}\//})
+    fi
+
+    # Make subdir for files stored in sub-folders
+
+    if [[ ${SAVED_NAME: -1} == '/' && ${#filelist[@]} -ge 1 ]]; then
+        mkdir -p "${OUTDIR}/${SAVED_NAME}"
+    fi
+    for file in ${filelist[@]}; do
+
+        # Make sure the file is not empty
+
+        if [[ ! -s ${JOBTMPDIR}/${file} ]]; then
+            continue
+        fi
+
+        SAVED_NAME_REAL=${SAVED_NAME}
+
+        # If SAVED_NAME is '*', keep the original name
+
+        if [[ ${SAVED_NAME} == *'*'* ]]; then
+            SAVED_NAME_REAL=${file##*/}
+        fi
+
+        # If SAVED_NAME ends with '/', update it
+
+        if [[  ${SAVED_NAME: -1} == '/' ]]; then
+            SAVED_NAME_REAL=`echo "${SAVED_NAME}${file##*/}"`
+        fi
+
+        # Copy files - do not cover the old ones
+
+        if [[ -e ${OUTDIR}/${SAVED_NAME_REAL} && -s ${OUTDIR}/${SAVED_NAME_REAL} ]]; then
+            continue
+        fi
+        echo "${file} ${SAVED_NAME_REAL}" | awk '{printf("  %-21s%-52s"),$1,$2}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
+        ls -l ${JOBTMPDIR}/${file} | awk '{printf("  %-8s %s %s %s\n"),$5,$6,$7,$8}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
+        cp -r ${JOBTMPDIR}/${file} ${OUTDIR}/${SAVED_NAME_REAL}
+    done
+
+    LINE_POSTCALC=`echo "scale=0;${LINE_POSTCALC%%:*}+1" | bc`
+    SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
+    TMP_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,22,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
+done
+#tag_check_end
 
