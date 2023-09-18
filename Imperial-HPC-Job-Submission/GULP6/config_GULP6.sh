@@ -121,6 +121,8 @@ EOF
 EOF
             exit
         fi
+        # Remove modules to avoid conflicts
+        echo ${EXEDIR} | sed 's|load|rm|g' | bash > /dev/null 2>&1
     fi
 }
 
@@ -141,7 +143,7 @@ EOF
         MPIDIR='module load  mpi/intel-2019'
     fi
 
-    if [[ ! -d ${EXEDIR} && (${EXEDIR} != *'module load'*) ]]; then
+    if [[ ! -d ${MPIDIR} && (${MPIDIR} != *'module load'*) ]]; then
         cat << EOF
 --------------------------------------------------------------------------------
     Error: Directory or command does not exist. Check your input: ${MPIDIR}
@@ -160,6 +162,8 @@ EOF
 EOF
             exit
         fi
+        # Remove modules to avoid conflicts
+        echo ${MPIDIR} | sed 's|load|rm|g' | bash > /dev/null 2>&1
     fi
 }
 
