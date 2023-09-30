@@ -142,6 +142,8 @@ EOF
 EOF
             exit
         fi
+        # Remove modules to avoid conflicts
+        echo ${EXEDIR} | sed 's|load|rm|g' | bash > /dev/null 2>&1
     fi
 }
 
@@ -162,7 +164,7 @@ EOF
         MPIDIR='module load PrgEnv-gnu/8.3.3 gcc/11.2.0 cray-mpich/8.1.23 cray-libsci/22.12.1.1'
     fi
 
-    if [[ ! -d ${EXEDIR} && (${EXEDIR} != *'module load'*) ]]; then
+    if [[ ! -d ${MPIDIR} && (${MPIDIR} != *'module load'*) ]]; then
         cat << EOF
 --------------------------------------------------------------------------------
     Error: Directory or command does not exist. Check your input: ${MPIDIR}
@@ -181,6 +183,8 @@ EOF
 EOF
             exit
         fi
+        # Remove modules to avoid conflicts
+        echo ${MPIDIR} | sed 's|load|rm|g' | bash > /dev/null 2>&1
     fi
 }
 
