@@ -97,8 +97,8 @@ function set_exe {
     Please specify the directory of CRYSTAL17 exectuables, 
     or the command to load CRYSTAL17 modules
 
-    Default Option
-    cry17gnu v2.2 (mpich - ifort - MPP)
+    Default Option (mpich - gfort - MPP)
+    /rds/general/user/gmallia/home/CRYSTAL17_cx1/v2.2gnu/bin/Linux-mpigfortran_MPP/Xeon___mpich__3.2.1
 
 EOF
 #---- END_USER ----#
@@ -143,7 +143,7 @@ function set_mpi {
     Please specify the directory of MPI executables or mpi modules
 
     Default Option
-    mpich/3.2.1
+    module load /rds/general/user/gmallia/home/CRYSTAL17_cx1/v2.2gnu/modules/mpich/3.2.1
 
 EOF
 #---- END_USER ----#
@@ -199,12 +199,12 @@ function set_settings {
     # Values for keywords
     sed -i "/SUBMISSION_EXT/a\ .qsub" ${SETFILE}
 #---- BEGIN_USER ----#
-    sed -i "/NCPU_PER_NODE/a\ 24" ${SETFILE}
-    sed -i "/MEM_PER_NODE/a\ 100" ${SETFILE}
+    sed -i "/NCPU_PER_NODE/a\ 256" ${SETFILE}
+    sed -i "/MEM_PER_NODE/a\ 512" ${SETFILE}
     sed -i "/NTHREAD_PER_PROC/a\ 1" ${SETFILE}
     sed -i "/NGPU_PER_NODE/a\ 0" ${SETFILE}
     sed -i "/GPU_TYPE/a\ RTX6000" ${SETFILE}
-    sed -i "/TIME_OUT/a\ 3" ${SETFILE}
+    sed -i "/TIME_OUT/a\ 1" ${SETFILE}
     sed -i "/JOB_TMPDIR/a\ ${EPHEMERAL}" ${SETFILE}
 #---- END_USER ----#
     sed -i "/EXEDIR/a\ ${EXEDIR}" ${SETFILE}
@@ -214,18 +214,18 @@ function set_settings {
 
     LINE_EXE=`grep -nw 'EXE_TABLE' ${SETFILE}`
     LINE_EXE=`echo "scale=0;${LINE_EXE%:*}+3" | bc`
-#---- BEGIN_USER ----# MPI+executable options
-    sed -i "${LINE_EXE}a\sprop                           properties < INPUT             Serial properties calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\scrys                           crystal < INPUT                Serial crystal calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\pprop      mpiexec              Pproperties                    Parallel properties calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\mppcrys    mpiexec              MPPcrystal                     Massive parallel crystal calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\pcrys      mpiexec              Pcrystal                       Parallel crystal calculation" ${SETFILE}
+#---- BEGIN_USER ----# MPI+executable options. The length of columns is important and should be kept
+    sed -i "${LINE_EXE}a\sprop                                                                   properties < INPUT                                           Serial properties calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\scrys                                                                   crystal < INPUT                                              Serial crystal calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\pprop      mpiexec                                                      Pproperties                                                  Parallel properties calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\mppcrys    mpiexec                                                      MPPcrystal                                                   Massive parallel crystal calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\pcrys      mpiexec                                                      Pcrystal                                                     Parallel crystal calculation" ${SETFILE}${SETFILE}
 #---- END_USER ----#
     # Input file table
 
 	LINE_PRE=`grep -nw 'PRE_CALC' ${SETFILE}`
     LINE_PRE=`echo "scale=0;${LINE_PRE%:*}+3" | bc`
-#---- BEGIN_USER ----# Files with [jobname] or [job]
+#---- BEGIN_USER ----# Files with [jobname] or [job]. The length of columns is important and should be kept
     sed -i "${LINE_PRE}a\[jobname].POINTCHG   POINTCHG.INP         Dummy atoms with 0 mass and given charge" ${SETFILE}
     sed -i "${LINE_PRE}a\[jobname].gui        fort.34              Geometry input" ${SETFILE}
     sed -i "${LINE_PRE}a\[jobname].d3         INPUT                Properties input file" ${SETFILE}
@@ -235,7 +235,7 @@ function set_settings {
 
 	LINE_REF=`grep -nw 'REF_FILE' ${SETFILE}`
     LINE_REF=`echo "scale=0;${LINE_REF%:*}+3" | bc`
-#---- BEGIN_USER ----# Files with [refname] or [ref]
+#---- BEGIN_USER ----# Files with [refname] or [ref]. The length of columns is important and should be kept
     sed -i "${LINE_REF}a\[refname].f31        fort.32              Derivative of density matrix" ${SETFILE}
     sed -i "${LINE_REF}a\[refname].f80        fort.81              Wannier funcion - input" ${SETFILE}
     sed -i "${LINE_REF}a\[refname].f28        fort.28              Binary IR intensity restart data" ${SETFILE}
@@ -251,7 +251,7 @@ function set_settings {
 
     LINE_POST=`grep -nw 'POST_CALC' ${SETFILE}`
     LINE_POST=`echo "scale=0;${LINE_POST%:*}+3" | bc`
-#---- BEGIN_USER ----# Output files   
+#---- BEGIN_USER ----# Output files. The length of columns is important and should be kept
     sed -i "${LINE_POST}a\[jobname].POTC       POTC.DAT             Electrostatic potential and derivatives" ${SETFILE}
     sed -i "${LINE_POST}a\[jobname]_POT.CUBE   POT_CUBE.DAT         3D electrostatic potential CUBE format  " ${SETFILE}
     sed -i "${LINE_POST}a\[jobname]_SPIN.CUBE  SPIN_CUBE.DAT        3D spin density CUBE format" ${SETFILE}
@@ -292,7 +292,7 @@ function set_settings {
     sed -i "${LINE_POST}a\[jobname].xyz        fort.33              Geometry, non-periodic xyz format" ${SETFILE}
     sed -i "${LINE_POST}a\[jobname].gui        fort.34              Geometry, CRYSTAL fort34 format" ${SETFILE}
     sed -i "${LINE_POST}a\[jobname].ERROR      fort.87              Error report" ${SETFILE}
-#---- END_USER ----#      
+#---- END_USER ----#
     # Job submission file template - should be placed at the end of file
 #---- BEGIN_USER ----# 
     cat << EOF >> ${SETFILE}
@@ -306,8 +306,6 @@ echo "PBS Job Report"
 echo "--------------------------------------------"
 echo "  Start Date : \$(date)"
 echo "  PBS Job ID : \${PBS_JOBID}"
-echo "  Status"
-qstat -f \${PBS_JOBID}
 echo "--------------------------------------------"
 echo ""
 

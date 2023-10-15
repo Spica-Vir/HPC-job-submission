@@ -90,16 +90,16 @@ function set_exe {
     Please specify the directory of CRYSTAL23 exectuables, 
     or the command to load CRYSTAL23 modules
 
-    Default Option
-    CRYSTAL23 v1.0.1 (openmpi - AMD aocc/aocl - MPP)
+    Default Option (mpich4.0.2 - gcc11.2.0-aocl - MPPCrystal)
+    module load /rds/general/project/cmsg/live/etc/modulefiles/CRYSTAL/23v1-gcc
 
 EOF
-    
+
     read -p " " EXEDIR
     EXEDIR=`echo ${EXEDIR}`
 
     if [[ -z ${EXEDIR} ]]; then
-        EXEDIR='/rds/general/user/hz1420/home/apps/CRYSTAL23_v1.0.1/bin/Linux-flang_openmpi_amd64EPYC/std'
+        EXEDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/CRYSTAL/23v1-gcc'
     fi
 
     if [[ ! -d ${EXEDIR} && (${EXEDIR} != *'module load'*) ]]; then
@@ -132,15 +132,15 @@ function set_mpi {
     Please specify the directory of MPI executables or mpi modules
 
     Default Option
-    openmpi/4.1.4
+    module load /rds/general/project/cmsg/live/etc/modulefiles/mpi/mpich4.0.2-gcc
 
 EOF
-    
+
     read -p " " MPIDIR
     MPIDIR=`echo ${MPIDIR}`
 
     if [[ -z ${MPIDIR} ]]; then
-        MPIDIR='module load  /rds/general/user/hz1420/home/apps/openmpi-4.1.4/openmpi-4.1.4_module'
+        MPIDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/mpi/mpich4.0.2-gcc'
     fi
 
     if [[ ! -d ${MPIDIR} && (${MPIDIR} != *'module load'*) ]]; then
@@ -184,12 +184,12 @@ function set_settings {
 
     # Values for keywords
     sed -i "/SUBMISSION_EXT/a\ .qsub" ${SETFILE}
-    sed -i "/NCPU_PER_NODE/a\ 24" ${SETFILE}
-    sed -i "/MEM_PER_NODE/a\ 100" ${SETFILE}
+    sed -i "/NCPU_PER_NODE/a\ 256" ${SETFILE}
+    sed -i "/MEM_PER_NODE/a\ 512" ${SETFILE}
     sed -i "/NTHREAD_PER_PROC/a\ 1" ${SETFILE}
     sed -i "/NGPU_PER_NODE/a\ 0" ${SETFILE}
     sed -i "/GPU_TYPE/a\ RTX6000" ${SETFILE}
-    sed -i "/TIME_OUT/a\ 3" ${SETFILE}
+    sed -i "/TIME_OUT/a\ 1" ${SETFILE}
     sed -i "/JOB_TMPDIR/a\ ${EPHEMERAL}" ${SETFILE}
     sed -i "/EXEDIR/a\ ${EXEDIR}" ${SETFILE}
     sed -i "/MPIDIR/a\ ${MPIDIR}" ${SETFILE}
@@ -198,11 +198,11 @@ function set_settings {
 
     LINE_EXE=`grep -nw 'EXE_TABLE' ${SETFILE}`
     LINE_EXE=`echo "scale=0;${LINE_EXE%:*}+3" | bc`
-    sed -i "${LINE_EXE}a\sprop                                                                   properties < INPUT                                           Serial properties calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\scrys                                                                   crystal < INPUT                                              Serial crystal calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\pprop      mpiexec -np \${V_TPROC}                                       Pproperties                                                  Parallel properties calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\mppcrys    mpiexec -np \${V_TPROC}                                       MPPcrystal                                                   Massive parallel crystal calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\pcrys      mpiexec -np \${V_TPROC}                                       Pcrystal                                                     Parallel crystal calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\sprop                                                                    Sproperties < INPUT                                          Serial properties calculation, OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\scrys                                                                    Scrystal < INPUT                                             Serial crystal calculation. OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\pprop      mpiexec -np \${V_TPROC}                                       Pproperties                                                  Parallel properties calculation, OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\mppcrys    mpiexec -np \${V_TPROC}                                       MPPcrystal                                                   Massive parallel crystal calculation, OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\pcrys      mpiexec -np \${V_TPROC}                                       Pcrystal                                                     Parallel crystal calculation, OMP" ${SETFILE}
 
     # Input file table
 
@@ -212,7 +212,7 @@ function set_settings {
     sed -i "${LINE_PRE}a\[jobname].gui        fort.34              Geometry input" ${SETFILE}
     sed -i "${LINE_PRE}a\[jobname].d3         INPUT                Properties input file" ${SETFILE}
     sed -i "${LINE_PRE}a\[jobname].d12        INPUT                Crystal input file" ${SETFILE}
-    
+
     # Reference file table
 
     LINE_REF=`grep -nw 'REF_FILE' ${SETFILE}`
@@ -229,12 +229,12 @@ function set_settings {
     sed -i "${LINE_REF}a\[refname].OPTINFO    OPTINFO.DAT          Optimisation restart data" ${SETFILE}
     sed -i "${LINE_REF}a\[refname].f9         fort.9               Last step wavefunction - properties input" ${SETFILE}
     sed -i "${LINE_REF}a\[refname].f9         fort.20              Last step wavefunction - crystal input" ${SETFILE}
-    
+
     # Post-processing file table
 
     LINE_POST=`grep -nw 'POST_CALC' ${SETFILE}`
     LINE_POST=`echo "scale=0;${LINE_POST%:*}+3" | bc`
-    
+
     sed -i "${LINE_POST}a\[jobname].POTC       POTC.DAT             Electrostatic potential and derivatives" ${SETFILE}
     sed -i "${LINE_POST}a\[jobname]_POT.CUBE   POT_CUBE.DAT         3D electrostatic potential CUBE format  " ${SETFILE}
     sed -i "${LINE_POST}a\[jobname]_SPIN.CUBE  SPIN_CUBE.DAT        3D spin density CUBE format" ${SETFILE}
@@ -283,15 +283,13 @@ function set_settings {
 -----------------------------------------------------------------------------------
 #!/bin/bash  --login
 #PBS -N \${V_JOBNAME}
-#PBS -l select=\${V_ND}:ncpus=\${V_NCPU}:mem=\${V_MEM}:mpiprocs=\${V_PROC}:ompthreads=\${V_TRED}\${V_NGPU}\${V_TGPU}:avx2=true
+#PBS -l select=\${V_ND}:ncpus=\${V_NCPU}:mem=\${V_MEM}:mpiprocs=\${V_PROC}:ompthreads=\${V_TRED}\${V_NGPU}\${V_TGPU}
 #PBS -l walltime=\${V_TWT}
 
 echo "PBS Job Report"
 echo "--------------------------------------------"
 echo "  Start Date : \$(date)"
 echo "  PBS Job ID : \${PBS_JOBID}"
-echo "  Status"
-qstat -f \${PBS_JOBID}
 echo "--------------------------------------------"
 echo ""
 
@@ -346,7 +344,7 @@ function set_commands {
     # echo "chmod 777 $(dirname $0)/post_proc" >> ${HOME}/.bashrc 
     # echo "chmod 777 $(dirname $0)/run_help" >> ${HOME}/.bashrc 
     echo "# <<< finish CRYSTAL23 job submitter settings <<<" >> ${HOME}/.bashrc
-    
+
     bash ${CONFIGDIR}/run_help
 }
 

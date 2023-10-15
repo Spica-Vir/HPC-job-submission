@@ -221,9 +221,9 @@ function set_settings {
     LINE_EXE=`echo "scale=0;${LINE_EXE%:*}+3" | bc`
     sed -i "${LINE_EXE}a\mppprop    srun --hint=nomultithread --distribution=block:block         MPPproperties                                                Massive parallel properties calculation" ${SETFILE}
     sed -i "${LINE_EXE}a\pprop      srun --hint=nomultithread --distribution=block:block         Pproperties                                                  Parallel properties calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\mppcrysomp srun --hint=nomultithread --distribution=block:block         MPPcrystalOMP                                                Massive parallel crystal calculation - OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\mppcrysomp srun --distribution=block:block                              MPPcrystalOMP                                                Massive parallel crystal calculation - OMP" ${SETFILE}
     sed -i "${LINE_EXE}a\mppcrys    srun --hint=nomultithread --distribution=block:block         MPPcrystal                                                   Massive parallel crystal calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\pcrysomp   srun --hint=nomultithread --distribution=block:block         PcrystalOMP                                                  Parallel crystal calculation - OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\pcrysomp   srun --distribution=block:block                              PcrystalOMP                                                  Parallel crystal calculation - OMP" ${SETFILE}
     sed -i "${LINE_EXE}a\pcrys      srun --hint=nomultithread --distribution=block:block         Pcrystal                                                     Parallel crystal calculation" ${SETFILE}
 
     # Input file table

@@ -32,7 +32,7 @@ function get_input_ {
 in_var="header "$@""
 get_input_
 OUTDIR=$(realpath ${JOBFILE})
-OUTDIR=${OUTDIR%/*}
+OUTDIR=$(dirname ${OUTDIR})
 OUTPUT=${JOBNAME}.out
 INPDIR=${OUTDIR}
 JOBTMPDIR=`echo $(grep -w -A 1 'JOB_TMPDIR' ${SETFILE} | tail -1)`
@@ -40,42 +40,110 @@ if [[ -z ${JOBTMPDIR} || ${JOBTMPDIR} == 'default' ]]; then # As subdirectory un
     JOBTMPDIR=$(dirname ${JOBFILE})/${JOBNAME}_${PBS_JOBID%.*}
 	JOBTMPDIR=`realpath ${JOBTMPDIR}`
     move_file=true
+    mpicmd=''
 elif [[ ${JOBTMPDIR} == 'nodir' ]]; then # In current directory
     JOBTMPDIR=$(dirname ${JOBFILE})
 	JOBTMPDIR=`realpath ${JOBTMPDIR}`
     move_file=false
+    mpicmd=''
+elif [[ ${JOBTMPDIR} == 'node' ]]; then # In node temporary directory
+    JOBTMPDIR=${TMPDIR}/${JOBNAME}_${PBS_JOBID%.*}
+    move_file=true
+    mpicmd='mpiexec -N 1 ' # Run parallel copy file for nodes
 else # In a separate directory
     JOBTMPDIR=${JOBTMPDIR}/${JOBNAME}_${PBS_JOBID%.*}
 	JOBTMPDIR=`realpath ${JOBTMPDIR}`
     move_file=true
+    mpicmd=''
 fi
 
 # Create temporary copy of the script for execution
 
 POSTSCRIPT="Post_script_${PBS_JOBID%.*}"
-sed '1,/^#tag_copy/d' $0 > ${JOBTMPDIR}/${POSTSCRIPT}
+sed '1,/^#tag_copy_begin/d;/^#tag_copy_end/,$d' $0 > ${JOBTMPDIR}/${POSTSCRIPT}
 
 # Start post-processing
+
 cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
+============================================
 Post Processing Report
 --------------------------------------------
 Begining of post processing : $(date)
-List of saved files
+List of saved files from Node 0
   TEMPORARY            SAVED
 EOF
 
 source ${JOBTMPDIR}/${POSTSCRIPT}
 
+# Check file sync status across all nodes - JOBTMPDIR = node only. Not sure source is compatible with mpiexec
+
+CHECKSCRIPT="checkfile_${PBS_JOBID%.*}"
+if [[ ${mpicmd} != '' ]]; then
+    cat << EOF > ${JOBTMPDIR}/${CHECKSCRIPT}
+#!/bin/bash
+JOBNAME=${JOBNAME}
+JOBTMPDIR=\${TMPDIR}/${JOBNAME}_${PBS_JOBID%.*} # \$TMPDIR is a variable for CX1/HX1, not necessarily for other PBS systems
+OUTDIR=${OUTDIR}
+OUTPUT=${OUTPUT}
+SETFILE=${SETFILE}
+move_file=${move_file}
+EOF
+    # Needs more tests
+    # Broadcast files across the node
+    sed '1,/^#tag_check_begin/d;/^#tag_check_end/,$d' $0 >> ${JOBTMPDIR}/${CHECKSCRIPT}
+    ${mpicmd}cp ${JOBTMPDIR}/${CHECKSCRIPT} ${TMPDIR}/${JOBNAME}_${PBS_JOBID%.*}/${CHECKSCRIPT} 2>/dev/null # Ignore copy to itself error
+    ${mpicmd}bash ${TMPDIR}/${JOBNAME}_${PBS_JOBID%.*}/${CHECKSCRIPT}
+fi
+
+# Calculation summary
+
+cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
+--------------------------------------------
+
+Temporary Directory Disk Info
+--------------------------------------------
+  Temporary directory      : ${JOBTMPDIR}
+
+  Disk usage (df -h)
+$(df -h ${JOBTMPDIR} 2>&1)
+
+  Usage by folders (du -m)
+$(du -m ${JOBTMPDIR} 2>&1)
+
+  Detailed file list of Node 0(ls -l .)
+    see ${OUTDIR}/${JOBNAME}.log file
+EOF
+
+cat << EOF
+$(ls -l ${JOBTMPDIR} 2>&1)
+EOF
+
+cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
+--------------------------------------------
+
+EOF
+
 cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
 End of post processing : $(date)
 Script post_proc done.
---------------------------------------------
+===========================================
 EOF
+
+# Remove temporary directory
+
+cd ${OUTDIR}
+if [[ ${move_file} == true ]]; then
+    ${mpicmd}rm -fr ${JOBTMPDIR}
+else
+    ${mpicmd}rm ${JOBTMPDIR}/Job_script_${PBS_JOBID%.*} ${JOBTMPDIR}/Post_script_${PBS_JOBID%.*}
+fi
+
 exit
 
 # Copied content: Between #tag_start_copy and #tag_end_copy are copied in temporary directory
-#tag_copy
-#tag_start_copy
+
+#tag_copy_begin
+
 cd ${JOBTMPDIR}
 
 # Read POST_CALC list
@@ -96,15 +164,10 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'TMP_NAME' settings
 
     if [[ ${TMP_NAME: -1} == '/' ]]; then
-        ls ${TMP_NAME} > /dev/null 2>&1
-        if [[ $? -eq 0 ]]; then
-            filelist=($(ls ${TMP_NAME}))
-            for ((i=0; i<${#filelist[@]}; i++)); do
-                filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
-            done
-        else
-            filelist=()
-        fi
+        filelist=($(ls ${TMP_NAME}))
+        for ((i=0; i<${#filelist[@]}; i++)); do
+            filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
+        done
     else
         filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
         filelist=(${filelist//${JOBTMPDIR}\//})
@@ -152,71 +215,80 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
     TMP_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,22,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
 done
+#tag_copy_end
 
-# Calculation summary
+#tag_check_begin
 
-cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
---------------------------------------------
+echo "start checking: $(hostname)"
+cd ${JOBTMPDIR}
 
-Temporary Directory Disk Info
---------------------------------------------
-  Temporary directory      : ${JOBTMPDIR}
+# Read POST_CALC list
 
-  Disk usage (df -h)
-$(df -h ${JOBTMPDIR} 2>&1)
+LINE_POSTCALC=`grep -nw 'POST_CALC' ${SETFILE}`
+LINE_POSTCALC=`echo "scale=0;${LINE_POSTCALC%%:*}+4" | bc`
 
-  Usage by folders (du -m)
-$(du -m ${JOBTMPDIR} 2>&1)
+# Read table, substitute variable flags and spaces for saved name in JOBTMPDIR
 
-  Detailed file list (ls -l .)
-    see ${OUTDIR}/*.o${PBS_JOBID} file
-EOF
-cat << EOF
-$(ls -l . 2>&1)
-EOF
-cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
---------------------------------------------
+SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
 
-EOF
+# Read table, substitute variable flags and spaces for temporary name in JOBTMPDIR
 
-#tag_end_copy
-# Check files on all nodes before exiting
+TMP_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,22,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
 
-cat << EOF > ${JOBTMPDIR}/checkfile0_${PBS_JOBID%.*}
-#!/bin/bash
-JOBNAME=${JOBNAME}
-SETFILE=${SETFILE}
-OUTDIR=${OUTDIR}
-OUTPUT=${OUTPUT}
-JOBTMPDIR=${JOBTMPDIR}
-cd  ${JOBTMPDIR}
-EOF
-sed '1,/^#tag_s/d;/^#tag_e/,$d'  $0 >> ${JOBTMPDIR}/checkfile0_${PBS_JOBID%.*}
-chmod 755 ${JOBTMPDIR}/checkfile0_${PBS_JOBID%.*}
-if [[ ! -z ${PBS_NODEFILE} ]]; then
-    echo "Check files across nodes ..."
-    echo "List of saved files"
-    echo "  TEMPORARY            SAVED"
-    PCLIST=`awk '{if ($I != old){printf("%s ",$I);old=$I}}' ${PBS_NODEFILE}`
-    for ((i = 2; i < ${#PCLIST[@]}; i++)); do
-        PC=${PCLIST[$i]}
-        echo "--------------------------------------------"
-        echo "node: ${PC}, checkfile..."
-        echo "scp ${JOBTMPDIR}/checkfile0_${PBS_JOBID%.*}    ${PC}:${JOBTMPDIR}/checkfile"
-        scp ${JOBTMPDIR}/checkfile0_${PBS_JOBID%.*} ${PC}:${JOBTMPDIR}/checkfile
-        ssh ${PC} "source ${JOBTMPDIR}/checkfile"
-        echo "node: ${PC}, checkfile ended."
-        echo "--------------------------------------------"
-        echo ""
+while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
+
+    # List files, to get all matched files in 'TMP_NAME' settings
+
+    if [[ ${TMP_NAME: -1} == '/' ]]; then
+        filelist=($(ls ${TMP_NAME}))
+        for ((i=0; i<${#filelist[@]}; i++)); do
+            filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
+        done
+    else
+        filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
+        filelist=(${filelist//${JOBTMPDIR}\//})
+    fi
+
+    # Make subdir for files stored in sub-folders
+
+    if [[ ${SAVED_NAME: -1} == '/' && ${#filelist[@]} -ge 1 ]]; then
+        mkdir -p "${OUTDIR}/${SAVED_NAME}"
+    fi
+    for file in ${filelist[@]}; do
+
+        # Make sure the file is not empty
+
+        if [[ ! -s ${JOBTMPDIR}/${file} ]]; then
+            continue
+        fi
+
+        SAVED_NAME_REAL=${SAVED_NAME}
+
+        # If SAVED_NAME is '*', keep the original name
+
+        if [[ ${SAVED_NAME} == *'*'* ]]; then
+            SAVED_NAME_REAL=${file##*/}
+        fi
+
+        # If SAVED_NAME ends with '/', update it
+
+        if [[  ${SAVED_NAME: -1} == '/' ]]; then
+            SAVED_NAME_REAL=`echo "${SAVED_NAME}${file##*/}"`
+        fi
+
+        # Copy files - do not cover the old ones
+
+        if [[ -e ${OUTDIR}/${SAVED_NAME_REAL} && -s ${OUTDIR}/${SAVED_NAME_REAL} ]]; then
+            continue
+        fi
+        echo "${file} ${SAVED_NAME_REAL}" | awk '{printf("  %-21s%-52s"),$1,$2}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
+        ls -l ${JOBTMPDIR}/${file} | awk '{printf("  %-8s %s %s %s\n"),$5,$6,$7,$8}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
+        cp -r ${JOBTMPDIR}/${file} ${OUTDIR}/${SAVED_NAME_REAL}
     done
-fi
 
-# Remove temporary directory
-
-cd ${OUTDIR}
-if [[ ${move_file} == true ]]; then
-    rm -fr ${JOBTMPDIR}
-else
-    rm Job_script_${PBS_JOBID%.*} Post_script_${PBS_JOBID%.*} checkfile0_${PBS_JOBID%.*}
-fi
+    LINE_POSTCALC=`echo "scale=0;${LINE_POSTCALC%%:*}+1" | bc`
+    SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
+    TMP_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,22,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
+done
+#tag_check_end
 

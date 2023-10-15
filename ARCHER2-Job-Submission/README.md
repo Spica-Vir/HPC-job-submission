@@ -12,14 +12,15 @@ Upper case letter(s) for job definition + lower case letters for executable + ve
 
 Here the configuration of 'CRYSTAL17' is used as the example. 
 
-| COMMAND    | FLAGS                                         | DEFINITION                                               |
-|:-----------|:---------------------------------------------:| :--------------------------------------------------------|
-| Pcrys17    | -in -nd -wt -ref(Optional)                    | Run parallel CRYSTAL17 executable                        |
-| MPPcrys17  | -in -nd -wt -ref(Optional)                    | Run massive parallel CRYSTAL17 executable                |
-| Scrys17    | -in -nd -wt -ref(Optional)                    | Run sequential CRYSTAL17 executable (for illustration, not implemented) |
-| Xcrys17    | -x -in -nd -wt -ref(Optional) -name(Optional) | Run user-defined multiple jobs (see advanced section)    |
-| SETcrys17  | No flag                                       | Print the local (user-defined) 'settings' file on screen |
-| HELPcrys17 | No flag                                       | Print instructions on screen                             |
+| COMMAND    | FLAGS                                             | DEFINITION                                               |
+|:-----------|:-------------------------------------------------:| :--------------------------------------------------------|
+| Pcrys17    | -in -nd -wt -ref(Optional) -nc                    | Run parallel CRYSTAL17 crystal executable                |
+| Pprop17    | -in -nd -wt -ref(Optional) -nc                    | Run parallel CRYSTAL17 properties executable             |
+| MPPcrys17  | -in -nd -wt -ref(Optional) -nc                    | Run massive parallel CRYSTAL17 crystal executable        |
+| Scrys17    | -in -nd -wt -ref(Optional) -nc                    | Run sequential CRYSTAL17 executable (for illustration, not implemented) |
+| Xcrys17    | -x -in -nd -wt -ref(Optional) -name(Optional) -nc | Run user-defined multiple jobs (see advanced section)    |
+| SETcrys17  | No flag                                           | Print the local (user-defined) 'settings' file on screen |
+| HELPcrys17 | No flag                                           | Print instructions on screen                             |
 
 ### Command-line flags
 
@@ -30,6 +31,8 @@ In the table below are listed command line flags for script `gen_sub`. The seque
 | -x    | string | Executable label, see the 'EXE\_TABLE' of settings file                  |
 | -in   | string | The main input file                                                      |
 | -nd   | int    | Number of nodes requested for the job                                    |
+| -nc   | int    | Total number of cores requested for the job                              |
+| -nt   | int    | Number of threads per process. Mulit/Sub-CPU threading is prohibited     |
 | -wt   | hh:mm  | Walltime requested for the job                                           |
 | -ref  | string | The common basename (without extensions) of reference files              |
 | -name | string | The name of slurm file                                                   |
@@ -84,14 +87,38 @@ Taking 'CRYSTAL17' as the example. The following steps are necessary to set up a
 
 ### Use commands
 
-After configuration, commands to generate the corresponding job submission file (slurm file) are defined in `~/.bashrc`. Detailed definitions of commands can be found in the previous section and by `HELPcrys17` command. For example, the following command generates and submits a slurm file for input file 'mgo.d12'. The job uses 1 node and the maximum time allowance for this job is 1 hour:
+After configuration, commands to generate the corresponding job submission file (slurm file) are defined in `~/.bashrc`. Detailed definitions of commands can be found in the previous section and by `HELPcrys17` command. For example, the following command generates and submits a slurm file for input file 'mgo.d12'. The job uses 1 node and the number of CPUs per node is read from the `NCPU_PER_NODE` keyword in settings file. The maximum time allowance for this job is 1 hour.
 
 ``` console
 ~$ Pcrys17 -in mgo.d12 -nd 1 -wt 01:00
 ~$ sbatch mgo.slurm
 ```
 
+Alternatively, `-nc` flag can be specify the total number of CPUs used. If `-nc` < `NCPU_PER_NODE`, a single node is used; otherwise CPUs are equally partitioned over the minimum nodes needed. When both `-nd` and `-nc` are specified, `-nc/-nd` is compared with `NCPU_PER_NODE` and the former one must be smaller. `-nc` CPUs are equally partitioned over `-nd` nodes. If neither of them is specified, `NCPU_PER_NODE` is read from settings file and `-nd` = 1. Warning message will be given. The following job requests 2 nodes of 12 CPUs.
+
+``` console
+~$ Pcrys17 -in mgo.d12 -nc 24 -nd 2 -wt 01:00
+```
+
 It is highly recommended to generate slurm files in the same directory as input files, though in principle, the user can generate slurm files and get the 'slurm-`${SLURM_JOB_ID}`.out' file in a separate directory. This feature is rarely tested and might lead to unexpected results - and somewhat meaningless because all the job-related files, including .out file, are stored in the input directory.  
+
+`-nt` flag specifies number of threads per process. If not specified, `NTHREAD_PER_PROC` are read from settings file. Number of processes = Total number of CPUs / `-nt`. Multi/Sub-CPU threading is forbidden. The following example requests 2 CPUs but 4 threads per process, which leads to error:
+
+``` console
+~$ Pcrys17 -in mgo.d12 -nc 2 -nt 4 -wt 01:00
+```
+
+The following example requests 8 CPUs, 2 nodes. On each node, there are: 4 CPUs, 2 processes. Each process containes 2 threads and each thread is run on 1 CPU.
+
+``` console
+~$ Pcrys17 -in mgo.d12 -nc 8 -nt 4 -nd 2 -wt 01:00
+```
+
+If `-nc` is not an integer multiply of `-nd` or `-nt`, the number of CPUs requested might change accordingly by rounding it to the nearest integer that is smaller than the specified one. For example, 4 CPUs instead of 5 are used:
+
+``` console
+~$ Pcrys17 -in mgo.d12 -nc 5 -nd 2 -wt 01:00
+```
 
 ### Common Outputs
 
@@ -110,7 +137,7 @@ There are 4 probable occasions of job termination. If an ephemeral directory is 
 1. For normal termination, all the non-empty files are kept in the output directory, with 'SAVED' names. The ephemeral directory will be removed.  
 2. If the job is terminated due to exceeding walltime, same as normal termination.  
 3. If the job is terminated due to error, same as normal termination.  
-4. If the job is killed by user, the ephemeral directory remains intact. The user can refer to '.out' file or 'slurm-`${SLURM_JOB_ID}`.out' file for the path to ephemeral directory and manually move them to output directory. Note that all the inputs are copied from the same directory so there is not need to copy inputs back.  
+4. If the job is killed by user, the ephemeral directory remains intact when `JOB_TMPDIR` is not 'node' (see sections below). The user can refer to '.out' file or 'slurm-`${SLURM_JOB_ID}`.out' file for the path to ephemeral directory and manually move them to output directory. Note that all the inputs are copied from local so there is not need to copy inputs back.  
 
 ### How to use settings file
 
@@ -130,12 +157,12 @@ The 'X' command allows the maximum flexibility for users to define a PBS job. Ta
 To run `Xcrys17` command, the number of in-line flags should follow certain rules:
 
 1. `-name` flag should appear at most only once, otherwise the last one will cover the previous entries. If left blank, the slurm file will be named as `mgo_et_al.slurm` (taking the previous line as an example).  
-2. `-nd` flag is mandatory and should appear once.  
+2. `-nd` `-nc` `-nt` flags should appear at most once. If not specified, `NCPU_PER_NODE` and `NTHREAD_PER_PROC` are read from settings file and `-nd` is set to 1.  
 3. `-x` `-in` `-wt` flags should be always in the same length, otherwise error is reported. 
 4. `-wt` flag defines the walltime for individual jobs. For each job, by default 3 minutes are spared for post-processing. Check the 'TIME\_OUT' keyword in settings file.   
 5. `-ref` flags should have either 0 length or the same length as `-x`. If no reference is needed, that flag should be matched with value 'no'. See the line above.  
 
-When job terminates, the output of each calculation is available in corresponding .out files. If input files have the same name, for example, mgo.d12 and mgo.d3, the output will be attached in the same .out file, i.e., mgo.out, with a warning message dividing the files. Check [testcase of CRYSTAL17 Imperial HPC version](https://github.com/cmsg-icl/crystal_shape_control/tree/main/Imperial-HPC-Job-Submission/CRYSTAL17/testcase)(they are quite similar). On the other hand, SLURM-related outputs, slurm and 'slurm-`${SLURM_JOB_ID}`.out' files, are defined by the `-name` flag.
+When job terminates, the output of each calculation is available in corresponding .out files. If input files have the same name, for example, mgo.d12 and mgo.d3, the output will be attached in the same .out file, i.e., mgo.out, with a warning message dividing the files. Check [testcase of CRYSTAL17 Imperial HPC version](https://github.com/cmsg-icl/HPC-job-submission/tree/main/Imperial-HPC-Job-Submission/CRYSTAL17/testcase)(they are quite similar). On the other hand, SLURM-related outputs, slurm and 'slurm-`${SLURM_JOB_ID}`.out' files, are defined by the `-name` flag.
 
 ### Edit the local 'settings' file
 
@@ -288,14 +315,14 @@ ${WORK}/etc/runCRYSTAL23/settings
 
 **Default executable**
 
-crystal/23-1.0.1 (shared module)
+crystal/23-1.0.1-3 (shared module)
 
 | LABEL      | ACTUAL IN-LINE COMMAND                                             |
 |:----------:|:-------------------------------------------------------------------|
 | pcrys      | srun --hint=nomultithread --distribution=block:block Pcrystal      |
-| pcrysomp   | srun --hint=nomultithread --distribution=block:block PcrystalOMP   |
+| pcrysomp   | srun --distribution=block:block PcrystalOMP                        |
 | mppcrys    | srun --hint=nomultithread --distribution=block:block MPPcrystal    |
-| mppcrysomp | srun --hint=nomultithread --distribution=block:block MPPcrystalOMP |
+| mppcrysomp | srun --distribution=block:block MPPcrystalOMP                      |
 | pporp      | srun --hint=nomultithread --distribution=block:block Pproperties   |
 | pporp      | srun --hint=nomultithread --distribution=block:block MPPproperties |
 
