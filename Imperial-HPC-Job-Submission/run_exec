@@ -86,23 +86,33 @@ echo "MPI command: ${EXECOMMAND}"
 # Set temporary directory
 
 JOBTMPDIR=`echo $(grep -w -A 1 'JOB_TMPDIR' ${SETFILE} | tail -1)`
-if [[ -z ${JOBTMPDIR} || ${JOBTMPDIR} == *'default'* ]]; then # As subdirectory under the current one
+if [[ -z ${JOBTMPDIR} || ${JOBTMPDIR} == 'default' ]]; then # As subdirectory under the current one
     JOBTMPDIR=$(dirname ${JOBFILE})/${JOBNAME}_${PBS_JOBID%.*}
 	JOBTMPDIR=`realpath ${JOBTMPDIR}`
     move_file=true
-    mkdir -p ${JOBTMPDIR}
+    mpicmd=''
     echo "Temporary directory : ${JOBTMPDIR}"
-elif [[ ${JOBTMPDIR} == *'nodir'* ]]; then # In current directory
+elif [[ ${JOBTMPDIR} == 'nodir' ]]; then # In current directory
     JOBTMPDIR=$(dirname ${JOBFILE})
 	JOBTMPDIR=`realpath ${JOBTMPDIR}`
     move_file=false
+    mpicmd=''
     echo "Temporary file stored under the current directory ${OUTDIR}"
+elif [[ ${JOBTMPDIR} == 'node' ]]; then # In node temporary directory
+    JOBTMPDIR=${TMPDIR}/${JOBNAME}_${PBS_JOBID%.*}
+    move_file=true
+    mpicmd='mpiexec -N 1 ' # Run parallel copy file for nodes
+    echo "Temporary directory on individual nodes : ${JOBTMPDIR}"
 else # In a separate directory
     JOBTMPDIR=${JOBTMPDIR}/${JOBNAME}_${PBS_JOBID%.*}
 	JOBTMPDIR=`realpath ${JOBTMPDIR}`
     move_file=true
-    mkdir -p ${JOBTMPDIR}
+    mpicmd=''
     echo "Temporary directory : ${JOBTMPDIR}"
+fi
+
+if [[ ${move_file} == true ]]; then
+    ${mpicmd}mkdir -p ${JOBTMPDIR}
 fi
 
 # Create temporary copy of the script for execution
@@ -112,7 +122,10 @@ sed '1,/^#tag_copy/d' $0 > ${JOBTMPDIR}/${SCRIPT}
 
 # Execute file 
 
-cat << EOF 
+cat << EOF
+============================================
+Job Executation Report
+--------------------------------------------
 Job Executation Script
 --------------------------------------------
 ${JOBTMPDIR}/${SCRIPT}
@@ -125,12 +138,18 @@ Running Job Report
 DATE START : $(date)
 
 EOF
+
+# Move files and run job
+
 source ${JOBTMPDIR}/${SCRIPT}
+
+# Job finished
+
 cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
 
 DATE END   : $(date)
 Script run_exec done.
---------------------------------------------
+============================================
 
 EOF
 exit
@@ -140,26 +159,17 @@ exit
 #tag_copy
 # Synchronise nodes
 
-if [[ ! -z ${PBS_NODEFILE} ]]; then
-    if [[ -e ${PBS_NODEFILE} ]]; then
-        cat << EOF
-PBE NODEFILE Info
+if [[ ! -z ${$PBS_NODEFILE} ]]; then
+    cat << EOF
+PBS NODEFILE INFO
 --------------------------------------------
-Found in ${PBS_NODEFILE}
-EOF
-        PCLIST=`awk '{if ($I != old){printf("%s ",$I);old=$I}}' ${PBS_NODEFILE}`
-        for PC in ${PCLIST[@]}; do
-            ssh ${PC} "if [[ ! -d ${JOBTMPDIR} ]]; then mkdir -p ${JOBTMPDIR} ;fi; echo '  temporary directory on '${PC}"
-            scp $0 ${PC}:${JOBTMPDIR}/${SCRIPT}
-        done
-        cat << EOF
+${$PBS_NODEFILE}
 --------------------------------------------
 
 EOF
-    else
-        echo '${PBS_NODEFILE} not found'
-        exit
-    fi
+else
+    echo 'PBS node information is not found'
+    exit
 fi
 
 # Generate basic information of output file
@@ -212,15 +222,10 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'SAVED_NAME' settings
 
     if [[ ${SAVED_NAME: -1} == '/' ]]; then
-        ls ${SAVED_NAME} > /dev/null 2>&1
-        if [[ $? -eq 0 ]]; then
-            filelist=($(ls ${SAVED_NAME}))
-            for ((i=0; i<${#filelist[@]}; i++)); do
-                filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
-            done
-        else
-            filelist=()
-        fi
+        filelist=($(ls ${SAVED_NAME}))
+        for ((i=0; i<${#filelist[@]}; i++)); do
+            filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
+        done
     else
         filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
         filelist=(${filelist//${INPDIR}\//})
@@ -229,7 +234,7 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # Make subdir for files stored in sub-folders 
 
     if [[ ${TMP_NAME: -1} == '/' && ${#filelist[@]} -ge 1 ]]; then
-        mkdir -p "${JOBTMPDIR}/${TMP_NAME}"
+        ${mpicmd}mkdir -p "${JOBTMPDIR}/${TMP_NAME}"
     fi
     for file in ${filelist[@]}; do
 
@@ -272,17 +277,8 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
             echo "Warning! Duplicate file detected in temporary directory: ${JOBTMPDIR}/${TMP_NAME_REAL}." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
             echo "  The file will be covered by the new entry ${INPDIR}/${file}." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
         fi
-        cp -r ${INPDIR}/${file} ${JOBTMPDIR}/${TMP_NAME_REAL}
+        ${mpicmd}cp -r ${INPDIR}/${file} ${JOBTMPDIR}/${TMP_NAME_REAL}
         echo "Input ${file} copied as ${JOBTMPDIR##*/}/${TMP_NAME_REAL}."
-
-        # Synchonise files on all nodes
-
-        if [[ ! -z ${PCLIST} ]]; then
-            for PC in ${PCLIST[@]}; do
-                scp ${INPDIR}/${file} ${PC}     : ${JOBTMPDIR}/${TMP_NAME_REAL}
-                echo "File synchonised on ${PC} : ${JOBTMPDIR}/${TMP_NAME_REAL}"
-            done
-        fi
     done
 
     LINE_PRECALC=`echo "scale=0;${LINE_PRECALC}+1" | bc`
@@ -308,15 +304,10 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true && ${REFNAME} != 'n
     # List files, to get all matched files in 'SAVED_NAME' settings
 
     if [[ ${SAVED_NAME: -1} == '/' ]]; then
-        ls ${SAVED_NAME} > /dev/null 2>&1
-        if [[ $? -eq 0 ]]; then
-            filelist=($(ls ${SAVED_NAME}))
-            for ((i=0; i<${#filelist[@]}; i++)); do
-                filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
-            done
-        else
-            filelist=()
-        fi
+        filelist=($(ls ${SAVED_NAME}))
+        for ((i=0; i<${#filelist[@]}; i++)); do
+            filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
+        done
     else
         filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
         filelist=(${filelist//${INPDIR}\//})
@@ -325,7 +316,7 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true && ${REFNAME} != 'n
     # Make subdir for files stored in sub-folders 
 
     if [[ ${TMP_NAME: -1} == '/' && ${#filelist[@]} -ge 1 ]]; then
-        mkdir -p "${JOBTMPDIR}/${TMP_NAME}"
+        ${mpicmd}mkdir -p "${JOBTMPDIR}/${TMP_NAME}"
     fi
     for file in ${filelist[@]}; do
 
@@ -360,17 +351,8 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true && ${REFNAME} != 'n
             echo "  The new reference entry ${INPDIR}/${file} is ignored." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
             continue
         fi
-        cp -r ${INPDIR}/${file} ${JOBTMPDIR}/${TMP_NAME_REAL}
+        ${mpicmd}cp -r ${INPDIR}/${file} ${JOBTMPDIR}/${TMP_NAME_REAL}
         echo "Input ${file} copied as ${JOBTMPDIR##*/}/${TMP_NAME_REAL}."
-
-        # Synchonise files on all nodes
-
-        if [[ ! -z ${PCLIST} ]]; then
-            for PC in ${PCLIST[@]}; do
-                scp ${INPDIR}/${file}     ${PC} : ${JOBTMPDIR}/${TMP_NAME_REAL}
-                echo "File synchonised on ${PC} : ${JOBTMPDIR}/${TMP_NAME_REAL}"
-            done
-        fi
     done
 
     LINE_REF=`echo "scale=0;${LINE_REF}+1" | bc`
@@ -395,10 +377,10 @@ $(cat ${JOBFILE})
 -------------------------------------------
 
 EOF
-cd ${JOBTMPDIR}
+
 echo "Entering temporary directory..."
 echo "Launching the job..."
 
+export PBS_JOBDIR=${JOBTMPDIR}
 echo "${EXECOMMAND} >> ${OUTDIR}/${OUTPUT} 2>&1" | bash
 
-cd ${OUTDIR}
