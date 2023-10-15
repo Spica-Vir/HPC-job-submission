@@ -1,0 +1,35 @@
+#!/bin/bash  --login
+#PBS -N mole-scf
+#PBS -l select=1:ncpus=24:mem=512GB:mpiprocs=12:ompthreads=2
+#PBS -l walltime=00:10:00
+
+echo "PBS Job Report"
+echo "--------------------------------------------"
+echo "  Start Date : $(date)"
+echo "  PBS Job ID : ${PBS_JOBID}"
+echo "--------------------------------------------"
+echo ""
+
+# number of cores per node used
+export NCORES=24
+# number of processes
+export NPROCESSES=12
+
+# Make sure any symbolic links are resolved to absolute path
+export PBS_O_WORKDIR=$(readlink -f ${PBS_O_WORKDIR})
+
+# Set the number of threads
+export OMP_NUM_THREADS=2
+
+# to sync nodes
+cd ${PBS_O_WORKDIR}
+
+# start calculation: command added below by gen_sub
+timeout 9m /rds/general/user/hz1420/home/GitHub/Spica-Vir/HPC-job-submission/Imperial-HPC-Job-Submission/run_exec -set /rds/general/user/hz1420/home/testsub/runCRYS23/settings -in mole-scf.d12 -ref no -- 'mpiexec -np 12 Pcrystal'
+/rds/general/user/hz1420/home/GitHub/Spica-Vir/HPC-job-submission/Imperial-HPC-Job-Submission/post_proc -in mole-scf.d12 -set /rds/general/user/hz1420/home/testsub/runCRYS23/settings
+
+
+if [[ -f ./mole-scf.run ]];then
+chmod 755 ./mole-scf.run
+./mole-scf.run
+fi

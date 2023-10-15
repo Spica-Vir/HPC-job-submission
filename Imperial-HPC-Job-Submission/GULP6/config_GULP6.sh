@@ -60,7 +60,7 @@ EOF
     if [[ ${SCRIPTDIR: -1} == '/' ]]; then
         SCRIPTDIR=${SCRIPTDIR%/*}
     fi
-    
+
     SCRIPTDIR=`realpath $(echo ${SCRIPTDIR}) 2>&1 | sed -r 's/.*\:(.*)\:.*/\1/' | sed 's/[[:space:]]//g'` # Ignore errors
     source_dir=`realpath $(dirname $0)`
     if [[ ${source_dir} == ${SCRIPTDIR} ]]; then
@@ -88,18 +88,18 @@ function set_exe {
     cat << EOF
 ================================================================================
     Please specify the directory of GULP 6 exectuables, 
-    or the command to load CRYSTAL17 modules
+    or the command to load GULP modules
 
-    Default Option
-    gulp-mpi (mpiintel2019 - ifort2019.4 - fftw3.3.3double - PLUMED)
+    Default Option(mpich4.0.2 - gcc11.2.0-aocl - PLUMED - OpenKIM)
+    module load /rds/general/project/cmsg/live/etc/modulefiles/GULP/6.1.2-gcc
 
 EOF
-    
+
     read -p " " EXEDIR
     EXEDIR=`echo ${EXEDIR}`
 
     if [[ -z ${EXEDIR} ]]; then
-        EXEDIR='module load  /rds/general/user/hz1420/home/apps/gulp-6.1.2/module_gulp'
+        EXEDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/GULP/6.1.2-gcc'
     fi
 
     if [[ ! -d ${EXEDIR} && (${EXEDIR} != *'module load'*) ]]; then
@@ -132,15 +132,15 @@ function set_mpi {
     Please specify the directory of MPI executables or mpi modules
 
     Default Option
-    mpi/intel-2019
+    module load /rds/general/project/cmsg/live/etc/modulefiles/mpi/mpich4.0.2-gcc
 
 EOF
-    
+
     read -p " " MPIDIR
     MPIDIR=`echo ${MPIDIR}`
 
     if [[ -z ${MPIDIR} ]]; then
-        MPIDIR='module load  mpi/intel-2019'
+        MPIDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/mpi/mpich4.0.2-gcc'
     fi
 
     if [[ ! -d ${MPIDIR} && (${MPIDIR} != *'module load'*) ]]; then
@@ -184,12 +184,12 @@ function set_settings {
 
     # Values for keywords
     sed -i "/SUBMISSION_EXT/a\ .qsub" ${SETFILE}
-    sed -i "/NCPU_PER_NODE/a\ 24" ${SETFILE}
-    sed -i "/MEM_PER_NODE/a\ 100" ${SETFILE}
+    sed -i "/NCPU_PER_NODE/a\ 256" ${SETFILE}
+    sed -i "/MEM_PER_NODE/a\ 512" ${SETFILE}
     sed -i "/NTHREAD_PER_PROC/a\ 1" ${SETFILE}
     sed -i "/NGPU_PER_NODE/a\ 0" ${SETFILE}
     sed -i "/GPU_TYPE/a\ RTX6000" ${SETFILE}
-    sed -i "/TIME_OUT/a\ 3" ${SETFILE}
+    sed -i "/TIME_OUT/a\ 1" ${SETFILE}
     sed -i "/JOB_TMPDIR/a\ ${EPHEMERAL}" ${SETFILE}
     sed -i "/EXEDIR/a\ ${EXEDIR}" ${SETFILE}
     sed -i "/MPIDIR/a\ ${MPIDIR}" ${SETFILE}
@@ -206,18 +206,17 @@ function set_settings {
     LINE_PRE=`echo "scale=0;${LINE_PRE%:*}+3" | bc`
     sed -i "${LINE_PRE}a\[jobname].gin        [jobname].gin        GULP input file" ${SETFILE}
 
-    
     # Reference file table
 
 	# LINE_REF=`grep -nw 'REF_FILE' ${SETFILE}`
     # LINE_REF=`echo "scale=0;${LINE_REF%:*}+3" | bc`
     # sed -i "${LINE_REF}a\[refname].something  something            Some reference files" ${SETFILE}
-    
+
     # Post-processing file table
 
     LINE_POST=`grep -nw 'POST_CALC' ${SETFILE}`
     LINE_POST=`echo "scale=0;${LINE_POST%:*}+3" | bc`
-    
+
     sed -i "${LINE_POST}a\*                    *.inp                Force field coefficient file LAMMPS format" ${SETFILE}
     sed -i "${LINE_POST}a\*                    *.lmp                Geometry file LAMMPS format" ${SETFILE}
     sed -i "${LINE_POST}a\*                    *.xyz                Geometry file xyz format" ${SETFILE}
@@ -228,15 +227,13 @@ function set_settings {
 -----------------------------------------------------------------------------------
 #!/bin/bash  --login
 #PBS -N \${V_JOBNAME}
-#PBS -l select=\${V_ND}:ncpus=\${V_NCPU}:mem=\${V_MEM}:mpiprocs=\${V_PROC}:ompthreads=\${V_TRED}\${V_NGPU}\${V_TGPU}:avx2=true
+#PBS -l select=\${V_ND}:ncpus=\${V_NCPU}:mem=\${V_MEM}:mpiprocs=\${V_PROC}:ompthreads=\${V_TRED}\${V_NGPU}\${V_TGPU}
 #PBS -l walltime=\${V_TWT}
 
 echo "PBS Job Report"
 echo "--------------------------------------------"
 echo "  Start Date : \$(date)"
 echo "  PBS Job ID : \${PBS_JOBID}"
-echo "  Status"
-qstat -f \${PBS_JOBID}
 echo "--------------------------------------------"
 echo ""
 
@@ -287,7 +284,7 @@ function set_commands {
     # echo "chmod 777 $(dirname $0)/post_proc" >> ${HOME}/.bashrc 
     # echo "chmod 777 $(dirname $0)/run_help" >> ${HOME}/.bashrc 
     echo "# <<< finish GULP6 job submitter settings <<<" >> ${HOME}/.bashrc
-    
+
     bash ${CONFIGDIR}/run_help
 }
 

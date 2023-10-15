@@ -99,7 +99,7 @@ elif [[ ${JOBTMPDIR} == 'nodir' ]]; then # In current directory
     mpicmd=''
     echo "Temporary file stored under the current directory ${OUTDIR}"
 elif [[ ${JOBTMPDIR} == 'node' ]]; then # In node temporary directory
-    JOBTMPDIR=${TMPDIR}/${JOBNAME}_${PBS_JOBID%.*}
+    JOBTMPDIR=${TMPDIR}/${JOBNAME}_${PBS_JOBID%.*} # $TMPDIR is a variable for CX1/HX1, not necessarily for other PBS systems
     move_file=true
     mpicmd='mpiexec -N 1 ' # Run parallel copy file for nodes
     echo "Temporary directory on individual nodes : ${JOBTMPDIR}"
@@ -159,11 +159,11 @@ exit
 #tag_copy
 # Synchronise nodes
 
-if [[ ! -z ${$PBS_NODEFILE} ]]; then
+if [[ ! -z ${PBS_NODEFILE} ]]; then
     cat << EOF
 PBS NODEFILE INFO
 --------------------------------------------
-${$PBS_NODEFILE}
+${PBS_NODEFILE}
 --------------------------------------------
 
 EOF
@@ -193,15 +193,18 @@ Pre-Calc Summary
 
 EOF
 
-if [[ ! -z ${PBS_JOBID} ]]; then
-    cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
-PBS Job Status
--------------------------------------------
-  $(qstat -f ${PBS_JOBID} 2>&1)
--------------------------------------------
+# This seems to cause severe delay
+# if [[ ! -z ${PBS_JOBID} ]]; then
+#     cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
+# PBS Job Status
+# -------------------------------------------
+#   $(qstat -f ${PBS_JOBID} 2>&1)
+# -------------------------------------------
+# 
+# EOF
+# fi
 
-EOF
-fi
+cd ${JOBTMPDIR}
 
 # Check and read input file
 # Read mandatory file list - Same as JOBNAME (Table PRE_CALC)
@@ -373,7 +376,7 @@ Job Ready to Go
   Temporary dir  : ${JOBTMPDIR}
   List of files  : $(ls -l ${JOBTMPDIR} 2>&1)
   Input script   :
-$(cat ${JOBFILE})
+$(cat ${OUTDIR}/${JOBFILE})
 -------------------------------------------
 
 EOF
@@ -384,3 +387,4 @@ echo "Launching the job..."
 export PBS_JOBDIR=${JOBTMPDIR}
 echo "${EXECOMMAND} >> ${OUTDIR}/${OUTPUT} 2>&1" | bash
 
+cd ${OUTDIR}

@@ -1,0 +1,349 @@
+PBS Job Report
+--------------------------------------------
+  Start Date : Sun 15 Oct 23:36:20 BST 2023
+  PBS Job ID : 8351222.pbs
+--------------------------------------------
+
+Parameter list:  --set '/rds/general/user/hz1420/home/testsub/runCRYS23/settings' --in 'mole-scf.d12' --ref 'no' -- 'mpiexec' '-np' '12' 'Pcrystal'
+Printed output filename /rds/general/user/hz1420/home/testsub/mole-scf.out
+==============================================================
+Loading CRYSTAL23 v1.0.1 ...
+  MPI/OMP Executables: MPPcrystal Pcrystal Pproperties
+  OMP Executables: Scrystal Sproperties
+==============================================================
+==============================================================
+Loading GCC11.2.0 + AOCL4.0(lp64) compiler + AMD MKL...
+==============================================================
+===============================================================
+Loading MPICH4.0.2 compiled by GNU...
+===============================================================
+
+Loading /rds/general/project/cmsg/live/etc/modulefiles/CRYSTAL/23v1-gcc
+  Loading requirement: gcc/11.2.0
+    /rds/general/project/cmsg/live/etc/modulefiles/compiler/gcc11.2.0-aocl
+    /rds/general/project/cmsg/live/etc/modulefiles/mpi/mpich4.0.2-gcc
+MPI command: mpiexec -np 12 Pcrystal
+Temporary directory on individual nodes : /var/tmp/pbs.8351222.pbs/mole-scf_8351222
+============================================
+Job Executation Report
+--------------------------------------------
+Job Executation Script
+--------------------------------------------
+/var/tmp/pbs.8351222.pbs/mole-scf_8351222/Job_script_8351222
+--------------------------------------------
+
+Running Job Report
+--------------------------------------------
+DATE START : Sun 15 Oct 23:36:20 BST 2023
+
+PBS NODEFILE INFO
+--------------------------------------------
+/var/spool/PBS/aux/8351222.pbs
+--------------------------------------------
+
+Pre-Calc Summary
+--------------------------------------------
+  date:                Sun 15 Oct 23:36:20 BST 2023
+  hostname:            cx3-7-2.cx3.hpc.ic.ac.uk
+  system:              Linux cx3-7-2.cx3.hpc.ic.ac.uk 4.18.0-348.20.1.el8_5.x86_64 #1 SMP Tue Mar 8 12:56:54 EST 2022 x86_64 x86_64 x86_64 GNU/Linux
+  user:                hz1420
+  input:               /rds/general/user/hz1420/home/testsub/mole-scf.d12
+  output:              /rds/general/user/hz1420/home/testsub/mole-scf.out
+  temporary directory: /var/tmp/pbs.8351222.pbs/mole-scf_8351222
+  executable script:   /rds/general/user/hz1420/home/GitHub/Spica-Vir/HPC-job-submission/Imperial-HPC-Job-Submission/run_exec
+  executable dir:      module load /rds/general/project/cmsg/live/etc/modulefiles/CRYSTAL/23v1-gcc
+  mpi + exe command:    mpiexec -np 12 Pcrystal
+-------------------------------------------
+
+Find input data: /rds/general/user/hz1420/home/testsub/mole-scf.d12
+Input mole-scf.d12 copied as mole-scf_8351222/INPUT.
+All files are synchonised.
+
+Job Ready to Go
+-------------------------------------------
+  Job name       : mole-scf
+  ID             : 8351222.pbs
+  Command        : mpiexec -np 12 Pcrystal >> /rds/general/user/hz1420/home/testsub/mole-scf.out 2>&1
+  Temporary dir  : /var/tmp/pbs.8351222.pbs/mole-scf_8351222
+  List of files  : total 12
+-rw-------. 1 hz1420 hpc-nmh  884 Oct 15 23:36 INPUT
+-rw-------. 1 hz1420 hpc-nmh 7915 Oct 15 23:36 Job_script_8351222
+  Input script   :
+Form0paracetamol optimisation Step  - PBE0-D3BJ/def2-SVP
+MOLECULE
+1
+20
+8  7.044687  8.876735  6.848715
+1  7.868851  9.361715  6.932157
+6  7.088402  8.073022  5.762583
+6  5.974940  7.291076  5.482365
+6  8.188702  7.993726  4.919212
+1  5.112849  7.346159  6.134104
+6  5.949144  6.445160  4.387239
+1  9.076223  8.588848  5.105303
+6  8.165253  7.148345  3.822754
+1  5.069236  5.852736  4.199107
+6  7.052692  6.363098  3.537623
+1  9.038757  7.107684  3.181185
+7  7.120818  5.535707  2.406200
+1  7.991472  5.582649  1.905770
+6  6.177980  4.693834  1.896343
+8  5.080683  4.524834  2.377096
+6  6.614325  3.962685  0.644189
+1  7.630199  4.183336  0.317611
+1  5.932809  4.210429 -0.168782
+1  6.534671  2.889502  0.812295
+BASISSET
+def2-SVP
+DFT
+PBE0-D3
+ENDDFT
+DFTD3
+VERSION
+4
+ABC
+END
+GCPAUTO
+TOLDEE
+7
+LDREMO
+1
+FMIXING
+50
+MAXCYCLE
+50
+TOLINTEG
+8 8 8 8 24
+EXCHSIZE
+40000000
+BIPOSIZE
+64000000
+ENDSCF
+-------------------------------------------
+
+Entering temporary directory...
+Launching the job...
+
+DATE END   : Sun 15 Oct 23:37:44 BST 2023
+Script run_exec done.
+============================================
+
+Parameter list:  --in 'mole-scf.d12' --set '/rds/general/user/hz1420/home/testsub/runCRYS23/settings' --
+============================================
+Post Processing Report
+--------------------------------------------
+Begining of post processing : Sun 15 Oct 23:37:44 BST 2023
+List of saved files from Node 0
+  TEMPORARY            SAVED
+  fort.9               mole-scf.f9                                           528656   Oct 15 23:37
+  fort.98              mole-scf.f98                                          1370949  Oct 15 23:37
+start checking: cx3-7-2.cx3.hpc.ic.ac.uk
+--------------------------------------------
+
+Temporary Directory Disk Info
+--------------------------------------------
+  Temporary directory      : /var/tmp/pbs.8351222.pbs/mole-scf_8351222
+
+  Disk usage (df -h)
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1       684G   19G  665G   3% /
+
+  Usage by folders (du -m)
+14	/var/tmp/pbs.8351222.pbs/mole-scf_8351222
+
+  Detailed file list of Node 0(ls -l .)
+    see /rds/general/user/hz1420/home/testsub/mole-scf.log file
+total 13392
+-rw-------. 1 hz1420 hpc-nmh    2886 Oct 15 23:37 checkfile_8351222
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 dffit3.dat
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err1.pe10
+-rw-------. 1 hz1420 hpc-nmh 2534528 Oct 15 23:37 diis_err1.pe11
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_err2.pe10
+-rw-------. 1 hz1420 hpc-nmh 2851344 Oct 15 23:37 diis_err2.pe11
+-rw-------. 1 hz1420 hpc-nmh 1181360 Oct 15 23:37 diis_Fg
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 diis_Sk.pe10
+-rw-------. 1 hz1420 hpc-nmh  633632 Oct 15 23:36 diis_Sk.pe11
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.10.pe10
+-rw-------. 1 hz1420 hpc-nmh  316816 Oct 15 23:37 fort.10.pe11
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe00
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe01
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe02
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe03
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe04
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe05
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe06
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe07
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe08
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe09
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe10
+-rw-------. 1 hz1420 hpc-nmh  118136 Oct 15 23:37 fort.11.pe11
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe10
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.17.pe11
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe10
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.18.pe11
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe10
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.1.pe11
+-rw-------. 1 hz1420 hpc-nmh    2404 Oct 15 23:37 fort.21
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe10
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.28.pe11
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe10
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.29.pe11
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe10
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.38.pe11
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe10
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.3.pe11
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe10
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.40.pe11
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe00
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe01
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe02
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe03
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe04
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe05
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe06
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe07
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe08
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe09
+-rw-------. 1 hz1420 hpc-nmh       0 Oct 15 23:36 fort.8.pe10
+-rw-------. 1 hz1420 hpc-nmh  316816 Oct 15 23:37 fort.8.pe11
+-rw-------. 1 hz1420 hpc-nmh  528656 Oct 15 23:37 fort.9
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe00
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe01
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe02
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe03
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe04
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe05
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe06
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe07
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe08
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe09
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe10
+-rw-------. 1 hz1420 hpc-nmh  174128 Oct 15 23:37 fort.95.pe11
+-rw-------. 1 hz1420 hpc-nmh 1370949 Oct 15 23:37 fort.98
+-rw-------. 1 hz1420 hpc-nmh     884 Oct 15 23:36 INPUT
+-rw-------. 1 hz1420 hpc-nmh    7915 Oct 15 23:36 Job_script_8351222
+-rw-------. 1 hz1420 hpc-nmh    2778 Oct 15 23:37 Post_script_8351222
+--------------------------------------------
+
+End of post processing : Sun 15 Oct 23:37:45 BST 2023
+Script post_proc done.
+===========================================

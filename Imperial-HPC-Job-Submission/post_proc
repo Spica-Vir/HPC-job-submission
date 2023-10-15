@@ -82,16 +82,17 @@ if [[ ${mpicmd} != '' ]]; then
     cat << EOF > ${JOBTMPDIR}/${CHECKSCRIPT}
 #!/bin/bash
 JOBNAME=${JOBNAME}
-JOBTMPDIR=${JOBTMPDIR}
+JOBTMPDIR=\${TMPDIR}/${JOBNAME}_${PBS_JOBID%.*} # \$TMPDIR is a variable for CX1/HX1, not necessarily for other PBS systems
 OUTDIR=${OUTDIR}
 OUTPUT=${OUTPUT}
 SETFILE=${SETFILE}
 move_file=${move_file}
 EOF
     # Needs more tests
+    # Broadcast files across the node
     sed '1,/^#tag_check_begin/d;/^#tag_check_end/,$d' $0 >> ${JOBTMPDIR}/${CHECKSCRIPT}
-    chmod 777 ${JOBTMPDIR}/${CHECKSCRIPT}
-	${mpicmd} -path ${JOBTMPDIR} ${CHECKSCRIPT}
+    ${mpicmd}cp ${JOBTMPDIR}/${CHECKSCRIPT} ${TMPDIR}/${JOBNAME}_${PBS_JOBID%.*}/${CHECKSCRIPT} 2>/dev/null # Ignore copy to itself error
+    ${mpicmd}bash ${TMPDIR}/${JOBNAME}_${PBS_JOBID%.*}/${CHECKSCRIPT}
 fi
 
 # Calculation summary
@@ -142,6 +143,9 @@ exit
 # Copied content: Between #tag_start_copy and #tag_end_copy are copied in temporary directory
 
 #tag_copy_begin
+
+cd ${JOBTMPDIR}
+
 # Read POST_CALC list
 
 LINE_POSTCALC=`grep -nw 'POST_CALC' ${SETFILE}`
@@ -246,7 +250,7 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     fi
 
     # Make subdir for files stored in sub-folders
-    
+
     if [[ ${SAVED_NAME: -1} == '/' && ${#filelist[@]} -ge 1 ]]; then
         mkdir -p "${OUTDIR}/${SAVED_NAME}"
     fi
