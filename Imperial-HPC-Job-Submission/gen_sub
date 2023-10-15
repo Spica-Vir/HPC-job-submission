@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Basic input format
-# gen_sub -set setfile -x jobtype -in input -ref refname -nd ND -wt WT -- 
+# gen_sub -set setfile -x jobtype -in input -ref refname -nd ND -nc NC -nt NT -wt WT -- 
 # setfile : str, path to the settings file
 # jobtype : str, pcrys / mppcrys / scrys / pprop /sprop
 # ND      : int, optional, number of nodes
@@ -124,7 +124,7 @@ EOF
 # Get label of command from input and find corresponding command
 
 function check_EXELABEL_ {
-    
+
     # No -x input
 
     if [[ -z ${EXELABEL} ]]; then

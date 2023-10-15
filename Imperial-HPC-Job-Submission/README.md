@@ -12,14 +12,16 @@ Upper case letter(s) for job definition + lower case letters for executable + ve
 
 Here the configuration of 'CRYSTAL17' is used as the example. 
 
-| COMMAND    | FLAGS                                         | DEFINITION                                               |
-|:-----------|:---------------------------------------------:| :--------------------------------------------------------|
-| Pcrys17    | -in -nd -wt -ref(Optional)                    | Run parallel CRYSTAL17 executable                        |
-| MPPcrys17  | -in -nd -wt -ref(Optional)                    | Run massive parallel CRYSTAL17 executable                |
-| Scrys17    | -in -nd -wt -ref(Optional)                    | Run sequential CRYSTAL17 executable                      |
-| Xcrys17    | -x -in -nd -wt -ref(Optional) -name(Optional) | Run user-defined multiple jobs (see advanced section)    |
-| SETcrys17  | No flag                                       | Print the local (user-defined) 'settings' file on screen |
-| HELPcrys17 | No flag                                       | Print instructions on screen                             |
+| COMMAND    | FLAGS                                             | DEFINITION                                               |
+|:-----------|:-------------------------------------------------:| :--------------------------------------------------------|
+| Pcrys17    | -in -nd -wt -ref(Optional) -nc                    | Run parallel CRYSTAL17 crystal executable                |
+| Pprop17    | -in -nd -wt -ref(Optional) -nc                    | Run parallel CRYSTAL17 properties executable             |
+| MPPcrys17  | -in -nd -wt -ref(Optional) -nc                    | Run massive parallel CRYSTAL17 crystal executable        |
+| Scrys17    | -in -nd -wt -ref(Optional) -nc                    | Run sequential CRYSTAL17 crystal executable              |
+| Sprop17    | -in -nd -wt -ref(Optional) -nc                    | Run sequential CRYSTAL17 properties executable           |
+| Xcrys17    | -x -in -nd -wt -ref(Optional) -name(Optional) -nc | Run user-defined multiple jobs (see advanced section)    |
+| SETcrys17  | No flag                                           | Print the local (user-defined) 'settings' file on screen |
+| HELPcrys17 | No flag                                           | Print instructions on screen                             |
 
 ### Command-line flags
 
@@ -86,7 +88,7 @@ Taking 'CRYSTAL17' as the example. The following steps are necessary to set up a
 
 ### Use commands
 
-After configuration, commands to generate the corresponding job submission file (qsub file) are defined in `~/.bashrc`. It is important to **rerun the `source ~/.bashrc`** command every time the user logs in. Detailed definitions of commands can be found in the previous section and by `HELPcrys17` command. For example, the following command generates and submits a qsub file for input file 'mgo.d12'. The job uses 1 node and the number of CPUs per node is read from the `NCPU_PER_NODE` keyword in settings file. The maximum time allowance for this job is 1 hour。
+After configuration, commands to generate the corresponding job submission file (qsub file) are defined in `~/.bashrc`. It is important to **rerun the `source ~/.bashrc`** command every time the user logs in. Detailed definitions of commands can be found in the previous section and by `HELPcrys17` command. For example, the following command generates and submits a qsub file for input file 'mgo.d12'. The job uses 1 node and the number of CPUs per node is read from the `NCPU_PER_NODE` keyword in settings file. The maximum time allowance for this job is 1 hour.
 
 ``` console
 ~$ Pcrys17 -in mgo.d12 -nd 1 -wt 01:00
@@ -159,12 +161,12 @@ The 'X' command allows the maximum flexibility for users to define a PBS job. Ta
 To run `Xcrys17` command, the number of in-line flags should follow certain rules:
 
 1. `-name` flag should appear at most only once, otherwise the last one will cover the previous entries. If left blank, the qsub file will be named as `mgo_et_al.qsub` (taking the previous line as an example).  
-2. `-nd` `-nc` `-nt` flags should appear at most once. If not specified, `NCPU_PER_NODE` and `NTHREAD_PER_PROC` are read from settings file.  
+2. `-nd` `-nc` `-nt` flags should appear at most once. If not specified, `NCPU_PER_NODE` and `NTHREAD_PER_PROC` are read from settings file `-nd` is set to 1.  
 3. `-x` `-in` `-wt` flags should be always in the same length, otherwise error is reported.  
 4. `-wt` flag defines the walltime for individual jobs. For each job, by default 3 minutes are spared for post-processing. Check the 'TIME\_OUT' keyword in settings file.  
 5. `-ref` flags should have either 0 length or the same length as `-x`. If no reference is needed, that flag should be matched with value 'no'. See the line above.  
 
-When job terminates, the output of each calculation is available in corresponding .out files. If input files have the same name, for example, mgo.d12 and mgo.d3, the output will be attached in the same .out file, i.e., mgo.out, with a warning message dividing the files. Check [testcase of CRYSTAL17](https://github.com/cmsg-icl/crystal_shape_control/tree/main/Imperial-HPC-Job-Submission/CRYSTAL17/testcase). On the other hand, PBS-related outputs, .qsub, .e`${PBS_JOBID%.*}` and .o`${PBS_JOBID%.*}` files, are defined by the `-name` flag.
+When job terminates, the output of each calculation is available in corresponding .out files. If input files have the same name, for example, mgo.d12 and mgo.d3, the output will be attached in the same .out file, i.e., mgo.out, with a warning message dividing the files. Check [testcase of CRYSTAL17](https://github.com/cmsg-icl/HPC-job-submission/tree/main/Imperial-HPC-Job-Submission/CRYSTAL17/testcase). On the other hand, PBS-related outputs, .qsub, .e`${PBS_JOBID%.*}` and .o`${PBS_JOBID%.*}` files, are defined by the `-name` flag.
 
 ### Edit the local 'settings' file
 
