@@ -198,8 +198,8 @@ function set_settings {
 
     LINE_EXE=`grep -nw 'EXE_TABLE' ${SETFILE}`
     LINE_EXE=`echo "scale=0;${LINE_EXE%:*}+3" | bc`
-    sed -i "${LINE_EXE}a\sprop                                                                    Sproperties < INPUT                                          Serial properties calculation, OMP" ${SETFILE}
-    sed -i "${LINE_EXE}a\scrys                                                                    Scrystal < INPUT                                             Serial crystal calculation. OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\sprop                                                                   Sproperties < INPUT                                          Serial properties calculation, OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\scrys                                                                   Scrystal < INPUT                                             Serial crystal calculation. OMP" ${SETFILE}
     sed -i "${LINE_EXE}a\pprop      mpiexec -np \${V_TPROC}                                       Pproperties                                                  Parallel properties calculation, OMP" ${SETFILE}
     sed -i "${LINE_EXE}a\mppcrys    mpiexec -np \${V_TPROC}                                       MPPcrystal                                                   Massive parallel crystal calculation, OMP" ${SETFILE}
     sed -i "${LINE_EXE}a\pcrys      mpiexec -np \${V_TPROC}                                       Pcrystal                                                     Parallel crystal calculation, OMP" ${SETFILE}
