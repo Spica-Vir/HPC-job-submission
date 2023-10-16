@@ -344,13 +344,20 @@ EOF
         NCPU=${DNCPU}
     # No -nd but has -nc
     elif [[ -z ${ND} && ! -z ${NC} ]]; then
+        NC=`echo | awk '{printf "%i\n", '${NC}'}'`
         if [[ ${NC} -le ${DNCPU} ]]; then
             ND=1
-            NCPU=`echo "scale=0; ${NC}" | bc`
+            NCPU=${NC}
         else
-            ND=`echo "scale=0;${NC}/${DNCPU}" | bc`
-            NCPU=`echo "scale=0;${ND}*${DNCPU}" | bc`
-            if [[ ${NCPU} -ne ${NC} ]]; then
+            intmulti=`echo | awk '{printf "%i\n", '${NC}'/'${DNCPU}'}'`
+            ncnew=`echo | awk '{printf "%i\n", '${intmulti}'*'${DNCPU}'}'`
+            if [[ ${ncnew} -eq ${NC} ]]; then # nc will not be rounded
+                NCPU=${NC}
+                ND=${intmulti}
+            else # nc will be rounded
+                ND=`echo | awk '{printf "%i\n", '${intmulti}'+1}'`
+                ncpunode=`echo | awk '{printf "%i\n", '${NC}'/'${ND}'}'`
+                NCPU=`echo | awk '{printf "%i\n", '${ND}'*'${ncpunode}'}'`
                 cat << EOF
     WARNING:
         -nc = ${NC} does not fit the default NCPU_PER_NODE.
@@ -361,14 +368,14 @@ EOF
         fi
     # No -nc but has -nd
     elif [[ ! -z ${ND} && -z ${NC} ]]; then
-        ND=`echo "scale=0; ${ND}" | bc`
-        NCPU=`echo "scale=0;${ND}*${DNCPU}" | bc`
+        ND=`echo | awk '{printf "%i\n", '${ND}'}'`
+        NCPU=`echo | awk '{printf "%i\n", '${ND}'*'${DNCPU}'}'`
     # -nc and -nd
     else
-        ND=`echo "scale=0; ${ND}" | bc`
-        NCPUNODE=`echo "scale=0;${NC}/${ND}" | bc`
-        if [[ ${NCPUNODE} -gt ${DNCPU} ]]; then
-            NCPU=`echo "scale=0;${ND}*${DNCPU}" | bc`
+        ND=`echo | awk '{printf "%i\n", '${ND}'}'`
+        ncpunode=`echo | awk '{printf "%i\n", '${NC}'/'${ND}'}'`
+        if [[ ${ncpunode} -gt ${DNCPU} ]]; then
+            NCPU=`echo | awk '{printf "%i\n", '${DNCPU}'*'${ND}'}'`
             cat << EOF
     WARNING:
         nc = ${NC}, nd = ${ND} larger than the default NCPU_PER_NODE.
@@ -376,21 +383,25 @@ EOF
 
 EOF
         else
-            NCPU=`echo "scale=0;${NC}" | bc`
-		fi
+            NCPU=`echo | awk '{printf "%i\n", '${NC}'}'`
+        fi
     fi
+
     # Reduce NCPU to number of cpus per node
-    NCPU=`echo "scale=0;${NCPU}/${ND}" | bc`
+
+    NCPU=`echo | awk '{printf "%i\n", '${NCPU}'/'${ND}'}'`
 
     # Check nt
 
     if [[ -z ${NT} ]]; then
         TRED=${DTRED}
     else
-        TRED=`echo "scale=0; ${NT}" | bc`
+        TRED=`echo | awk '{printf "%i\n", '${NT}'}'`
     fi
+
     # processes per node = NCPU/NT, sub CPU threading is not allowed.
-    PROC=`echo "scale=0;${NCPU}/${TRED}" | bc`
+
+    PROC=`echo | awk '{printf "%i\n", '${NCPU}'/'${TRED}'}'`
     if [[ ${PROC} -lt 1 ]]; then
         cat << EOF
     ERROR:
@@ -400,8 +411,24 @@ EOF
         print_HOWTO_ND_
         exit
     fi
+
+    # NCPU must be the integer multiply of threads
+
+    proc_check=`echo | awk '{printf "%i\n", '${NCPU}'%'${TRED}'}'`
+    if [[ ${proc_check} -ne 0 ]]; then
+        cat << EOF
+    ERROR:
+        Number of CPU per node = ${NCPU}, must be the
+        integer multiply of threads per process = ${TRED}.
+
+EOF
+        print_HOWTO_ND_
+        exit
+    fi
+
     # total number of processes = PROC*ND
-    TPROC=`echo "scale=0;${NCPU}/${TRED}*${ND}" | bc`
+
+    TPROC=`echo | awk '{printf "%i\n", '${NCPU}'/'${TRED}'*'${ND}'}'`
 }
 
 # Instruction for ND
@@ -416,12 +443,12 @@ function print_HOWTO_ND_ {
     -nt flag
 
     Number of threads per PROCESS.
-    Sub-CPU threading is not allowed
+    Multi/Sub-CPU threading is not allowed
 
 EOF
 }
 
-# Check memory. Useless for ARCHER2.
+# # Check memory, useless for ARCHER2
 
 # function check_MEM_ {
 
@@ -438,7 +465,7 @@ EOF
 #     else
 #         MEM=${MEM%G*}
 #         MEM=${MEM%g*}
-#         MEM=`echo "scale=0; ${MEM}" | bc`
+#         MEM=`echo | awk '{printf "%i\n", '${MEM}'}'`
 #     fi
 
 #     if [[ ${MEM} -gt ${DMEM} ]]; then
@@ -452,7 +479,7 @@ EOF
 #     fi
 # }
 
-# Instruction for MEM. Useless for ARCHER2.
+# # Instruction for MEM, useless for ARCHER2
 
 # function print_HOWTO_MEM_ {
 #     cat << EOF
