@@ -16,9 +16,9 @@
 
 function get_input_ {
 
-    # List of flags: -set, -x, -nd, -wt, -in, -ref, -name, -help
+    # List of flags: -set, -x, -nd, -nc, -nt, -wt, -in, -ref, -name, -help. -mem is accepted but not used.
 
-    param_list=$(getopt -a -l help,x:,set:,nd:,wt:,in:,ref:,name: -n "$0" -- ${in_var} 2> /dev/null) 
+    param_list=$(getopt -a -l help,x:,set:,nd:,nc:,nt:,mem:,wt:,in:,ref:,name: -n "$0" -- ${in_var} 2> /dev/null) 
     cat << EOF
     INPUT parameters:
         ${param_list}
@@ -44,13 +44,15 @@ EOF
             shift; NC=$1 ;;
         --nt )
             shift; NT=$1 ;;
-        --wt ) 
+        --mem )
+            shift; MEM=$1 ;;
+        --wt )
             shift; WT+=($1) ;;
         --name )
             shift; TMPJOBNAME=$1 ;;
-        -- ) 
+        -- )
             break ;;
-        * ) 
+        * )
             cat << EOF
     ERROR: 
         Format error in input list.
@@ -74,6 +76,7 @@ EOF
         done
     fi
     check_NDCT_
+    # check_MEM_
     check_WT_
     if [[ ${#EXELABEL[@]} -gt 1 ]]; then
         set_multijob_name_
@@ -83,6 +86,8 @@ EOF
 Formatted INPUT parameters:
 -----------------------------------------
     Number of nodes     = ${ND}
+    N CPU per node      = ${NCPU}
+    N threads           = ${TRED}
     Executable label(s) = ${EXELABEL[@]}
     Input file(s)       = ${INFILE[@]}
     Walltime            = ${WT[@]}
@@ -357,7 +362,7 @@ EOF
     # No -nc but has -nd
     elif [[ ! -z ${ND} && -z ${NC} ]]; then
         ND=`echo "scale=0; ${ND}" | bc`
-        NC=`echo "scale=0;${ND}*${DNCPU}" | bc`
+        NCPU=`echo "scale=0;${ND}*${DNCPU}" | bc`
     # -nc and -nd
     else
         ND=`echo "scale=0; ${ND}" | bc`
@@ -370,7 +375,9 @@ EOF
         nd = ${ND}, nc = ${NPU}
 
 EOF
-        fi
+        else
+            NCPU=`echo "scale=0;${NC}" | bc`
+		fi
     fi
     # Reduce NCPU to number of cpus per node
     NCPU=`echo "scale=0;${NCPU}/${ND}" | bc`
@@ -413,6 +420,49 @@ function print_HOWTO_ND_ {
 
 EOF
 }
+
+# Check memory. Useless for ARCHER2.
+
+# function check_MEM_ {
+
+#     # read default memeory request
+
+#     DMEM=`echo $(grep -w -A 1 'MEM_PER_NODE' ${SETFILE} | tail -1)`
+#     DMEM=${DMEM%G*}
+#     DMEM=${DMEM%g*}
+
+#     # check input
+
+#     if [[ -z ${MEM} ]]; then
+#         MEM=${DMEM}
+#     else
+#         MEM=${MEM%G*}
+#         MEM=${MEM%g*}
+#         MEM=`echo "scale=0; ${MEM}" | bc`
+#     fi
+
+#     if [[ ${MEM} -gt ${DMEM} ]]; then
+#         cat << EOF
+#     ERROR:
+#         -mem = ${MEM} is larger than the default maximum ${DMEM}.
+#         Check your input or change 'MEM_PER_NODE' keyword.
+# EOF
+#         print_HOWTO_MEM_
+#         exit
+#     fi
+# }
+
+# Instruction for MEM. Useless for ARCHER2.
+
+# function print_HOWTO_MEM_ {
+#     cat << EOF
+#     -------------------------------------------
+#     -mem flag
+
+#     Set the memory request per node in GB.
+
+# EOF
+# }
 
 # Check walltime
 
@@ -549,6 +599,7 @@ EOF
     print_HOWTO_NAME_
     print_HOWTO_SETFILE_
     print_HOWTO_ND_
+    # print_HOWTO_MEM_
     print_HOWTO_EXELABEL_
     print_HOWTO_INFILE_
     print_HOWTO_REFNAME_
@@ -713,12 +764,6 @@ function get_subinfo_ {
 
     SUB_EXT=`echo $(grep -w -A 1 'SUBMISSION_EXT' ${SETFILE} | tail -1)`
     SUB_EXT=${SUB_EXT#*.}
-
-    # memory per node
-
-    # MEM=`echo $(grep -w -A 1 'MEM_PER_NODE' ${SETFILE} | tail -1)`
-    # MEM=${MEM%G*}
-    # MEM=${MEM%g*}
 
     # number of GPUs per node
 

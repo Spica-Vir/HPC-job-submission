@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Basic input format
-# gen_sub -set setfile -x jobtype -in input -ref refname -nd ND -nc NC -nt NT -wt WT -- 
+# gen_sub -set setfile -x jobtype -in input -ref refname -nd ND -nc NC -nt NT -mem MEM -wt WT -- 
 # setfile : str, path to the settings file
 # jobtype : str, pcrys / mppcrys / scrys / pprop /sprop
 # ND      : int, optional, number of nodes
 # NC      : int, optional, total number of cores
 # NT      : int, optional, number of threads per process
+# MEM     : int, optional, number of memories per node
 # WT      : str, walltime in hh:mm
 # jobname : str, input .d12 or .d3 file
 # refname : str, optional, name of the previous run
@@ -16,9 +17,9 @@
 
 function get_input_ {
 
-    # List of flags: -set, -x, -nd, -nc, -nt,-wt, -in, -ref, -name, -help
+    # List of flags: -set, -x, -nd, -nc, -nt, -mem, -wt, -in, -ref, -name, -help
 
-    param_list=$(getopt -a -l help,x:,set:,nd:,nc:,nt:,wt:,in:,ref:,name: -n "$0" -- ${in_var} 2> /dev/null) 
+    param_list=$(getopt -a -l help,x:,set:,nd:,nc:,nt:,mem:,wt:,in:,ref:,name: -n "$0" -- ${in_var} 2> /dev/null) 
     cat << EOF
     INPUT parameters:
         ${param_list}
@@ -44,6 +45,8 @@ EOF
             shift; NC=$1 ;;
         --nt )
             shift; NT=$1 ;;
+        --mem )
+            shift; MEM=$1 ;;
         --wt )
             shift; WT+=($1) ;;
         --name )
@@ -74,6 +77,7 @@ EOF
 		done
     fi
     check_NDCT_
+    check_MEM_
     check_WT_
     if [[ ${#EXELABEL[@]} -gt 1 ]]; then
         set_multijob_name_
@@ -83,6 +87,9 @@ EOF
 Formatted INPUT parameters:
 -----------------------------------------
     Number of nodes     = ${ND}
+    N CPU per node      = ${NCPU}
+    N threads           = ${TRED}
+    Memory per node(GB) = ${MEM}
     Executable label(s) = ${EXELABEL[@]}
     Input file(s)       = ${INFILE[@]}
     Walltime            = ${WT[@]}
@@ -357,11 +364,11 @@ EOF
     # No -nc but has -nd
     elif [[ ! -z ${ND} && -z ${NC} ]]; then
         ND=`echo "scale=0; ${ND}" | bc`
-        NC=`echo "scale=0;${ND}*${DNCPU}" | bc`
+        NCPU=`echo "scale=0;${ND}*${DNCPU}" | bc`
     # -nc and -nd
     else
         ND=`echo "scale=0; ${ND}" | bc`
-        NCPUNODE=`echo "scale=0;${NC}/${ND}" | bc`
+        NCPUNODE=`echo "scale=0; ${NC}/${ND}" | bc`
         if [[ ${NCPUNODE} -gt ${DNCPU} ]]; then
             NCPU=`echo "scale=0;${ND}*${DNCPU}" | bc`
             cat << EOF
@@ -370,11 +377,12 @@ EOF
         nd = ${ND}, nc = ${NPU}
 
 EOF
+        else
+            NCPU=`echo "scale=0; ${NC}" | bc`
         fi
     fi
     # Reduce NCPU to number of cpus per node
     NCPU=`echo "scale=0;${NCPU}/${ND}" | bc`
-
     # Check nt
 
     if [[ -z ${NT} ]]; then
@@ -410,6 +418,49 @@ function print_HOWTO_ND_ {
 
     Number of threads per PROCESS.
     Sub-CPU threading is not allowed
+
+EOF
+}
+
+# Check memory
+
+function check_MEM_ {
+
+    # read default memeory request
+
+    DMEM=`echo $(grep -w -A 1 'MEM_PER_NODE' ${SETFILE} | tail -1)`
+    DMEM=${DMEM%G*}
+    DMEM=${DMEM%g*}
+
+    # check input
+
+    if [[ -z ${MEM} ]]; then
+        MEM=${DMEM}
+    else
+        MEM=${MEM%G*}
+        MEM=${MEM%g*}
+        MEM=`echo "scale=0; ${MEM}" | bc`
+    fi
+
+    if [[ ${MEM} -gt ${DMEM} ]]; then
+        cat << EOF
+    ERROR:
+        -mem = ${MEM} is larger than the default maximum ${DMEM}.
+        Check your input or change 'MEM_PER_NODE' keyword.
+EOF
+        print_HOWTO_MEM_
+        exit
+    fi
+}
+
+# Instruction for MEM
+
+function print_HOWTO_MEM_ {
+    cat << EOF
+    -------------------------------------------
+    -mem flag
+
+    Set the memory request per node in GB.
 
 EOF
 }
@@ -526,7 +577,7 @@ function print_HOWTO_ {
 
     Available flags
 
-        -set -x  -in  -ref  -nd  -nc  -nt  -wt  -name  -help
+        -set -x  -in  -ref  -nd  -nc  -nt  -mem -wt  -name  -help
         The sequence of input parameters is flexible
 
     Multiple input example code
@@ -535,20 +586,21 @@ function print_HOWTO_ {
 
     Typically an alias is defined beginning with 'X', which does not require -set flag. For example:
 
-        Xcrys17 -name mgo_band -nc 32 -nd 2 -x Pcrys -in mgo.d12 -ref no -wt 02:00 -x Pprop -in mgo.d3 -ref mgo -wt 00:30
+        Xcrys17 -name mgo_band -nc 32 -nd 2 -mem 10 -x Pcrys -in mgo.d12 -ref no -wt 02:00 -x Pprop -in mgo.d3 -ref mgo -wt 00:30
 
     This command generates a single 'mgo_band.qsub' file which 
     sequentially run parallel crystal calculation by 'mgo.d12' 
     without reference and a parallel properties calculation by 'mgo.d3'
     with 'mgo' SCF calculation as reference. The walltime for 'mgo.d12'
-    is 2 hours and for 'mgo.d3' is 30 minutes. 2 nodes / 32 cores in
-    total are used.
+    is 2 hours and for 'mgo.d3' is 30 minutes. 2 nodes / 32 cores and
+    20GB (10GB each node) in total are used.
 
 EOF
 
     print_HOWTO_NAME_
     print_HOWTO_SETFILE_
     print_HOWTO_ND_
+    print_HOWTO_MEM_
     print_HOWTO_EXELABEL_
     print_HOWTO_INFILE_
     print_HOWTO_REFNAME_
@@ -714,12 +766,6 @@ function get_subinfo_ {
     SUB_EXT=`echo $(grep -w -A 1 'SUBMISSION_EXT' ${SETFILE} | tail -1)`
     SUB_EXT=${SUB_EXT#*.}
 
-    # memory per node
-
-    MEM=`echo $(grep -w -A 1 'MEM_PER_NODE' ${SETFILE} | tail -1)`
-    MEM=${MEM%G*}
-    MEM=${MEM%g*}
-
     # number of GPUs per node
 
     NGPU=`echo $(grep -w -A 1 'NGPU_PER_NODE' ${SETFILE} | tail -1)`
@@ -778,6 +824,9 @@ Job information:
     Post processing script        = ${SCRIPTDIR}/${POSCRIPT}
     Settings script               = ${SETFILE}
     Number of nodes               = ${ND}
+    Number of CPUs per node       = ${NCPU}
+    Memory request per node (GB)  = ${MEM}
+    Number of threads per process = ${TRED}
     Commands                      = ${COMMAND[@]}
     Input directory               = ${INPDIR}
     Input file(s)                 = ${INFILE[@]}

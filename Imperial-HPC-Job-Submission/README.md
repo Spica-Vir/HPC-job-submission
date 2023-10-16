@@ -34,6 +34,7 @@ In the table below are listed command line flags for script `gen_sub`. The seque
 | -nd   | int    | Number of nodes requested for the job                                    |
 | -nc   | int    | Total number of cores requested for the job                              |
 | -nt   | int    | Number of threads per process. Mulit/Sub-CPU threading is prohibited     |
+| -mem  | int    | Memory in GB requested on each node for the job                          |
 | -wt   | hh:mm  | Walltime requested for the job                                           |
 | -ref  | string | The common basename (without extensions) of reference files              |
 | -name | string | The name of qsub file                                                    |
@@ -47,15 +48,15 @@ Parameters are defined in local 'settings' file. By default it is in `${HOME}/et
 | KEYWORD                   | DEFAULT VALUE   | DEFINITION                                                            |
 |:--------------------------|:---------------:|:----------------------------------------------------------------------|
 | SUBMISSION\_EXT           | .qsub           | The extension of job submission script                                |
-| NCPU\_PER\_NODE           | 24              | The allowed maximum number of processors per node                     |
-| MEM\_PER\_NODE            | 50              | Unit: GB. Requested memory per node                                   |
+| NCPU\_PER\_NODE           | 256             | The allowed maximum number of processors per node                     |
+| MEM\_PER\_NODE            | 512             | Unit: GB. The allowed maximum memory request per node                 |
 | NTHREAD\_PER\_PROC        | 1               | Number of threads per process. Mulit/Sub-CPU threading is prohibited  |
 | NGPU\_PER\_NODE           | 0               | Number of GPUs per node                                               |
 | GPU\_TYPE                 | RTX6000         | The default type of GPU                                               |
 | BUDGET\_CODE              | -               | For ARCHER2. Not used                                                 |
 | QOS                       | -               | For ARCHER2. Not used                                                 |
 | PARTITION                 | -               | For ARCHER2. Not used                                                 |
-| TIME\_OUT                 | 3               | Unit: min. Time spared for post processing                            |
+| TIME\_OUT                 | 1               | Unit: min. Time spared for post processing                            |
 | JOB\_TMPDIR               | \[depends\]     | The temporary directory for data files generated during a job         |
 | EXEDIR                    | \[depends\]     | Directory of executable / Module load command                         |
 | MPIDIR                    | \[depends\]     | Directory of MPI / Module load command                                |
@@ -121,6 +122,12 @@ If `-nc` is not an integer multiply of `-nd` or `-nt`, the number of CPUs reques
 ~$ Pcrys17 -in mgo.d12 -nc 5 -nd 2 -wt 01:00
 ```
 
+`-mem` flag sets the memory in GB requested for each node. If not set, the default value is read from the `MEM_PER_NODE` keyword in local settings file. That also defines the maximum allowed memory. The following example requests 20GB in total for a job on 2 nodes:
+
+``` console
+~$ Pcrys17 -in mgo.d12 -nc 12 -nd 2 -mem 10 -wt 01:00
+```
+
 ### Common Outputs
 
 Although parallel codes differ from each other, 3 common outputs are generated. 
@@ -161,7 +168,7 @@ The 'X' command allows the maximum flexibility for users to define a PBS job. Ta
 To run `Xcrys17` command, the number of in-line flags should follow certain rules:
 
 1. `-name` flag should appear at most only once, otherwise the last one will cover the previous entries. If left blank, the qsub file will be named as `mgo_et_al.qsub` (taking the previous line as an example).  
-2. `-nd` `-nc` `-nt` flags should appear at most once. If not specified, `NCPU_PER_NODE` and `NTHREAD_PER_PROC` are read from settings file `-nd` is set to 1.  
+2. `-nd` `-nc` `-nt` `-mem` flags should appear at most once. If not specified, `NCPU_PER_NODE`, `NTHREAD_PER_PROC` and `MEM_PER_NODE` are read from settings file `-nd` is set to 1.  
 3. `-x` `-in` `-wt` flags should be always in the same length, otherwise error is reported.  
 4. `-wt` flag defines the walltime for individual jobs. For each job, by default 3 minutes are spared for post-processing. Check the 'TIME\_OUT' keyword in settings file.  
 5. `-ref` flags should have either 0 length or the same length as `-x`. If no reference is needed, that flag should be matched with value 'no'. See the line above.  
