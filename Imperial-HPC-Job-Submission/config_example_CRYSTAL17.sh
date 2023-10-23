@@ -215,11 +215,11 @@ function set_settings {
     LINE_EXE=`grep -nw 'EXE_TABLE' ${SETFILE}`
     LINE_EXE=`echo "scale=0;${LINE_EXE%:*}+3" | bc`
 #---- BEGIN_USER ----# MPI+executable options. The length of columns is important and should be kept
-    sed -i "${LINE_EXE}a\sprop                                                                   properties < INPUT                                           Serial properties calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\scrys                                                                   crystal < INPUT                                              Serial crystal calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\sprop                                                                  properties < INPUT                                           Serial properties calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\scrys                                                                  crystal < INPUT                                              Serial crystal calculation" ${SETFILE}
     sed -i "${LINE_EXE}a\pprop      mpiexec                                                      Pproperties                                                  Parallel properties calculation" ${SETFILE}
     sed -i "${LINE_EXE}a\mppcrys    mpiexec                                                      MPPcrystal                                                   Massive parallel crystal calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\pcrys      mpiexec                                                      Pcrystal                                                     Parallel crystal calculation" ${SETFILE}${SETFILE}
+    sed -i "${LINE_EXE}a\pcrys      mpiexec                                                      Pcrystal                                                     Parallel crystal calculation" ${SETFILE}
 #---- END_USER ----#
     # Input file table
 
@@ -299,7 +299,7 @@ function set_settings {
 -----------------------------------------------------------------------------------
 #!/bin/bash  --login
 #PBS -N \${V_JOBNAME}
-#PBS -l select=\${V_ND}:ncpus=\${V_NCPU}:mem=\${V_MEM}:mpiprocs=\${V_PROC}:ompthreads=\${V_TRED}\${V_NGPU}\${V_TGPU}:avx2=true
+#PBS -l select=\${V_ND}:ncpus=\${V_NCPU}:mem=\${V_MEM}:mpiprocs=\${V_PROC}:ompthreads=\${V_TRED}\${V_NGPU}\${V_TGPU}
 #PBS -l walltime=\${V_TWT}
 
 echo "PBS Job Report"

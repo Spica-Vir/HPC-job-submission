@@ -219,7 +219,7 @@ function set_settings {
     sed -i "${LINE_EXE}a\scrys                                                                  crystal < INPUT                                              Serial crystal calculation" ${SETFILE}
     sed -i "${LINE_EXE}a\pprop      mpiexec                                                      Pproperties                                                  Parallel properties calculation" ${SETFILE}
     sed -i "${LINE_EXE}a\mppcrys    mpiexec                                                      MPPcrystal                                                   Massive parallel crystal calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\pcrys      mpiexec                                                      Pcrystal                                                     Parallel crystal calculation" ${SETFILE}${SETFILE}
+    sed -i "${LINE_EXE}a\pcrys      mpiexec                                                      Pcrystal                                                     Parallel crystal calculation" ${SETFILE}
 #---- END_USER ----#
     # Input file table
 
