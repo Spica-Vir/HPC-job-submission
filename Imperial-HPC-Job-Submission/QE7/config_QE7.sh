@@ -76,10 +76,16 @@ EOF
         if [[ $? == 0 ]]; then
             cat << EOF
 --------------------------------------------------------------------------------
-    Warning: Directory exists - current folder will be removed.
+    Warning: Directory exists: ${SCRIPTDIR} - This folder will be removed.
+    Continue? ([yes]/no)
 
 EOF
-            rm -r ${SCRIPTDIR}
+            read -p " " remove_dir
+            if [[ -z ${remove_dir} || ${remove_dir} == 'yes' ]]; then
+                rm -r ${SCRIPTDIR}
+            else
+                exit
+            fi
         fi
     fi
 }
@@ -198,10 +204,10 @@ function set_settings {
 
     LINE_EXE=`grep -nw 'EXE_TABLE' ${SETFILE}`
     LINE_EXE=`echo "scale=0;${LINE_EXE%:*}+3" | bc`
-    sed -i "${LINE_EXE}a\pp         mpiexec                                                      pp.x < [job].in                                              Parallel data postprocessing" ${SETFILE}
-    sed -i "${LINE_EXE}a\cp         mpiexec                                                      cp.x < [job].in                                              Parallel Car-Parrinello MD" ${SETFILE}
-    sed -i "${LINE_EXE}a\ph         mpiexec                                                      ph.x < [job].in                                              Parallel Phonon (DFPT) calculation" ${SETFILE}
-    sed -i "${LINE_EXE}a\pw         mpiexec                                                      pw.x < [job].in                                              Parallel PWscf calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\pp         mpiexec                                                      pp.x -i [job].in                                             Parallel data postprocessing" ${SETFILE}
+    sed -i "${LINE_EXE}a\cp         mpiexec                                                      cp.x -i [job].in                                             Parallel Car-Parrinello MD" ${SETFILE}
+    sed -i "${LINE_EXE}a\ph         mpiexec                                                      ph.x -i [job].in                                             Parallel Phonon (DFPT) calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\pw         mpiexec                                                      pw.x -i [job].in                                             Parallel PWscf calculation" ${SETFILE}
 
     # Input file table
 
