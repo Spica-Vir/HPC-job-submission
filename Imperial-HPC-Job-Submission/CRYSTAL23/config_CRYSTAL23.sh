@@ -76,10 +76,16 @@ EOF
         if [[ $? == 0 ]]; then
             cat << EOF
 --------------------------------------------------------------------------------
-    Warning: Directory exists - current folder will be removed.
+    Warning: Directory exists: ${SCRIPTDIR} - This folder will be removed.
+	Continue? ([yes]/no)
 
 EOF
-            rm -r ${SCRIPTDIR}
+			read -p " " remove_dir
+            if [[ -z ${remove_dir} || ${remove_dir} == 'yes' ]]; then
+				rm -r ${SCRIPTDIR}
+			else
+				exit
+			fi
         fi
     fi
 }
