@@ -96,8 +96,8 @@ function set_exe {
     Please specify the directory of Quantum Espresso7 exectuables, 
     or the command to load QE7 modules
 
-    Default Option(v7.1 mpich4.0.2 - gcc11.2.0-aocl - libxc)
-    module load /rds/general/project/cmsg/live/etc/modulefiles/QE/v7.1-gcc
+    Default Option(v7.2 foss2022a - libxc 5.1.2)
+    module load /rds/general/project/cmsg/live/etc/modulefiles/QE/v7.2-foss
 
 EOF
 
@@ -105,7 +105,7 @@ EOF
     EXEDIR=`echo ${EXEDIR}`
 
     if [[ -z ${EXEDIR} ]]; then
-        EXEDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/QE/v7.1-gcc'
+        EXEDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/QE/v7.2-foss'
     fi
 
     if [[ ! -d ${EXEDIR} && (${EXEDIR} != *'module load'*) ]]; then
@@ -138,7 +138,7 @@ function set_mpi {
     Please specify the directory of MPI executables or mpi modules
 
     Default Option
-    module load /rds/general/project/cmsg/live/etc/modulefiles/mpi/mpich4.0.2-gcc
+    module load tools/prod foss/2022a
 
 EOF
 
@@ -146,7 +146,7 @@ EOF
     MPIDIR=`echo ${MPIDIR}`
 
     if [[ -z ${MPIDIR} ]]; then
-        MPIDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/mpi/mpich4.0.2-gcc'
+        MPIDIR='module load tools/prod foss/2022a'
     fi
 
     if [[ ! -d ${MPIDIR} && (${MPIDIR} != *'module load'*) ]]; then

@@ -328,7 +328,7 @@ ${HOME}/etc/runCRYSTAL23/settings
 
 **Default executable**
 
-Version 1.0.1 compiled with mpich4.0.1, gcc11.2.0 and AMD aocl 4.0
+Version 1.0.1 compiled with EasyBuild Intel2023a
 
 All executables are compiled with multi-threading.
 
@@ -365,7 +365,7 @@ ${HOME}/etc/runQE7/settings
 
 **Default executable**
 
-Version 7.1 MPI/OMP compiled by mpich4.0.1, gcc11.2.0 and AMD aocl 4.0
+Version 7.1 MPI/OMP compiled by EasyBuild FOSS2022a and LibXC5.1.2
 
 | LABEL | ACTUAL IN-LINE COMMAND    |
 |:-----:|:--------------------------|
@@ -396,7 +396,7 @@ ${HOME}/etc/runGULP6/settings
 
 **Default executable**
 
-Version 6.1.2 compiled with mpi/intel-2019 and intel-suite/2019.4. With PLUMED 2.8.1
+Version 6.1.2 compiled with EasyBuild FOSS2022a, PLUMED 2.9.0 and OpenKIM 2.3.0
 
 | LABEL   | ACTUAL IN-LINE COMMAND             |
 |:-------:|:-----------------------------------|

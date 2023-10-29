@@ -96,8 +96,8 @@ function set_exe {
     Please specify the directory of CRYSTAL23 exectuables, 
     or the command to load CRYSTAL23 modules
 
-    Default Option (mpich4.0.2 - gcc11.2.0-aocl - MPPCrystal)
-    module load /rds/general/project/cmsg/live/etc/modulefiles/CRYSTAL/23v1-gcc
+    Default Option (EasyBuild Intel2023a - MPPCrystal)
+    module load /rds/general/project/cmsg/live/etc/modulefiles/CRYSTAL/23v1-intel
 
 EOF
 
@@ -105,7 +105,7 @@ EOF
     EXEDIR=`echo ${EXEDIR}`
 
     if [[ -z ${EXEDIR} ]]; then
-        EXEDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/CRYSTAL/23v1-gcc'
+        EXEDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/CRYSTAL/23v1-intel'
     fi
 
     if [[ ! -d ${EXEDIR} && (${EXEDIR} != *'module load'*) ]]; then
@@ -138,7 +138,7 @@ function set_mpi {
     Please specify the directory of MPI executables or mpi modules
 
     Default Option
-    module load /rds/general/project/cmsg/live/etc/modulefiles/mpi/mpich4.0.2-gcc
+    module load tools/prod intel/2023a
 
 EOF
 
@@ -146,7 +146,7 @@ EOF
     MPIDIR=`echo ${MPIDIR}`
 
     if [[ -z ${MPIDIR} ]]; then
-        MPIDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/mpi/mpich4.0.2-gcc'
+        MPIDIR='module load tools/prod intel/2023a'
     fi
 
     if [[ ! -d ${MPIDIR} && (${MPIDIR} != *'module load'*) ]]; then
