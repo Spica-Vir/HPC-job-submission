@@ -363,6 +363,20 @@ function set_commands {
 CONFIGDIR=`realpath $(dirname $0)`
 CTRLDIR=`realpath ${CONFIGDIR}/../`
 
+# Check executable 'bc': Not available on HX1 computational node by Oct. 2023
+which bc > /dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+    cat << EOF
+================================================================================
+    Bash calculator 'bc' not found. Job submission script cannot be run properly.
+
+EOF
+    exit
+fi
+bcpath=`which bc`
+mkdir -p ~/.local/bin
+cp ${bcpath} ~/.local/bin/bc
+
 welcome_msg
 get_scriptdir
 copy_scripts
