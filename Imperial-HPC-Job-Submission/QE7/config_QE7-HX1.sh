@@ -6,11 +6,11 @@ function welcome_msg {
     core_author=`grep 'core' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,54,21))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
     core_contact=`grep 'core' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,75,31))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
     core_acknolg=`grep 'core' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,106,length($0)))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
-    code_version=`grep 'GULP6' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,22,11))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
-    code_date=`grep 'GULP6' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,33,21))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
-    code_author=`grep 'GULP6' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,54,21))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
-    code_contact=`grep 'GULP6' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,75,31))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
-    code_acknolg=`grep 'GULP6' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,106,length($0)))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
+    code_version=`grep 'QE7' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,22,11))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
+    code_date=`grep 'QE7' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,33,21))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
+    code_author=`grep 'QE7' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,54,21))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
+    code_contact=`grep 'QE7' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,75,31))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
+    code_acknolg=`grep 'QE7' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,106,length($0)))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
     cat << EOF
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ function welcome_msg {
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-GULP6 job submission script for Imperial HPC - Setting up
+Quantum Espresso7 job submission script for Imperial HPC - Setting up
 
 Job submission script installed date : `date`
 Batch system                         : PBS
@@ -47,14 +47,14 @@ function get_scriptdir {
     Please specify your installation path.
 
     Default Option
-    ${HOME}/etc/runGULP6/):
+    ${HOME}/etc/runQE7/):
 
 EOF
 
     read -p " " SCRIPTDIR
 
     if [[ -z ${SCRIPTDIR} ]]; then
-        SCRIPTDIR=${HOME}/etc/runGULP6
+        SCRIPTDIR=${HOME}/etc/runQE7
     fi
 
     if [[ ${SCRIPTDIR: -1} == '/' ]]; then
@@ -93,11 +93,10 @@ EOF
 function set_exe {
     cat << EOF
 ================================================================================
-    Please specify the directory of GULP 6 exectuables, 
-    or the command to load GULP modules
+    Please specify the directory of Quantum Espresso7 exectuables, 
+    or the command to load QE7 modules
 
-    Default Option(EasyBuild FOSS2022a - PLUMED - OpenKIM)
-    module load /rds/general/project/cmsg/live/etc/modulefiles/GULP/6.1.2-foss
+    Default Option (no default)
 
 EOF
 
@@ -105,7 +104,7 @@ EOF
     EXEDIR=`echo ${EXEDIR}`
 
     if [[ -z ${EXEDIR} ]]; then
-        EXEDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/GULP/6.1.2-foss'
+        EXEDIR=''
     fi
 
     if [[ ! -d ${EXEDIR} && (${EXEDIR} != *'module load'*) ]]; then
@@ -137,8 +136,7 @@ function set_mpi {
 ================================================================================
     Please specify the directory of MPI executables or mpi modules
 
-    Default Option
-    module load tools/prod foss/2022a
+    Default Option (No default)
 
 EOF
 
@@ -146,7 +144,7 @@ EOF
     MPIDIR=`echo ${MPIDIR}`
 
     if [[ -z ${MPIDIR} ]]; then
-        MPIDIR='module load tools/prod foss/2022a'
+        MPIDIR=''
     fi
 
     if [[ ! -d ${MPIDIR} && (${MPIDIR} != *'module load'*) ]]; then
@@ -190,13 +188,13 @@ function set_settings {
 
     # Values for keywords
     sed -i "/SUBMISSION_EXT/a\ .qsub" ${SETFILE}
-    sed -i "/NCPU_PER_NODE/a\ 256" ${SETFILE}
-    sed -i "/MEM_PER_NODE/a\ 512" ${SETFILE}
+    sed -i "/NCPU_PER_NODE/a\ 64" ${SETFILE}
+    sed -i "/MEM_PER_NODE/a\ 128" ${SETFILE}
     sed -i "/NTHREAD_PER_PROC/a\ 1" ${SETFILE}
     sed -i "/NGPU_PER_NODE/a\ 0" ${SETFILE}
     sed -i "/GPU_TYPE/a\ RTX6000" ${SETFILE}
     sed -i "/TIME_OUT/a\ 1" ${SETFILE}
-    sed -i "/JOB_TMPDIR/a\ ${EPHEMERAL}" ${SETFILE}
+    sed -i "/JOB_TMPDIR/a\ nodir" ${SETFILE}
     sed -i "/EXEDIR/a\ ${EXEDIR}" ${SETFILE}
     sed -i "/MPIDIR/a\ ${MPIDIR}" ${SETFILE}
 
@@ -204,13 +202,16 @@ function set_settings {
 
     LINE_EXE=`grep -nw 'EXE_TABLE' ${SETFILE}`
     LINE_EXE=`echo "scale=0;${LINE_EXE%:*}+3" | bc`
-    sed -i "${LINE_EXE}a\pgulp      mpiexec                                                      gulp-mpi < [jobname].gin                                     Parallel GULP exectuable with PLUMED add-on" ${SETFILE}
+    sed -i "${LINE_EXE}a\pp         mpiexec                                                      pp.x -i [job].in                                             Parallel data postprocessing" ${SETFILE}
+    sed -i "${LINE_EXE}a\cp         mpiexec                                                      cp.x -i [job].in                                             Parallel Car-Parrinello MD" ${SETFILE}
+    sed -i "${LINE_EXE}a\ph         mpiexec                                                      ph.x -i [job].in                                             Parallel Phonon (DFPT) calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\pw         mpiexec                                                      pw.x -i [job].in                                             Parallel PWscf calculation" ${SETFILE}
 
     # Input file table
 
-	LINE_PRE=`grep -nw 'PRE_CALC' ${SETFILE}`
-    LINE_PRE=`echo "scale=0;${LINE_PRE%:*}+3" | bc`
-    sed -i "${LINE_PRE}a\[jobname].gin        [jobname].gin        GULP input file" ${SETFILE}
+	# LINE_PRE=`grep -nw 'PRE_CALC' ${SETFILE}`
+    # LINE_PRE=`echo "scale=0;${LINE_PRE%:*}+3" | bc`
+    # sed -i "${LINE_PRE}a\[jobname].gin        [jobname].gin        GULP input file" ${SETFILE}
 
     # Reference file table
 
@@ -220,12 +221,12 @@ function set_settings {
 
     # Post-processing file table
 
-    LINE_POST=`grep -nw 'POST_CALC' ${SETFILE}`
-    LINE_POST=`echo "scale=0;${LINE_POST%:*}+3" | bc`
+    # LINE_POST=`grep -nw 'POST_CALC' ${SETFILE}`
+    # LINE_POST=`echo "scale=0;${LINE_POST%:*}+3" | bc`
 
-    sed -i "${LINE_POST}a\*                    *.inp                Force field coefficient file LAMMPS format" ${SETFILE}
-    sed -i "${LINE_POST}a\*                    *.lmp                Geometry file LAMMPS format" ${SETFILE}
-    sed -i "${LINE_POST}a\*                    *.xyz                Geometry file xyz format" ${SETFILE}
+    # sed -i "${LINE_POST}a\*                    *.inp                Force field coefficient file LAMMPS format" ${SETFILE}
+    # sed -i "${LINE_POST}a\*                    *.lmp                Geometry file LAMMPS format" ${SETFILE}
+    # sed -i "${LINE_POST}a\*                    *.xyz                Geometry file xyz format" ${SETFILE}
 
     # Job submission file template
 
@@ -253,9 +254,16 @@ export PBS_O_WORKDIR=\$(readlink -f \${PBS_O_WORKDIR})
 
 # Set the number of threads
 export OMP_NUM_THREADS=\${V_TRED}
+export OMP_PLACES=cores
 
 # to sync nodes
 cd \${PBS_O_WORKDIR}
+
+# suppress OpenMPI warnings
+export OMPI_MCA_mca_base_component_show_load_errors=0
+
+# Set temporary directory
+export ESPRESSO_TMPDIR=\$(pwd)/\${V_JOBNAME}.save
 
 # start calculation: command added below by gen_sub
 -----------------------------------------------------------------------------------
@@ -271,8 +279,8 @@ EOF
 # Configure user alias
 
 function set_commands {
-    bgline=`grep -nw "# >>> begin GULP6 job submitter settings >>>" ${HOME}/.bashrc`
-    edline=`grep -nw "# <<< finish GULP6 job submitter settings <<<" ${HOME}/.bashrc`
+    bgline=`grep -nw "# >>> begin QE7 job submitter settings >>>" ${HOME}/.bashrc`
+    edline=`grep -nw "# <<< finish QE7 job submitter settings <<<" ${HOME}/.bashrc`
 
     if [[ ! -z ${bgline} && ! -z ${edline} ]]; then
         bgline=${bgline%%:*}
@@ -280,16 +288,15 @@ function set_commands {
         sed -i "${bgline},${edline}d" ${HOME}/.bashrc
     fi
 
-    echo "# >>> begin GULP6 job submitter settings >>>" >> ${HOME}/.bashrc
-    echo "alias Pglp6='${CTRLDIR}/gen_sub -x pgulp -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
-    echo "alias Xglp6='${CTRLDIR}/gen_sub -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
-    echo "alias SETglp6='cat ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
-    echo "alias HELPglp6='bash ${CONFIGDIR}/run_help gensub'" >> ${HOME}/.bashrc
-    # echo "chmod 777 $(dirname $0)/gen_sub" >> ${HOME}/.bashrc
-    # echo "chmod 777 $(dirname $0)/run_exec" >> ${HOME}/.bashrc
-    # echo "chmod 777 $(dirname $0)/post_proc" >> ${HOME}/.bashrc 
-    # echo "chmod 777 $(dirname $0)/run_help" >> ${HOME}/.bashrc 
-    echo "# <<< finish GULP6 job submitter settings <<<" >> ${HOME}/.bashrc
+    echo "# >>> begin QE7 job submitter settings >>>" >> ${HOME}/.bashrc
+    echo "alias PWqe7='${CTRLDIR}/gen_sub -x pw -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
+    echo "alias PHqe7='${CTRLDIR}/gen_sub -x ph -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
+    echo "alias CPqe7='${CTRLDIR}/gen_sub -x cp -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
+    echo "alias PPqe7='${CTRLDIR}/gen_sub -x pp -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
+    echo "alias Xqe7='${CTRLDIR}/gen_sub -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
+    echo "alias SETqe7='cat ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
+    echo "alias HELPqe7='bash ${CONFIGDIR}/run_help gensub'" >> ${HOME}/.bashrc
+    echo "# <<< finish QE7 job submitter settings <<<" >> ${HOME}/.bashrc
 
     bash ${CONFIGDIR}/run_help
 }

@@ -195,7 +195,7 @@ function set_settings {
     sed -i "/NTHREAD_PER_PROC/a\ 1" ${SETFILE}
     sed -i "/NGPU_PER_NODE/a\ 0" ${SETFILE}
     sed -i "/GPU_TYPE/a\ RTX6000" ${SETFILE}
-    sed -i "/TIME_OUT/a\ 1" ${SETFILE}
+    sed -i "/TIME_OUT/a\ 3" ${SETFILE}
     sed -i "/JOB_TMPDIR/a\ ${EPHEMERAL}" ${SETFILE}
     sed -i "/EXEDIR/a\ ${EXEDIR}" ${SETFILE}
     sed -i "/MPIDIR/a\ ${MPIDIR}" ${SETFILE}
@@ -362,6 +362,20 @@ function set_commands {
 ## For executable scripts, ${SCRIPTDIR} refer to their own directory. ${SETTINGS} refers to local settings file. 
 CONFIGDIR=`realpath $(dirname $0)`
 CTRLDIR=`realpath ${CONFIGDIR}/../`
+
+# Check executable 'bc': Not available on HX1 computational node by Oct. 2023
+which bc > /dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+    cat << EOF
+================================================================================
+    Bash calculator 'bc' not found. Job submission script cannot be run properly.
+
+EOF
+    exit
+fi
+bcpath=`which bc`
+mkdir -p ~/.local/bin
+cp ${bcpath} ~/.local/bin/bc
 
 welcome_msg
 get_scriptdir
