@@ -195,7 +195,7 @@ function set_settings {
     sed -i "/NTHREAD_PER_PROC/a\ 1" ${SETFILE}
     sed -i "/NGPU_PER_NODE/a\ 0" ${SETFILE}
     sed -i "/GPU_TYPE/a\ RTX6000" ${SETFILE}
-    sed -i "/TIME_OUT/a\ 1" ${SETFILE}
+    sed -i "/TIME_OUT/a\ 3" ${SETFILE}
     sed -i "/JOB_TMPDIR/a\ ${EPHEMERAL}" ${SETFILE}
     sed -i "/EXEDIR/a\ ${EXEDIR}" ${SETFILE}
     sed -i "/MPIDIR/a\ ${MPIDIR}" ${SETFILE}
