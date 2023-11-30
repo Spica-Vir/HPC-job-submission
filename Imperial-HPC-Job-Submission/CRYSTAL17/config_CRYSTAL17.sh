@@ -379,6 +379,21 @@ function set_commands {
 ## For executable scripts, ${SCRIPTDIR} refer to their own directory. ${SETTINGS} refers to local settings file. 
 CONFIGDIR=`realpath $(dirname $0)`
 CTRLDIR=`realpath ${CONFIGDIR}/../`
+
+# Check executable 'bc': Not available on HX1 computational node by Oct. 2023
+which bc > /dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+    cat << EOF
+================================================================================
+    Bash calculator 'bc' not found. Job submission script cannot be run properly.
+
+EOF
+    exit
+fi
+bcpath=`which bc`
+mkdir -p ~/.local/bin
+cp ${bcpath} ~/.local/bin/bc
+
 welcome_msg
 get_scriptdir
 copy_scripts
