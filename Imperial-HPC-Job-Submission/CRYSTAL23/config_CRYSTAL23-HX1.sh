@@ -312,6 +312,9 @@ export OMP_NUM_THREADS=\${V_TRED}
 # to sync nodes
 cd \${PBS_O_WORKDIR}
 
+# suppress OpenMPI warnings
+export OMPI_MCA_mca_base_component_show_load_errors=0
+
 module purge
 # start calculation: command added below by gen_sub
 -----------------------------------------------------------------------------------
