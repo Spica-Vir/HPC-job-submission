@@ -355,6 +355,31 @@ ${EPHEMERAL}
 
 Note that this is also an illustruction of multi-threading feature of CRYSTAL23 and the fine-tuning of job submission script. In total 24 CPUs are used (one node), which are divided into 12 processes and 2 threads each process.
 
+### CRYSTAL14
+
+*Author: K. Tallat-Kelpsa*
+
+**Default settings file**
+
+${HOME}/etc/runCRYSTAL14/settings
+
+**Default executable**
+
+CRYSTAL+MP2 versions (crystal2, Pcrystal2 and MPPcrystal) compiled with EasyBuild Intel2023a. 'properties' not available.
+
+| LABEL   | ACTUAL IN-LINE COMMAND              |
+|:-------:|:------------------------------------|
+| pcrys   | mpiexec -np ${V\_TPROC} Pcrystal    |
+| mppcrys | mpiexec -np ${V\_TPROC} MPPcrystal  |
+| scrys   | Scrystal < INPUT                    |
+
+**Default ephemeral directory**
+
+${EPHEMERAL}
+
+**Commands**  
+`Pcrys14` `MPPcrys14` `Scrys14` `Xcrys14` `SETcrys14` `HELPcrys14`
+
 ### Quantum Espresso 7
 
 *Author: Spica. Vir.*

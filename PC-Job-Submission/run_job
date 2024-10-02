@@ -23,13 +23,19 @@ EOF
         --help )
             print_HOWTO_; exit ;;
         --set )
-            shift; SETFILE=$1 ;;
+            shift; SETFILE=$(realpath $1) ;;
         --x ) 
             shift; EXELABEL+=($1) ;;
         --in ) 
-            shift; INFILE+=($1) ;;
+            shift;
+            INFILE+=$(realpath $1); INNAMETMP=${INFILE%.*}; INNAME+=${INNAMETMP##*/} ;;
         --ref ) 
-            shift; REFNAME+=($1) ;;
+            shift;
+            if [[ ! -z $1 ]]; then
+                REFNAMETMP=$1;
+                REFNAMETMP=${REFNAMETMP%.*};
+                REFNAME+=${REFNAMETMP##*/};
+            fi ;;
         --np ) 
             shift; NP=$1 ;;
         --nt ) 
@@ -481,8 +487,7 @@ EOF
 
         # substitute jobname
 
-        inpname=${AINFILE%.*}
-        ACOMMAND=`echo "${ACOMMAND}" | sed "s/\[job.*\]/${inpname}/g"`
+        ACOMMAND=`echo "${ACOMMAND}" | sed "s/\[job.*\]/${AINNAME}/g"`
     else
         ls ${XDIR}/${ACOMMAND%% *} > /dev/null 2>&1 
         if [[ $? -ne 0 ]]; then
@@ -500,8 +505,7 @@ EOF
 
         # substitute jobname
 
-        inpname=${AINFILE%.*}
-        ACOMMAND=`echo "${XDIR}/${ACOMMAND}" | sed "s/\[job.*\]/${inpname}/g"`
+        ACOMMAND=`echo "${XDIR}/${ACOMMAND}" | sed "s/\[job.*\]/${AINNAME}/g"`
     fi
 }
 
@@ -659,6 +663,7 @@ for (( i = 0; i < ${#COMMAND[@]}; i++ )); do
     ACOMMAND=${COMMAND[$i]}
     AMPICOMMAND=${MPICOMMAND[$i]}
     AINFILE=${INFILE[$i]}
+    AINNAME=${INNAME[$i]}
     AREFNAME=${REFNAME[$i]}
 
     run_calc_
@@ -710,15 +715,10 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'SAVED_NAME' settings
 
     if [[ ${SAVED_NAME: -1} == '/' ]]; then
-        ls ${SAVED_NAME} > /dev/null 2>&1
-        if [[ $? -eq 0 ]]; then
-            filelist=($(ls ${SAVED_NAME}))
-            for ((i=0; i<${#filelist[@]}; i++)); do
-                filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
-            done
-        else
-            filelist=()
-        fi
+        filelist=($(ls ${SAVED_NAME} 2>/dev/null)) 2>/dev/null
+        for ((i=0; i<${#filelist[@]}; i++)); do
+            filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
+        done
     else
         filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
         filelist=(${filelist//${INPDIR}\//})
@@ -797,15 +797,10 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true && ${AREFNAME} != '
     # List files, to get all matched files in 'SAVED_NAME' settings
 
     if [[ ${SAVED_NAME: -1} == '/' ]]; then
-        ls ${SAVED_NAME} > /dev/null 2>&1
-        if [[ $? -eq 0 ]]; then
-            filelist=($(ls ${SAVED_NAME}))
-            for ((i=0; i<${#filelist[@]}; i++)); do
-                filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
-            done
-        else
-            filelist=()
-        fi
+        filelist=($(ls ${SAVED_NAME} 2>/dev/null))
+        for ((i=0; i<${#filelist[@]}; i++)); do
+            filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
+        done
     else
         filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
         filelist=(${filelist//${INPDIR}\//})
@@ -906,15 +901,10 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'TMP_NAME' settings
 
     if [[ ${TMP_NAME: -1} == '/' ]]; then
-        ls ${TMP_NAME} > /dev/null 2>&1
-        if [[ $? -eq 0 ]]; then
-            filelist=($(ls ${TMP_NAME}))
-            for ((i=0; i<${#filelist[@]}; i++)); do
-                filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
-            done
-        else
-            filelist=()
-        fi
+        filelist=($(ls ${SAVED_NAME} 2>/dev/null))
+        for ((i=0; i<${#filelist[@]}; i++)); do
+            filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
+        done
     else
         filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
         filelist=(${filelist//${JOBTMPDIR}\//})

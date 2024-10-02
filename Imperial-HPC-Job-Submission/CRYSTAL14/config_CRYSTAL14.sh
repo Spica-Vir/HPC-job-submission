@@ -6,11 +6,11 @@ function welcome_msg {
     core_author=`grep 'core' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,54,21))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
     core_contact=`grep 'core' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,75,31))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
     core_acknolg=`grep 'core' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,106,length($0)))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
-    code_version=`grep 'CRYSTAL23' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,22,11))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
-    code_date=`grep 'CRYSTAL23' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,33,21))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
-    code_author=`grep 'CRYSTAL23' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,54,21))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
-    code_contact=`grep 'CRYSTAL23' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,75,31))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
-    code_acknolg=`grep 'CRYSTAL23' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,106,length($0)))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
+    code_version=`grep 'CRYSTAL14' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,22,11))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
+    code_date=`grep 'CRYSTAL14' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,33,21))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
+    code_author=`grep 'CRYSTAL14' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,54,21))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
+    code_contact=`grep 'CRYSTAL14' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,75,31))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
+    code_acknolg=`grep 'CRYSTAL14' ${CTRLDIR}/version_control.txt | awk '{printf("%s", substr($0,106,length($0)))}' | awk '{sub(/^ */, ""); sub(/ *$/, "")}1'`
     cat << EOF
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ function set_exe {
     Please specify the directory of CRYSTAL14 exectuables, 
     or the command to load CRYSTAL14 modules
 
-    Default Option (EasyBuild Intel2023a - MPPCrystal)
+    Default Option (EasyBuild Intel2023a - crystal2, PCrystal2 MPPcrystal)
     /rds/general/project/cmsg/live/app/CRYSTAL/14__intel2023a/
 
 EOF
@@ -105,7 +105,7 @@ EOF
     EXEDIR=`echo ${EXEDIR}`
 
     if [[ -z ${EXEDIR} ]]; then
-        EXEDIR='module load /rds/general/project/cmsg/live/etc/modulefiles/CRYSTAL/23v1-intel'
+        EXEDIR='/rds/general/project/cmsg/live/app/CRYSTAL/14__intel2023a/'
     fi
 
     if [[ ! -d ${EXEDIR} && (${EXEDIR} != *'module load'*) ]]; then
@@ -204,9 +204,9 @@ function set_settings {
 
     LINE_EXE=`grep -nw 'EXE_TABLE' ${SETFILE}`
     LINE_EXE=`echo "scale=0;${LINE_EXE%:*}+3" | bc`
-    sed -i "${LINE_EXE}a\sprop                                                                   Sproperties < INPUT                                          Serial properties calculation, OMP" ${SETFILE}
+    # sed -i "${LINE_EXE}a\sprop                                                                   Sproperties < INPUT                                          Serial properties calculation, OMP" ${SETFILE}
     sed -i "${LINE_EXE}a\scrys                                                                   crystal2 < INPUT                                             Serial crystal calculation. OMP" ${SETFILE}
-    sed -i "${LINE_EXE}a\pprop      mpiexec -np \${V_TPROC}                                       Pproperties                                                  Parallel properties calculation, OMP" ${SETFILE}
+    # sed -i "${LINE_EXE}a\pprop      mpiexec -np \${V_TPROC}                                       Pproperties                                                  Parallel properties calculation, OMP" ${SETFILE}
     sed -i "${LINE_EXE}a\mppcrys    mpiexec -np \${V_TPROC}                                       MPPcrystal                                                   Massive parallel crystal calculation, OMP" ${SETFILE}
     sed -i "${LINE_EXE}a\pcrys      mpiexec -np \${V_TPROC}                                       Pcrystal2                                                     Parallel crystal calculation, OMP" ${SETFILE}
 
@@ -327,8 +327,8 @@ EOF
 # Configure user alias
 
 function set_commands {
-    bgline=`grep -nw "# >>> begin CRYSTAL23 job submitter settings >>>" ${HOME}/.bashrc`
-    edline=`grep -nw "# <<< finish CRYSTAL23 job submitter settings <<<" ${HOME}/.bashrc`
+    bgline=`grep -nw "# >>> begin CRYSTAL14 job submitter settings >>>" ${HOME}/.bashrc`
+    edline=`grep -nw "# <<< finish CRYSTAL14 job submitter settings <<<" ${HOME}/.bashrc`
 
     if [[ ! -z ${bgline} && ! -z ${edline} ]]; then
         bgline=${bgline%%:*}
@@ -339,9 +339,9 @@ function set_commands {
     echo "# >>> begin CRYSTAL14 job submitter settings >>>" >> ${HOME}/.bashrc
     echo "alias Pcrys14='${CTRLDIR}/gen_sub -x pcrys -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
     echo "alias MPPcrys14='${CTRLDIR}/gen_sub -x mppcrys -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
-    echo "alias Pprop14='${CTRLDIR}/gen_sub -x pprop -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
+    # echo "alias Pprop14='${CTRLDIR}/gen_sub -x pprop -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
     echo "alias Scrys14='${CTRLDIR}/gen_sub -x scrys -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
-    echo "alias Sprop14='${CTRLDIR}/gen_sub -x sprop -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
+    # echo "alias Sprop14='${CTRLDIR}/gen_sub -x sprop -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
     echo "alias Xcrys14='${CTRLDIR}/gen_sub -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
     echo "alias SETcrys14='cat ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
     echo "alias HELPcrys14='bash ${CONFIGDIR}/run_help gensub'" >> ${HOME}/.bashrc
