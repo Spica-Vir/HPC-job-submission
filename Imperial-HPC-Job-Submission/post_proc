@@ -164,7 +164,7 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'TMP_NAME' settings
 
     if [[ ${TMP_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${TMP_NAME}))
+        filelist=($(ls ${TMP_NAME} 2>/dev/null))
         for ((i=0; i<${#filelist[@]}; i++)); do
             filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
         done
@@ -240,7 +240,7 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'TMP_NAME' settings
 
     if [[ ${TMP_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${TMP_NAME}))
+        filelist=($(ls ${TMP_NAME} 2>/dev/null))
         for ((i=0; i<${#filelist[@]}; i++)); do
             filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
         done
