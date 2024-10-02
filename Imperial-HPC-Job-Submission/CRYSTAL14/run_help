@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Instructions of pre-defined commands
+
+function print_ALIAS_HOWTO_ {
+    cat << EOF
+    -------------------------------------------
+    Imperial HPC CRYSTAL14 job submitter HOWTO
+    -------------------------------------------
+    Use 'source ~/.bashrc' to activate pre-defined
+    commands
+
+    Pre-defined commands
+        Pcrys14    : Run parallel crystal DFT/MP2 calculations
+        MPPcrys14  : Run massive parallel crystal DFT calculations
+        Scrys14    : Run serial crystal DFT/MP2 calculations
+        Xcrys14    : Run user defined commands (Advanced)
+        SETcrys14  : Quick reference of settings file
+        HELPcrys14 : Print help file
+
+    Example code:
+        Pcrys14 -in mgo.d12 -wt 02:00 -nd 2
+        Xcrys14 -name mag-band -nd 1 -x pcrystal -in mgo.d12 -wt 01:00 -ref no -x pproperties -in band.d3 -wt 00:30 -ref mgo
+
+EOF
+}
+
+# Instructions of user-defined commands
+
+function print_GENSUB_HOWTO_ {
+    SOURCE=${CTRLDIR}/gen_sub
+    source ${SOURCE} -help
+}
+
+print_ALIAS_HOWTO_
+
+if [[ $1 == 'gensub' ]]; then
+    CONFIGDIR=`realpath $(dirname $0)`
+    CTRLDIR=`realpath ${CONFIGDIR}/../`
+    print_GENSUB_HOWTO_
+fi
