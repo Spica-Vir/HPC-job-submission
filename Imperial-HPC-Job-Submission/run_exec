@@ -385,6 +385,7 @@ $(cat ${OUTDIR}/${JOBFILE})
 
 EOF
 
+cd ${JOBTMPDIR}
 echo "Entering temporary directory..."
 echo "Launching the job..."
 
