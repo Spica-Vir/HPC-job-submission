@@ -144,6 +144,9 @@ exit
 # Copied content: After #tag_copy is are copied in temporary directory
 
 #tag_copy_begin
+echo "start checking node0: $(hostname)"
+cd ${JOBTMPDIR}
+
 # Read POST_CALC list
 
 LINE_POSTCALC=`grep -nw 'POST_CALC' ${SETFILE}`
@@ -218,8 +221,7 @@ done
 #tag_copy_end
 
 #tag_check_begin
-
-echo "start checking: $(hostname)"
+echo "start checking other nodes: $(hostname)"
 cd ${JOBTMPDIR}
 
 # Read POST_CALC list

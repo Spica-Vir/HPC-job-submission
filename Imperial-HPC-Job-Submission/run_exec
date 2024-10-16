@@ -145,6 +145,7 @@ source ${JOBTMPDIR}/${SCRIPT}
 
 # Job finished
 
+cd ${OUTDIR}
 cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
 
 DATE END   : $(date)
@@ -204,8 +205,6 @@ EOF
 # 
 # EOF
 # fi
-
-cd ${JOBTMPDIR}
 
 # Check and read input file
 # Read mandatory file list - Same as JOBNAME (Table PRE_CALC)
@@ -391,5 +390,3 @@ echo "Launching the job..."
 
 export PBS_JOBDIR=${JOBTMPDIR}
 echo "${EXECOMMAND} >> ${OUTDIR}/${OUTPUT} 2>&1" | bash
-
-cd ${OUTDIR}
