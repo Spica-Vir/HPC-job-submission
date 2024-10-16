@@ -164,12 +164,14 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'TMP_NAME' settings
 
     if [[ ${TMP_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${TMP_NAME} 2>/dev/null))
+        filelist=($(ls ${TMP_NAME} 2>/dev/null)) 2>/dev/null
         for ((i=0; i<${#filelist[@]}; i++)); do
             filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
         done
     else
-        filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
+        # DO NOT USE. Leads to duplicate file issues in sub-folders.
+        # filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
+        filelist=$(ls ${TMP_NAME} 2>/dev/null)
         filelist=(${filelist//${JOBTMPDIR}\//})
     fi
 
@@ -240,12 +242,14 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'TMP_NAME' settings
 
     if [[ ${TMP_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${TMP_NAME} 2>/dev/null))
+        filelist=($(ls ${TMP_NAME} 2>/dev/null)) 2>/dev/null
         for ((i=0; i<${#filelist[@]}; i++)); do
             filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
         done
     else
-        filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
+        # DO NOT USE. Leads to duplicate file issues in sub-folders.
+        # filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
+        filelist=$(ls ${TMP_NAME} 2>/dev/null)
         filelist=(${filelist//${JOBTMPDIR}\//})
     fi
 

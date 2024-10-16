@@ -175,6 +175,7 @@ fi
 # Generate basic information of output file
 
 INPDIR=${OUTDIR}
+cd ${INPDIR}
 
 cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
 Pre-Calc Summary
@@ -225,12 +226,14 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'SAVED_NAME' settings
 
     if [[ ${SAVED_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${SAVED_NAME} 2>/dev/null))
+        filelist=($(ls ${SAVED_NAME} 2>/dev/null)) 2>/dev/null
         for ((i=0; i<${#filelist[@]}; i++)); do
             filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
         done
     else
-        filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
+        # DO NOT USE. Leads to duplicate file issues in sub-folders.
+        # filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
+        filelist=$(ls ${SAVED_NAME} 2>/dev/null)
         filelist=(${filelist//${INPDIR}\//})
     fi
 
@@ -307,12 +310,14 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true && ${REFNAME} != 'n
     # List files, to get all matched files in 'SAVED_NAME' settings
 
     if [[ ${SAVED_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${SAVED_NAME} 2>/dev/null))
+        filelist=($(ls ${SAVED_NAME} 2>/dev/null)) 2>/dev/null
         for ((i=0; i<${#filelist[@]}; i++)); do
             filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
         done
     else
-        filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
+        # DO NOT USE. Leads to duplicate file issues in sub-folders.
+        # filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
+        filelist=$(ls ${SAVED_NAME} 2>/dev/null)
         filelist=(${filelist//${INPDIR}\//})
     fi
 

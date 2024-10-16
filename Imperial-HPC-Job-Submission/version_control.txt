@@ -3,7 +3,7 @@ Width of columns: CODE - 21; VERSION - 11; DATE - 21; AUTHOR - 21; CONTACT - 31;
 -----------------------------------------------------------------------------------------------------------------------------------
 CODE                 VERSION    DATE                 AUTHOR               CONTACT                        ACKNOWLEDGEMENT
 -----------------------------------------------------------------------------------------------------------------------------------
-core                 v4.2       Oct.02, 24           Spica-Vir            ICL, spica.h.zhou@gmail.com
+core                 v4.3       Oct.16, 24           Spica-Vir            ICL, spica.h.zhou@gmail.com
 CRYSTAL23            v2.0       Oct.15, 23           Spica-Vir            ICL, spica.h.zhou@gmail.com    Special thanks to K. Tallat-Kelpsa, G.Mallia and N.M.Harrison
 CRYSTAL17            v1.7       May.19, 23           Spica-Vir            ICL, spica.h.zhou@gmail.com    Based on IC-HPC script released by Spica-Vir, Mar.11, 22. Special thanks to G.Mallia and N.M.Harrison.
 CRYSTAL14            v1.0       Nov.30, 23           K.Tallat-Kelpsa      ICL
