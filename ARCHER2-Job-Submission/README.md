@@ -276,6 +276,8 @@ Configurations scripts `config_CODE.sh` and help information `run_help` (a rathe
 
 ### CRYSTAL17
 
+*Configure file not maintained anymore. Please refer to the latest version of CRYSTAL.*
+
 *Author: Spica. Vir.*
 
 **Default settings file**

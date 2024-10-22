@@ -212,6 +212,10 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
         ls -l ${file} | awk '{printf("  %-8s %s %s %s\n"),$5,$6,$7,$8}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
         cp -r ${JOBTMPDIR}/${file} ${OUTDIR}/${SAVED_NAME_REAL}
     done
+	# for empty files in subfolder
+    if [[ ${SAVED_NAME: -1} == '/' && ! $(ls "${OUTDIR}/${SAVED_NAME}") ]]; then
+        rm -r "${OUTDIR}/${SAVED_NAME}"
+    fi
 
     LINE_POSTCALC=`echo "scale=0;${LINE_POSTCALC%%:*}+1" | bc`
     SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`

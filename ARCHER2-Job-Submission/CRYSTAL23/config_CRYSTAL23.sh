@@ -289,6 +289,7 @@ function set_settings {
     sed -i "${LINE_POST}a\[job].f80            fort.80              Wannier funcion - output" ${SETFILE}
     sed -i "${LINE_POST}a\[job].f28            fort.28              Binary IR intensity restart data" ${SETFILE}
     sed -i "${LINE_POST}a\[job].f13            fort.13              Binary reducible density matrix" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].HESSFREQ       HESSFREQ.DAT         Hessian matrix from frequency calculation" ${SETFILE}
     sed -i "${LINE_POST}a\[job].FREQINFO       FREQINFO.DAT         Frequency restart data" ${SETFILE}
 	sed -i "${LINE_POST}a\[job].freqtsk/       FREQINFO.DAT.tsk*    Frequency multitask restart data" ${SETFILE}
     sed -i "${LINE_POST}a\[job].optstory/      opt*                 Optimised geometry per step " ${SETFILE}
@@ -316,6 +317,8 @@ function set_settings {
 #SBATCH --ntasks-per-node=\${V_PROC}
 #SBATCH --cpus-per-task=\${V_TRED}
 #SBATCH --time=\${V_TWT}
+#SBATCH --output=\${V_JOBNAME}.log
+#SBATCH --error=\${V_JOBNAME}.log
 
 # Replace [budget code] below with your full project code
 #SBATCH --account=\${V_BUDGET}
@@ -344,7 +347,7 @@ export OMP_PLACES=cores
 ${V_GENSUB}
 
 # MultiTask wavefunction fort.9.tsk* fix
-cd ${PBS_O_WORKDIR}
+cd ${SLURM_SUBMIT_DIR}
 if [[ -e ${V_JOBNAME}.f9tsk && -d ${V_JOBNAME}.f9tsk ]]; then
     files=($(ls ${V_JOBNAME}.f9tsk))
     for ((i=0; i<${#files[@]}; i++)); do

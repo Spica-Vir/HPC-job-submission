@@ -287,6 +287,8 @@ Configurations scripts `config_CODE.sh` and help information `run_help` (a rathe
 
 ### CRYSTAL17
 
+*Configure file not maintained anymore. Please refer to the latest version of CRYSTAL.*
+
 *Author: Spica. Vir.*
 
 **Default settings file**
@@ -356,6 +358,8 @@ ${EPHEMERAL}
 Note that this is also an illustruction of multi-threading feature of CRYSTAL23 and the fine-tuning of job submission script. In total 24 CPUs are used (one node), which are divided into 12 processes and 2 threads each process.
 
 ### CRYSTAL14
+
+*Configure file not maintained anymore. Please refer to the latest version of CRYSTAL.*
 
 *Author: K. Tallat-Kelpsa*
 

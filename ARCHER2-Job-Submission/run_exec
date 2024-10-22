@@ -100,7 +100,7 @@ elif [[ ${JOBTMPDIR} == *'nodir'* ]]; then # In current directory
 elif [[ ${JOBTMPDIR} == *'node'* ]]; then # In node temporary directory
     JOBTMPDIR=/tmp/${JOBNAME}_${SLURM_JOB_ID}
     move_file=true
-    srun_flag="srun --ntasks=${SLURM_NNODES} --ntasks-per-node=1 " # Run parallel copy file for nodes
+    srun_flag="srun --ntasks=${SLURM_NNODES} --distribution=arbitrary --nodelist=${SLURM_JOB_NODELIST} " # Run parallel copy file for nodes
     echo "Temporary directory on individual nodes : ${JOBTMPDIR}"
 else # In a separate directory
     JOBTMPDIR=${JOBTMPDIR}/${JOBNAME}_${SLURM_JOB_ID}

@@ -49,7 +49,7 @@ elif [[ ${JOBTMPDIR} == *'nodir'* ]]; then # In current directory
 elif [[ ${JOBTMPDIR} == *'node'* ]]; then # In node temporary directory
     JOBTMPDIR=/tmp/${JOBNAME}_${SLURM_JOB_ID}
     move_file=true
-    srun_flag="srun --ntasks=${SLURM_NNODES} --ntasks-per-node=1 " # Run parallel copy file for nodes
+    srun_flag="srun --ntasks=${SLURM_NNODES} --distribution=arbitrary --nodelist=${SLURM_JOB_NODELIST} " # Run parallel copy file for nodes
 else # In a separate directory
     JOBTMPDIR=${JOBTMPDIR}/${JOBNAME}_${SLURM_JOB_ID}
     JOBTMPDIR=`realpath ${JOBTMPDIR}`
@@ -69,13 +69,10 @@ cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
 Post Processing Report
 --------------------------------------------
 Begining of post processing : $(date)
-List of saved files from Node 0
-  TEMPORARY            SAVED
 EOF
 
-source ${JOBTMPDIR}/${POSTSCRIPT}
-
-# Check file sync status across all nodes - JOBTMPDIR = node only. source is disabled when srun is used.
+# Sync files from other nodes to node 0 first - JOBTMPDIR = node only
+#     The same file on other nodes will cover the one on node 0 if it is modified
 
 CHECKSCRIPT="checkfile_${SLURM_JOB_ID}"
 if [[ ${srun_flag} != '' ]]; then
@@ -93,6 +90,8 @@ EOF
     ${srun_flag}chmod 777 ${JOBTMPDIR}/${CHECKSCRIPT}
     ${srun_flag}bash ${JOBTMPDIR}/${CHECKSCRIPT}
 fi
+
+source ${JOBTMPDIR}/${POSTSCRIPT}
 
 # Calculation summary
 
@@ -144,8 +143,14 @@ exit
 # Copied content: After #tag_copy is are copied in temporary directory
 
 #tag_copy_begin
-echo "start checking node0: $(hostname)"
+echo "Syncing local files to output dir from NODE0 ($(hostname))"
 cd ${JOBTMPDIR}
+
+cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
+--------------------------------------------
+List of saved files from NODE0 ($(hostname))
+  TEMPORARY            SAVED
+EOF
 
 # Read POST_CALC list
 
@@ -203,16 +208,32 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
             SAVED_NAME_REAL=`echo "${SAVED_NAME}${file##*/}"`
         fi
 
-        # Copy files - cover the old ones
+        # Copy files - overwrite the old ones
+        # Judge by modification time
 
         if [[ -e ${OUTDIR}/${SAVED_NAME_REAL} && -s ${OUTDIR}/${SAVED_NAME_REAL} ]]; then
             echo "Warning! Duplicate file detected in out directory: ${OUTDIR}/${SAVED_NAME_REAL}." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
-            echo "  The file will be covered by the new entry ${JOBTMPDIR}/${file}." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
+            # saved file time
+            stime=`stat -c %Y ${OUTDIR}/${SAVED_NAME_REAL}`
+            # node file time
+            ntime=`stat -c %Y ${JOBTMPDIR}/${file}`
+            if [[ ${stime} -gt ${ntime} ]]; then
+                # Donot overwrite
+                echo "  The saved file is kept because it is the latest version." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
+                continue
+            else
+                # overwite
+                echo "  The file will be covered by the new entry ${JOBTMPDIR}/${file}." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
+            fi
         fi
         echo "${file} ${SAVED_NAME_REAL}" | awk '{printf("  %-21s%-52s"),$1,$2}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
         ls -l ${JOBTMPDIR}/${file} | awk '{printf("  %-8s %s %s %s\n"),$5,$6,$7,$8}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
         cp -r ${JOBTMPDIR}/${file} ${OUTDIR}/${SAVED_NAME_REAL}
     done
+    # for empty files in subfolder
+    if [[ ${SAVED_NAME: -1} == '/' && ! $(ls "${OUTDIR}/${SAVED_NAME}") ]]; then
+        rm -r "${OUTDIR}/${SAVED_NAME}"
+    fi
 
     LINE_POSTCALC=`echo "scale=0;${LINE_POSTCALC%%:*}+1" | bc`
     SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
@@ -221,8 +242,14 @@ done
 #tag_copy_end
 
 #tag_check_begin
-echo "start checking other nodes: $(hostname)"
+echo "Syncing local files to output dir from NODE $(hostname)"
 cd ${JOBTMPDIR}
+
+cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
+--------------------------------------------
+List of saved files from NODE $(hostname)
+  TEMPORARY            SAVED
+EOF
 
 # Read POST_CALC list
 
@@ -280,9 +307,12 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
             SAVED_NAME_REAL=`echo "${SAVED_NAME}${file##*/}"`
         fi
 
-        # Copy files - do not cover the old ones
+        # Copy files - do not overwrite the old ones (only sync newly generated/modified files from other nodes)
+        # Cannot judge by modification time
 
         if [[ -e ${OUTDIR}/${SAVED_NAME_REAL} && -s ${OUTDIR}/${SAVED_NAME_REAL} ]]; then
+            echo "Warning! Duplicate file detected in out directory: ${OUTDIR}/${SAVED_NAME_REAL}." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
+            echo "  The saved file is kept." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
             continue
         fi
         echo "${file} ${SAVED_NAME_REAL}" | awk '{printf("  %-21s%-52s"),$1,$2}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
