@@ -342,6 +342,8 @@ export FI_MR_CACHE_MAX_COUNT=0
 # Set number of threads and OMP level
 export OMP_NUM_THREADS=\${V_TRED}
 export OMP_PLACES=cores
+# Ensure the cpus-per-task option is propagated to srun commands
+export SRUN_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK}
 
 # start calculation: command added below by gen_sub
 \${V_GENSUB}

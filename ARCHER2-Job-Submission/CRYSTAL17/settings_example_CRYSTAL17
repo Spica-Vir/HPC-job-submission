@@ -15,7 +15,6 @@ NGPU_PER_NODE
 GPU_TYPE
 
 BUDGET_CODE
- e89-ic_c
 
 QOS
 standard

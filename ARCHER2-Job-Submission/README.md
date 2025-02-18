@@ -148,7 +148,7 @@ The 'settings' file is a dictionary for reference. Although all the necessary ke
 
 ### Multiple jobs and 'X' command
 
-The 'X' command allows the maximum flexibility for users to define a PBS job. Taking CRYSTAL17 as the example, using `Xcrys17` can sequentially run multiple jobs. The following code illustrates how to integrate SCF and band calculations of mgo into a single slurm file:
+The 'X' command allows the maximum flexibility for users to define a batch job. Taking CRYSTAL17 as the example, using `Xcrys17` can sequentially run multiple jobs. The following code illustrates how to integrate SCF and band calculations of mgo into a single slurm file:
 
 ``` console
 ~$ Xcrys17 -name mgo-band -nd 1 -x pcrys -in mgo.d12 -wt 01:00 -ref no -x pprop -in band.d3 -wt 00:30 -ref mgo
@@ -221,6 +221,7 @@ It is suggested to slightly increase 'TIME\_OUT' when using large number of node
 ```
 
 **EXE\_TABLE** 
+
 For each job submission script, multiple executables can be placed in the same directory, 'EXEDIR'. The corresponding commands to launch the executables are listed in 'EXE\_TABLE'. The following table gives information of each column. 
 
 | NAME                | RECOGNIZABLE LENGTH | EXPLANATION                                                               |
@@ -266,7 +267,7 @@ Job submission template offers a template for qsub files, which contains essenti
 
 | SYMBOL         | Definition                                                         |
 |:---------------|:-------------------------------------------------------------------|
-| `${V_JOBNAME}` | PBS job name                                                       |
+| `${V_JOBNAME}` | Job name                                                           |
 | `${V_ND}`      | Number of nodes                                                    |
 | `${V_NCPU}`    | Number of CPUs per node                                            |
 | `${V_MEM}`     | Memory allocation per node, in GB                                  |
@@ -276,6 +277,10 @@ Job submission template offers a template for qsub files, which contains essenti
 | `${V_TGPU}`    | ':gpu\_type=' + Type of GPU node                                   |
 | `${V_TWT}`     | Total wall time (timeout + post processing) requested by qsub file |
 | `${V_TPROC}`   | Total number of processes (`${V_PROC}` \* `${V_ND}`)               |
+| `${V_BUDGET}`  | Project budget code                                                |
+| `${V_PARTITION}` | ARCHER2 job partition                                            |
+| `${V_QOS}`     | ARCHER2 quality of service                                         |
+| `${V_GENSUB}`  | For submission template defined in settings file                   |
 
 ### Structure of the repository
 
