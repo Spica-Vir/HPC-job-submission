@@ -143,7 +143,7 @@ exit
 # Copied content: Between #tag_start_copy and #tag_end_copy are copied in temporary directory
 
 #tag_copy_begin
-
+echo "start checking node0: $(hostname)"
 cd ${JOBTMPDIR}
 
 # Read POST_CALC list
@@ -164,12 +164,14 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'TMP_NAME' settings
 
     if [[ ${TMP_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${TMP_NAME} 2>/dev/null))
+        filelist=($(ls ${TMP_NAME} 2>/dev/null)) 2>/dev/null
         for ((i=0; i<${#filelist[@]}; i++)); do
             filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
         done
     else
-        filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
+        # DO NOT USE. Leads to duplicate file issues in sub-folders.
+        # filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
+        filelist=$(ls ${TMP_NAME} 2>/dev/null)
         filelist=(${filelist//${JOBTMPDIR}\//})
     fi
 
@@ -210,6 +212,10 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
         ls -l ${file} | awk '{printf("  %-8s %s %s %s\n"),$5,$6,$7,$8}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
         cp -r ${JOBTMPDIR}/${file} ${OUTDIR}/${SAVED_NAME_REAL}
     done
+	# for empty files in subfolder
+    if [[ ${SAVED_NAME: -1} == '/' && ! $(ls "${OUTDIR}/${SAVED_NAME}") ]]; then
+        rm -r "${OUTDIR}/${SAVED_NAME}"
+    fi
 
     LINE_POSTCALC=`echo "scale=0;${LINE_POSTCALC%%:*}+1" | bc`
     SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
@@ -218,7 +224,6 @@ done
 #tag_copy_end
 
 #tag_check_begin
-
 echo "start checking: $(hostname)"
 cd ${JOBTMPDIR}
 
@@ -240,12 +245,14 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'TMP_NAME' settings
 
     if [[ ${TMP_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${TMP_NAME} 2>/dev/null))
+        filelist=($(ls ${TMP_NAME} 2>/dev/null)) 2>/dev/null
         for ((i=0; i<${#filelist[@]}; i++)); do
             filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
         done
     else
-        filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
+        # DO NOT USE. Leads to duplicate file issues in sub-folders.
+        # filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
+        filelist=$(ls ${TMP_NAME} 2>/dev/null)
         filelist=(${filelist//${JOBTMPDIR}\//})
     fi
 

@@ -1,48 +1,51 @@
 # Job submission scripts
 SUBMISSION_EXT
-.slurm
+ .qsub
 
 NCPU_PER_NODE
-128
+ 24
 
 MEM_PER_NODE
+ 100
 
 NTHREAD_PER_PROC
  1
 
 NGPU_PER_NODE
+ 0
 
 GPU_TYPE
+ RTX6000
 
 BUDGET_CODE
 
 QOS
-standard
 
 PARTITION
-standard
 
 TIME_OUT
-1
+ 3
 
 JOB_TMPDIR
-node
+ /rds/general/user/hz1420/ephemeral
 
 
 # Executables
 EXEDIR
- module load other-software crystal/17-1.0.2
+ /rds/general/user/hz1420/home/apps/CRYSTAL23_v1.0.1/bin/Linux-flang_openmpi_amd64EPYC/std
 
 MPIDIR
- module load PrgEnv-cray/8.3.3 cray-mpich/8.1.23 cray-libsci/22.12.1.1 cce/15.0.0
+ module load  /rds/general/user/hz1420/home/apps/openmpi-4.1.4/openmpi-4.1.4_module
 
 EXE_TABLE                                                               [jobname]
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 LABEL      MPI & OPTION                                                 EXECUTABLE & OPTION                                          DEFINITION
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-pcrys      srun --hint=nomultithread --distribution=block:block         Pcrystal                                                     Parallel crystal calculation
-mppcrys    srun --hint=nomultithread --distribution=block:block         MPPcrystal                                                   Massive parallel crystal calculation
-pprop      srun --hint=nomultithread --distribution=block:block         Pproperties                                                  Parallel properties calculation
+pcrys      mpiexec                                                      Pcrystal                                                     Parallel crystal calculation
+mppcrys    mpiexec                                                      MPPcrystal                                                   Massive parallel crystal calculation
+pprop      mpiexec                                                      Pproperties                                                  Parallel properties calculation
+scrys                                                                   crystal < INPUT                                              Serial crystal calculation
+sprop                                                                   properties < INPUT                                           Serial properties calculation
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -65,7 +68,6 @@ KEYWORD              TEMPORATY            DEFINITION
 [refname].f9         fort.9               Last step wavefunction - properties input
 [refname].OPTINFO    OPTINFO.DAT          Optimisation restart data
 [refname].FREQINFO   FREQINFO.DAT         Frequency restart data
-[refname].freqtsk/   *                    Frequency restart data multitask
 [refname].BORN       BORN.DAT             Born tensor
 [refname].TENS_RAMAN TENS_RAMAN.DAT       Raman tensor
 [refname].f13        fort.13              Binary reducible density matrix
@@ -93,11 +95,11 @@ SAVED                TEMPORARY            DEFINITION
 [jobname].HESSOPT    HESSOPT.DAT          Hessian matrix per optimisation step
 [jobname].optstory/  opt*                 Optimised geometry per step 
 [jobname].FREQINFO   FREQINFO.DAT         Frequency restart data
-[jobname].freqtsk/   FREQINFO.DAT.tsk*    Frequency restart data multitask
 [jobname].f13        fort.13              Binary reducible density matrix
 [jobname].f28        fort.28              Binary IR intensity restart data
 [jobname].f80        fort.80              Wannier funcion - output
 [jobname].scanmode/  SCAN*                Displaced geometry along scanned mode
+[jobname].FREQINFO   FREQINFO.DAT         Frequency restart data
 [jobname].f25        fort.25              Data in Crgra2006 format
 [jobname].PHONBANDS  PHONBANDS.DAT        Phonon bands xmgrace format
 [jobname].IRDIEL     IRDIEL.DAT           IR dielectric function
@@ -119,38 +121,38 @@ SAVED                TEMPORARY            DEFINITION
 [jobname]_POT.CUBE   POT_CUBE.DAT         3D electrostatic potential CUBE format  
 [jobname].POTC       POTC.DAT             Electrostatic potential and derivatives
 -----------------------------------------------------------------------------------
+                         
 
 JOB_SUBMISSION_TEMPLATE
-----------------------------------------------------------------------------------------
-#!/bin/bash
-#SBATCH --nodes=${V_ND}
-#SBATCH --ntasks-per-node=${V_PROC}
-#SBATCH --cpus-per-task=${V_TRED}
-#SBATCH --time=${V_TWT}
+-----------------------------------------------------------------------------------
+#!/bin/bash  --login
+#PBS -N ${V_JOBNAME}
+#PBS -l select=${V_ND}:ncpus=${V_NCPU}:mem=${V_MEM}:mpiprocs=${V_PROC}:ompthreads=${V_TRED}${V_NGPU}${V_TGPU}:avx2=true
+#PBS -l walltime=${V_TWT}
 
-# Replace [budget code] below with your full project code
-#SBATCH --account=${V_BUDGET}
-#SBATCH --partition=${V_PARTITION}
-#SBATCH --qos=${V_QOS}
-#SBATCH --export=none
-
-echo "============================================"
-echo "SLURM Job Report"
+echo "PBS Job Report"
 echo "--------------------------------------------"
 echo "  Start Date : $(date)"
-echo "  SLURM Job ID : ${SLURM_JOB_ID}"
+echo "  PBS Job ID : ${PBS_JOBID}"
 echo "  Status"
-squeue -j ${SLURM_JOB_ID} 2>&1
-echo "============================================"
+qstat -f ${PBS_JOBID}
+echo "--------------------------------------------"
 echo ""
 
-# Address the memory leak
-export FI_MR_CACHE_MAX_COUNT=0
+# number of cores per node used
+export NCORES=${V_NCPU}
+# number of processes
+export NPROCESSES=${V_TPROC}
 
-# Set number of threads and OMP level
+# Make sure any symbolic links are resolved to absolute path
+export PBS_O_WORKDIR=$(readlink -f ${PBS_O_WORKDIR})
+
+# Set the number of threads
 export OMP_NUM_THREADS=${V_TRED}
-export OMP_PLACES=cores
+
+# to sync nodes
+cd ${PBS_O_WORKDIR}
 
 # start calculation: command added below by gen_sub
-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------
 

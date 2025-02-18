@@ -671,19 +671,26 @@ EOF
     # ./${JOBNAME}.run
     # fi
     ################################################
- 
-    for (( i = 0; i < ${#INFILE[@]}; i++ )); do
-        echo "timeout ${TOUT[$i]} ${SCRIPTDIR}/${SCRIPT} -set ${SETFILE} -in ${INFILE[$i]} -ref ${REFNAME[$i]} -- '${MPICOMMAND[$i]} ${COMMAND[$i]}'" >> ${JOBNAME}.${SUB_EXT}
-        echo "${SCRIPTDIR}/${POSCRIPT} -in ${INFILE[$i]} -set ${SETFILE}" >> ${JOBNAME}.${SUB_EXT}
-        echo -e "\n" >> ${JOBNAME}.${SUB_EXT}
+
+    GENSUB=''
+	for (( i = 0; i < ${#INFILE[@]}; i++ )); do
+        GENSUB=`echo "${GENSUB}timeout ${TOUT[$i]} ${SCRIPTDIR}/${SCRIPT} -set ${SETFILE} -in ${INFILE[$i]} -ref ${REFNAME[$i]} -- '${MPICOMMAND[$i]} ${COMMAND[$i]}'\n"`
+        GENSUB=`echo "${GENSUB}${SCRIPTDIR}/${POSCRIPT} -in ${INFILE[$i]} -set ${SETFILE}\n"`
     done
-    echo "if [[ -f ./${JOBNAME}.run ]];then" >> ${JOBNAME}.${SUB_EXT}
-    echo "chmod 755 ./${JOBNAME}.run"        >> ${JOBNAME}.${SUB_EXT}
-    echo "./${JOBNAME}.run"                  >> ${JOBNAME}.${SUB_EXT}
-    echo 'fi'                                >> ${JOBNAME}.${SUB_EXT}
+    GENSUB=`echo "${GENSUB}if [[ -f ./${JOBNAME}.run ]];then\n"`
+    GENSUB=`echo "${GENSUB}    chmod 755 ./${JOBNAME}.run\n"`
+    GENSUB=`echo "${GENSUB}    ./${JOBNAME}.run\n"`
+    GENSUB=`echo "${GENSUB}fi\n"`
 
     # Substitute PBS setup variables in template 
-
+    ## Gensub command might contain variables, must be printed first
+    ## Compatibility
+    flag=`grep '${V_GENSUB}' ${JOBNAME}.${SUB_EXT}`
+    if [[ -z ${flag} ]]; then
+        echo -e "${GENSUB}" >> ${JOBNAME}.${SUB_EXT}
+    else
+        sed -i "s|\${V_GENSUB}|${GENSUB}|g" ${JOBNAME}.${SUB_EXT}
+    fi
     sed -i "s|\${V_JOBNAME}|${JOBNAME}|g" ${JOBNAME}.${SUB_EXT}
     sed -i "s|\${V_ND}|${ND}|g" ${JOBNAME}.${SUB_EXT}
     sed -i "s|\${V_NCPU}|${NCPU}|g" ${JOBNAME}.${SUB_EXT}

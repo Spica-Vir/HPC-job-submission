@@ -25,10 +25,10 @@ function welcome_msg {
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-CRYSTAL23 job submission script for Imperial HPC - Setting up
+CRYSTAL23 job submission script for ARCHER2 - Setting up
 
 Job submission script installed date : `date`
-Batch system                         : PBS
+Batch system                         : SLURM
 Job submission script version        : ${code_version} (${code_date})
 Job submission script author         : ${code_author} (${code_contact})
 Core script version                  : ${core_version} (${core_date})
@@ -41,20 +41,21 @@ EOF
 }
 
 function get_scriptdir {
+    WORK=`echo "/work/${HOME#*/home/}"`
     cat << EOF
 ================================================================================
     Note: all scripts should be placed into the same directory!
     Please specify your installation path.
 
     Default Option
-    ${HOME}/etc/runCRYSTAL23/):
+    ${WORK}/etc/runCRYSTAL23
 
 EOF
 
     read -p " " SCRIPTDIR
 
     if [[ -z ${SCRIPTDIR} ]]; then
-        SCRIPTDIR=${HOME}/etc/runCRYSTAL23
+        SCRIPTDIR=${WORK}/etc/runCRYSTAL23
     fi
 
     if [[ ${SCRIPTDIR: -1} == '/' ]]; then
@@ -62,7 +63,7 @@ EOF
     fi
 
     SCRIPTDIR=`realpath $(echo ${SCRIPTDIR}) 2>&1 | sed -r 's/.*\:(.*)\:.*/\1/' | sed 's/[[:space:]]//g'` # Ignore errors
-    source_dir=`dirname $0`
+    source_dir=`realpath $(dirname $0)`
     if [[ ${source_dir} == ${SCRIPTDIR} ]]; then
         cat << EOF
 --------------------------------------------------------------------------------
@@ -76,27 +77,42 @@ EOF
         if [[ $? == 0 ]]; then
             cat << EOF
 --------------------------------------------------------------------------------
-    Warning: Directory exists: ${SCRIPTDIR} - This folder will be removed.
-	Continue? ([yes]/no)
+    Warning: Directory exists - currnet folder will be removed.
 
 EOF
-			read -p " " remove_dir
-            if [[ -z ${remove_dir} || ${remove_dir} == 'yes' ]]; then
-				rm -r ${SCRIPTDIR}
-			else
-				exit
-			fi
+            rm -r ${SCRIPTDIR}
         fi
+    fi
+}
+
+function get_budget_code {
+    cat << EOF
+================================================================================
+    Please specify your budget code:
+
+EOF
+
+    read -p " " BUDGET_CODE
+    BUDGET_CODE=`echo ${BUDGET_CODE}`
+
+    if [[ -z ${BUDGET_CODE} ]]; then
+        cat << EOF
+--------------------------------------------------------------------------------
+    Error: Budget code must be specified. Exiting current job. 
+
+EOF
+        exit
     fi
 }
 
 function set_exe {
     cat << EOF
 ================================================================================
-    Please specify the directory of CRYSTAL23 exectuables, 
-    or the command to load CRYSTAL23 modules
+    Please specify the directory of CRYSTAL exectuables, 
+    or the command to load CRYSTAL modules
 
-    Default Option (No default)
+    Default Option
+    module load other-software crystal/23-1.0.1-3
 
 EOF
 
@@ -104,7 +120,7 @@ EOF
     EXEDIR=`echo ${EXEDIR}`
 
     if [[ -z ${EXEDIR} ]]; then
-        EXEDIR=''
+        EXEDIR='module load other-software crystal/23-1.0.1-3'
     fi
 
     if [[ ! -d ${EXEDIR} && (${EXEDIR} != *'module load'*) ]]; then
@@ -136,7 +152,8 @@ function set_mpi {
 ================================================================================
     Please specify the directory of MPI executables or mpi modules
 
-    Default Option (No default)
+    Default Option
+    module load PrgEnv-gnu/8.3.3 gcc/11.2.0 cray-mpich/8.1.23 cray-libsci/22.12.1.1
 
 EOF
 
@@ -144,7 +161,7 @@ EOF
     MPIDIR=`echo ${MPIDIR}`
 
     if [[ -z ${MPIDIR} ]]; then
-        MPIDIR=''
+        MPIDIR='module load PrgEnv-gnu/8.3.3 gcc/11.2.0 cray-mpich/8.1.23 cray-libsci/22.12.1.1'
     fi
 
     if [[ ! -d ${MPIDIR} && (${MPIDIR} != *'module load'*) ]]; then
@@ -187,14 +204,14 @@ function set_settings {
     SETFILE=${SCRIPTDIR}/settings
 
     # Values for keywords
-    sed -i "/SUBMISSION_EXT/a\ .qsub" ${SETFILE}
-    sed -i "/NCPU_PER_NODE/a\ 64" ${SETFILE}
-    sed -i "/MEM_PER_NODE/a\ 128" ${SETFILE}
+    sed -i "/SUBMISSION_EXT/a\.slurm" ${SETFILE}
+    sed -i "/NCPU_PER_NODE/a\128" ${SETFILE}
     sed -i "/NTHREAD_PER_PROC/a\ 1" ${SETFILE}
-    sed -i "/NGPU_PER_NODE/a\ 0" ${SETFILE}
-    sed -i "/GPU_TYPE/a\ RTX6000" ${SETFILE}
-    sed -i "/TIME_OUT/a\ 3" ${SETFILE}
-    sed -i "/JOB_TMPDIR/a\ ${EPHEMERAL}" ${SETFILE}
+    sed -i "/BUDGET_CODE/a\ ${BUDGET_CODE}" ${SETFILE}
+    sed -i "/QOS/a\standard" ${SETFILE}
+    sed -i "/PARTITION/a\standard" ${SETFILE}
+    sed -i "/TIME_OUT/a\3" ${SETFILE}
+    sed -i "/JOB_TMPDIR/a\/tmp" ${SETFILE}
     sed -i "/EXEDIR/a\ ${EXEDIR}" ${SETFILE}
     sed -i "/MPIDIR/a\ ${MPIDIR}" ${SETFILE}
 
@@ -202,12 +219,12 @@ function set_settings {
 
     LINE_EXE=`grep -nw 'EXE_TABLE' ${SETFILE}`
     LINE_EXE=`echo "scale=0;${LINE_EXE%:*}+3" | bc`
-    sed -i "${LINE_EXE}a\sprop                                                                   Sproperties < INPUT                                          Serial properties calculation, OMP" ${SETFILE}
-    sed -i "${LINE_EXE}a\scrys                                                                   Scrystal < INPUT                                             Serial crystal calculation. OMP" ${SETFILE}
-    sed -i "${LINE_EXE}a\mppprop    mpiexec -np \${V_TPROC}                                       MPPproperties                                                Massive parallel properties calculation, OMP" ${SETFILE}
-    sed -i "${LINE_EXE}a\pprop      mpiexec -np \${V_TPROC}                                       Pproperties                                                  Parallel properties calculation, OMP" ${SETFILE}
-    sed -i "${LINE_EXE}a\mppcrys    mpiexec -np \${V_TPROC}                                       MPPcrystal                                                   Massive parallel crystal calculation, OMP" ${SETFILE}
-    sed -i "${LINE_EXE}a\pcrys      mpiexec -np \${V_TPROC}                                       Pcrystal                                                     Parallel crystal calculation, OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\mppprop    srun --hint=nomultithread --distribution=block:block         MPPproperties                                                Massive parallel properties calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\pprop      srun --hint=nomultithread --distribution=block:block         Pproperties                                                  Parallel properties calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\mppcrysomp srun --distribution=block:block                              MPPcrystalOMP                                                Massive parallel crystal calculation - OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\mppcrys    srun --hint=nomultithread --distribution=block:block         MPPcrystal                                                   Massive parallel crystal calculation" ${SETFILE}
+    sed -i "${LINE_EXE}a\pcrysomp   srun --distribution=block:block                              PcrystalOMP                                                  Parallel crystal calculation - OMP" ${SETFILE}
+    sed -i "${LINE_EXE}a\pcrys      srun --hint=nomultithread --distribution=block:block         Pcrystal                                                     Parallel crystal calculation" ${SETFILE}
 
     # Input file table
 
@@ -272,6 +289,7 @@ function set_settings {
     sed -i "${LINE_POST}a\[job].f80            fort.80              Wannier funcion - output" ${SETFILE}
     sed -i "${LINE_POST}a\[job].f28            fort.28              Binary IR intensity restart data" ${SETFILE}
     sed -i "${LINE_POST}a\[job].f13            fort.13              Binary reducible density matrix" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].HESSFREQ       HESSFREQ.DAT         Hessian matrix from frequency calculation" ${SETFILE}
     sed -i "${LINE_POST}a\[job].FREQINFO       FREQINFO.DAT         Frequency restart data" ${SETFILE}
 	sed -i "${LINE_POST}a\[job].freqtsk/       FREQINFO.DAT.tsk*    Frequency multitask restart data" ${SETFILE}
     sed -i "${LINE_POST}a\[job].optstory/      opt*                 Optimised geometry per step " ${SETFILE}
@@ -292,56 +310,56 @@ function set_settings {
     sed -i "${LINE_POST}a\[job].ERROR          fort.87              Error report" ${SETFILE}
 
     # Job submission file template - should be placed at the end of file
-
     cat << EOF >> ${SETFILE}
------------------------------------------------------------------------------------
-#!/bin/bash  --login
-#PBS -N \${V_JOBNAME}
-#PBS -l select=\${V_ND}:ncpus=\${V_NCPU}:mem=\${V_MEM}:mpiprocs=\${V_PROC}:ompthreads=\${V_TRED}\${V_NGPU}\${V_TGPU}
-#PBS -l walltime=\${V_TWT}
+----------------------------------------------------------------------------------------
+#!/bin/bash
+#SBATCH --nodes=\${V_ND}
+#SBATCH --ntasks-per-node=\${V_PROC}
+#SBATCH --cpus-per-task=\${V_TRED}
+#SBATCH --time=\${V_TWT}
+#SBATCH --output=\${V_JOBNAME}.log
+#SBATCH --error=\${V_JOBNAME}.log
 
-echo "PBS Job Report"
+# Replace [budget code] below with your full project code
+#SBATCH --account=\${V_BUDGET}
+#SBATCH --partition=\${V_PARTITION}
+#SBATCH --qos=\${V_QOS}
+#SBATCH --export=none
+
+echo "============================================"
+echo "SLURM Job Report"
 echo "--------------------------------------------"
 echo "  Start Date : \$(date)"
-echo "  PBS Job ID : \${PBS_JOBID}"
-echo "--------------------------------------------"
+echo "  SLURM Job ID : \${SLURM_JOB_ID}"
+echo "  Status"
+squeue -j \${SLURM_JOB_ID} 2>&1
+echo "============================================"
 echo ""
 
-# number of cores per node used
-export NCORES=\${V_NCPU}
-# number of processes
-export NPROCESSES=\${V_TPROC}
+# Address the memory leak
+export FI_MR_CACHE_MAX_COUNT=0
 
-# Make sure any symbolic links are resolved to absolute path
-export PBS_O_WORKDIR=\$(readlink -f \${PBS_O_WORKDIR})
-
-# Set the number of threads
+# Set number of threads and OMP level
 export OMP_NUM_THREADS=\${V_TRED}
+export OMP_PLACES=cores
 
-# to sync nodes
-cd \${PBS_O_WORKDIR}
-
-# suppress OpenMPI warnings
-export OMPI_MCA_mca_base_component_show_load_errors=0
-
-module purge
 # start calculation: command added below by gen_sub
 ${V_GENSUB}
 
 # MultiTask wavefunction fort.9.tsk* fix
-cd ${PBS_O_WORKDIR}
+cd ${SLURM_SUBMIT_DIR}
 if [[ -e ${V_JOBNAME}.f9tsk && -d ${V_JOBNAME}.f9tsk ]]; then
     files=($(ls ${V_JOBNAME}.f9tsk))
     for ((i=0; i<${#files[@]}; i++)); do
         mv ${V_JOBNAME}.f9tsk/fort.9.tsk${i} ${V_JOBNAME}.f9tsk/fort.20.tsk${i}
     done
 fi
------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 
 EOF
     cat << EOF
 ================================================================================
-    Paramters specified in ${SETFILE}. 
+    Paramters specified in ${SETFILE}.
 
 EOF
 }
@@ -360,18 +378,16 @@ function set_commands {
 
     echo "# >>> begin CRYSTAL23 job submitter settings >>>" >> ${HOME}/.bashrc
     echo "alias Pcrys23='${CTRLDIR}/gen_sub -x pcrys -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
+    echo "alias OPcrys23='${CTRLDIR}/gen_sub -x pcrysomp -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
     echo "alias MPPcrys23='${CTRLDIR}/gen_sub -x mppcrys -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
+    echo "alias OMPPcrys23='${CTRLDIR}/gen_sub -x mppcrysomp -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
     echo "alias Pprop23='${CTRLDIR}/gen_sub -x pprop -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
     echo "alias MPPprop23='${CTRLDIR}/gen_sub -x mppprop -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
-    echo "alias Scrys23='${CTRLDIR}/gen_sub -x scrys -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
-    echo "alias Sprop23='${CTRLDIR}/gen_sub -x sprop -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
     echo "alias Xcrys23='${CTRLDIR}/gen_sub -set ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
     echo "alias SETcrys23='cat ${SCRIPTDIR}/settings'" >> ${HOME}/.bashrc
-    echo "alias HELPcrys23='bash ${CONFIGDIR}/run_help gensub'" >> ${HOME}/.bashrc
-    # echo "chmod 777 $(dirname $0)/gen_sub" >> ${HOME}/.bashrc
-    # echo "chmod 777 $(dirname $0)/run_exec" >> ${HOME}/.bashrc
-    # echo "chmod 777 $(dirname $0)/post_proc" >> ${HOME}/.bashrc 
-    # echo "chmod 777 $(dirname $0)/run_help" >> ${HOME}/.bashrc 
+    echo "alias HELPcrys23='source ${CONFIGDIR}/run_help gensub'" >> ${HOME}/.bashrc
+    echo "chmod -R 'u+r+w+x' ${CTRLDIR}" >> ${HOME}/.bashrc
+    echo "chmod 'u+r+w+x' ${CONFIGDIR}/run_help" >> ${HOME}/.bashrc
     echo "# <<< finish CRYSTAL23 job submitter settings <<<" >> ${HOME}/.bashrc
 
     bash ${CONFIGDIR}/run_help
@@ -386,23 +402,10 @@ function set_commands {
 CONFIGDIR=`realpath $(dirname $0)`
 CTRLDIR=`realpath ${CONFIGDIR}/../`
 
-# Check executable 'bc': Not available on HX1 computational node by Oct. 2023
-which bc > /dev/null 2>&1
-if [[ $? -ne 0 ]]; then
-    cat << EOF
-================================================================================
-    Bash calculator 'bc' not found. Job submission script cannot be run properly.
-
-EOF
-    exit
-fi
-bcpath=`which bc`
-mkdir -p ~/.local/bin
-cp ${bcpath} ~/.local/bin/bc
-
 welcome_msg
 get_scriptdir
 copy_scripts
+get_budget_code
 set_exe
 set_mpi
 set_settings

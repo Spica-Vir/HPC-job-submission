@@ -100,7 +100,7 @@ elif [[ ${JOBTMPDIR} == *'nodir'* ]]; then # In current directory
 elif [[ ${JOBTMPDIR} == *'node'* ]]; then # In node temporary directory
     JOBTMPDIR=/tmp/${JOBNAME}_${SLURM_JOB_ID}
     move_file=true
-    srun_flag="srun --ntasks=${SLURM_NNODES} --ntasks-per-node=1 " # Run parallel copy file for nodes
+    srun_flag="srun --ntasks=${SLURM_NNODES} --distribution=arbitrary --nodelist=${SLURM_JOB_NODELIST} " # Run parallel copy file for nodes
     echo "Temporary directory on individual nodes : ${JOBTMPDIR}"
 else # In a separate directory
     JOBTMPDIR=${JOBTMPDIR}/${JOBNAME}_${SLURM_JOB_ID}
@@ -173,6 +173,7 @@ fi
 # Generate basic information of output file
 
 INPDIR=${OUTDIR}
+cd ${INPDIR}
 
 cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
 Pre-Calc Summary
@@ -220,12 +221,14 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
     # List files, to get all matched files in 'SAVED_NAME' settings
 
     if [[ ${SAVED_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${SAVED_NAME} 2>/dev/null))
+        filelist=($(ls ${SAVED_NAME} 2>/dev/null)) 2>/dev/null
         for ((i=0; i<${#filelist[@]}; i++)); do
             filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
         done
     else
-        filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
+        # DO NOT USE. Leads to duplicate file issues in sub-folders.
+        # filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
+        filelist=$(ls ${SAVED_NAME} 2>/dev/null)
         filelist=(${filelist//${INPDIR}\//})
     fi
 
@@ -302,12 +305,14 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true && ${REFNAME} != 'n
     # List files, to get all matched files in 'SAVED_NAME' settings
 
     if [[ ${SAVED_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${SAVED_NAME} 2>/dev/null))
+        filelist=($(ls ${SAVED_NAME} 2>/dev/null)) 2>/dev/null
         for ((i=0; i<${#filelist[@]}; i++)); do
             filelist[$i]=`echo "${SAVED_NAME}${filelist[$i]}"`
         done
     else
-        filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
+        # DO NOT USE. Leads to duplicate file issues in sub-folders.
+        # filelist=`find ${INPDIR} -name "${SAVED_NAME}"`
+        filelist=$(ls ${SAVED_NAME} 2>/dev/null)
         filelist=(${filelist//${INPDIR}\//})
     fi
 
@@ -376,9 +381,9 @@ $(cat ${JOBFILE})
 
 EOF
 
+cd ${JOBTMPDIR}
 echo "Entering temporary directory..."
 echo "Launching the job..."
 
 export SLURM_WORKING_DIR=${JOBTMPDIR}
 echo "${EXECOMMAND} >> ${OUTDIR}/${OUTPUT} 2>&1" | bash
-

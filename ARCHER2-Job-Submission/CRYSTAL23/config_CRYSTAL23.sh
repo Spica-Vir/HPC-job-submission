@@ -230,73 +230,84 @@ function set_settings {
 
     LINE_PRE=`grep -nw 'PRE_CALC' ${SETFILE}`
     LINE_PRE=`echo "scale=0;${LINE_PRE%:*}+3" | bc`
-    sed -i "${LINE_PRE}a\[jobname].POINTCHG   POINTCHG.INP         Dummy atoms with 0 mass and given charge" ${SETFILE}
-    sed -i "${LINE_PRE}a\[jobname].gui        fort.34              Geometry input" ${SETFILE}
-    sed -i "${LINE_PRE}a\[jobname].d3         INPUT                Properties input file" ${SETFILE}
-    sed -i "${LINE_PRE}a\[jobname].d12        INPUT                Crystal input file" ${SETFILE}
+    sed -i "${LINE_PRE}a\[job].POINTCHG       POINTCHG.INP         Dummy atoms with 0 mass and given charge" ${SETFILE}
+    sed -i "${LINE_PRE}a\[job].gui            fort.34              Geometry input" ${SETFILE}
+    sed -i "${LINE_PRE}a\[job].d3             INPUT                Properties input file" ${SETFILE}
+    sed -i "${LINE_PRE}a\[job].d12            INPUT                Crystal input file" ${SETFILE}
 
     # Reference file table
 
     LINE_REF=`grep -nw 'REF_FILE' ${SETFILE}`
     LINE_REF=`echo "scale=0;${LINE_REF%:*}+3" | bc`
-    sed -i "${LINE_REF}a\[refname].f31        fort.32              Derivative of density matrix" ${SETFILE}
-    sed -i "${LINE_REF}a\[refname].f80        fort.81              Wannier funcion - input" ${SETFILE}
-    sed -i "${LINE_REF}a\[refname].f28        fort.28              Binary IR intensity restart data" ${SETFILE}
-    sed -i "${LINE_REF}a\[refname].f13        fort.13              Binary reducible density matrix" ${SETFILE}
-    sed -i "${LINE_REF}a\[refname].TENS_RAMAN TENS_RAMAN.DAT       Raman tensor" ${SETFILE}
-    sed -i "${LINE_REF}a\[refname].BORN       BORN.DAT             Born tensor" ${SETFILE}
-    sed -i "${LINE_REF}a\[refname].freqtsk/   *                    Frequency restart data multitask" ${SETFILE}
-    sed -i "${LINE_REF}a\[refname].FREQINFO   FREQINFO.DAT         Frequency restart data" ${SETFILE}
-    sed -i "${LINE_REF}a\[refname].OPTINFO    OPTINFO.DAT          Optimisation restart data" ${SETFILE}
-    sed -i "${LINE_REF}a\[refname].f9         fort.9               Last step wavefunction - properties input" ${SETFILE}
-    sed -i "${LINE_REF}a\[refname].f9         fort.20              Last step wavefunction - crystal input" ${SETFILE}
-    
+    sed -i "${LINE_REF}a\[ref].f31            fort.32              Derivative of density matrix" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].f80            fort.81              Wannier funcion - input" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].f28            fort.28              Binary IR intensity restart data" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].f13            fort.13              Binary reducible density matrix" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].TENS_RAMAN     TENS_RAMAN.DAT       Raman tensor" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].TENS_IR        TENS_IR.DAT          IR tensor" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].BORN           BORN.DAT             Born tensor" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].FREQINFO       FREQINFO.DAT         Frequency restart data" ${SETFILE}
+	sed -i "${LINE_REF}a\[ref].freqtsk/       *                    Frequency multitask restart data" ${SETFILE}
+	sed -i "${LINE_REF}a\[ref].EOSINFO        EOSINFO.DAT          Equation of state restart data" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].OPTINFO        OPTINFO.DAT          Optimisation restart data" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].f9tsk/         *                    Last step wavefunction - multitask" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].f9             fort.9               Last step wavefunction - properties input" ${SETFILE}
+    sed -i "${LINE_REF}a\[ref].f9             fort.20              Last step wavefunction - crystal input" ${SETFILE}
+
     # Post-processing file table
 
     LINE_POST=`grep -nw 'POST_CALC' ${SETFILE}`
     LINE_POST=`echo "scale=0;${LINE_POST%:*}+3" | bc`
-    
-    sed -i "${LINE_POST}a\[jobname].POTC       POTC.DAT             Electrostatic potential and derivatives" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname]_POT.CUBE   POT_CUBE.DAT         3D electrostatic potential CUBE format  " ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname]_SPIN.CUBE  SPIN_CUBE.DAT        3D spin density CUBE format" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].RHOLINE    RHOLINE.DAT          1D charge density and gradient" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname]_CHG.CUBE   DENS_CUBE.DAT        3D charge density Gaussian CUBE format" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].DOSS       DOSS.DAT             DOS xmgrace format" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].BAND       BAND.DAT             Band xmgrace format " ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].DIEL       DIEL.DAT             Dielectric constants" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].KRED       KRED.DAT             K space information for cryapi_inp" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].GRED       GRED.DAT             Real space information for cryapi_inp" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].f31        fort.31              Derivative of density matrix / Proeprties 3D grid data" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].EOSINFO    EOSINFO.DAT          QHA and equation of states information" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].TENS_RAMAN TENS_RAMAN.DAT       Raman tensor" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].RAMSPEC    RAMSPEC.DAT          Raman spectra" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].BORN       BORN.DAT             Born tensor" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].IRSPEC     IRSPEC.DAT           IR absorbance and reflectance" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].IRREFR     IRREFR.DAT           IR refractive index" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].IRDIEL     IRDIEL.DAT           IR dielectric function" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].PHONBANDS  PHONBANDS.DAT        Phonon bands xmgrace format" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].f25        fort.25              Data in Crgra2006 format" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].scanmode/  SCAN*                Displaced geometry along scanned mode" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].f80        fort.80              Wannier funcion - output" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].f28        fort.28              Binary IR intensity restart data" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].f13        fort.13              Binary reducible density matrix" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].freqtsk/   FREQINFO.DAT.tsk*    Frequency restart data multitask" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].FREQINFO   FREQINFO.DAT         Frequency restart data" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].optstory/  opt*                 Optimised geometry per step " ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].HESSOPT    HESSOPT.DAT          Hessian matrix per optimisation step" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].OPTINFO    OPTINFO.DAT          Optimisation restart data" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].SCFLOG     SCFOUT.LOG           SCF output per step" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].f53        fort.53              Optimised Basis Set Output" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].PPAN       PPAN.DAT             Mulliken population" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].f98        fort.98              Formatted wavefunction" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].f9         fort.9               Last step wavefunction - crystal output" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].STRUC      STRUC.INCOOR         Geometry, STRUC.INCOOR format" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].GAUSSIAN   GAUSSIAN.DAT         Geometry, for Gaussian98/03" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].FINDSYM    FINDSYM.DAT          Geometry, for FINDSYM" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].cif        GEOMETRY.CIF         Geometry, cif format (CIFPRT/CIFPRTSYM)" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].xyz        fort.33              Geometry, non-periodic xyz format" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].gui        fort.34              Geometry, CRYSTAL fort34 format" ${SETFILE}
-    sed -i "${LINE_POST}a\[jobname].ERROR      fort.87              Error report" ${SETFILE}
+
+    sed -i "${LINE_POST}a\[job].SIGMA          SIGMA.DAT            Electrical conductivity" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].SEEBECK        SEEBECK.DAT          Seebeck coefficient" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].SIGMAS         SIGMAS.DAT           SigmaS" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].KAPPA          KAPPA.DAT            Thermal conductivity" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].TDF            TDF.DAT              Distribution function" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].POTC           POTC.DAT             Electrostatic potential and derivatives" ${SETFILE}
+    sed -i "${LINE_POST}a\[job]_POT.CUBE       POT_CUBE.DAT         3D electrostatic potential CUBE format  " ${SETFILE}
+    sed -i "${LINE_POST}a\[job]_SPIN.CUBE      SPIN_CUBE.DAT        3D spin density CUBE format" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].RHOLINE        RHOLINE.DAT          1D charge density and gradient" ${SETFILE}
+    sed -i "${LINE_POST}a\[job]_CHG.CUBE       DENS_CUBE.DAT        3D charge density Gaussian CUBE format" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].DOSS           DOSS.DAT             DOS xmgrace format" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].BAND           BAND.DAT             Band xmgrace format " ${SETFILE}
+    sed -i "${LINE_POST}a\[job].DIEL           DIEL.DAT             Dielectric constants" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].KRED           KRED.DAT             K space information for cryapi_inp" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].GRED           GRED.DAT             Real space information for cryapi_inp" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].f31            fort.31              Derivative of density matrix / Proeprties 3D grid data" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].EOSINFO        EOSINFO.DAT          QHA and equation of states information" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].TENS_RAMAN     TENS_RAMAN.DAT       Raman tensor" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].RAMSPEC        RAMSPEC.DAT          Raman spectra" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].TENS_IR        TENS_IR.DAT          IR tensor" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].BORN           BORN.DAT             Born tensor" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].IRSPEC         IRSPEC.DAT           IR absorbance and reflectance" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].IRREFR         IRREFR.DAT           IR refractive index" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].IRDIEL         IRDIEL.DAT           IR dielectric function" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].PHONBANDS      PHONBANDS.DAT        Phonon bands xmgrace format" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].f25            fort.25              Data in Crgra2006 format" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].scan/          SCAN*                Displaced geometry of scanning" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].f80            fort.80              Wannier funcion - output" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].f28            fort.28              Binary IR intensity restart data" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].f13            fort.13              Binary reducible density matrix" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].HESSFREQ       HESSFREQ.DAT         Hessian matrix from frequency calculation" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].FREQINFO       FREQINFO.DAT         Frequency restart data" ${SETFILE}
+	sed -i "${LINE_POST}a\[job].freqtsk/       FREQINFO.DAT.tsk*    Frequency multitask restart data" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].optstory/      opt*                 Optimised geometry per step " ${SETFILE}
+    sed -i "${LINE_POST}a\[job].HESSOPT        HESSOPT.DAT          Hessian matrix per optimisation step" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].OPTINFO        OPTINFO.DAT          Optimisation restart data" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].SCFLOG         SCFOUT.LOG           SCF output per step" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].f53            fort.53              Optimised Basis Set Output" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].PPAN           PPAN.DAT             Mulliken population" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].f9tsk/         fort.9.tsk*          Wavefunction restart data - multitask" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].f98            fort.98              Formatted wavefunction" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].f9             fort.9               Last step wavefunction - crystal output" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].STRUC          STRUC.INCOOR         Geometry, STRUC.INCOOR format" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].GAUSSIAN       GAUSSIAN.DAT         Geometry, for Gaussian98/03" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].FINDSYM        FINDSYM.DAT          Geometry, for FINDSYM" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].cif            GEOMETRY.CIF         Geometry, cif format (CIFPRT/CIFPRTSYM)" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].xyz            fort.33              Geometry, non-periodic xyz format" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].gui            fort.34              Geometry, CRYSTAL fort34 format" ${SETFILE}
+    sed -i "${LINE_POST}a\[job].ERROR          fort.87              Error report" ${SETFILE}
 
     # Job submission file template - should be placed at the end of file
     cat << EOF >> ${SETFILE}
@@ -306,6 +317,8 @@ function set_settings {
 #SBATCH --ntasks-per-node=\${V_PROC}
 #SBATCH --cpus-per-task=\${V_TRED}
 #SBATCH --time=\${V_TWT}
+#SBATCH --output=\${V_JOBNAME}.log
+#SBATCH --error=\${V_JOBNAME}.log
 
 # Replace [budget code] below with your full project code
 #SBATCH --account=\${V_BUDGET}
@@ -329,8 +342,20 @@ export FI_MR_CACHE_MAX_COUNT=0
 # Set number of threads and OMP level
 export OMP_NUM_THREADS=\${V_TRED}
 export OMP_PLACES=cores
+# Ensure the cpus-per-task option is propagated to srun commands
+export SRUN_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK}
 
 # start calculation: command added below by gen_sub
+\${V_GENSUB}
+
+# MultiTask wavefunction fort.9.tsk* fix
+cd \${SLURM_SUBMIT_DIR}
+if [[ -e \${V_JOBNAME}.f9tsk && -d \${V_JOBNAME}.f9tsk ]]; then
+    files=(\$(ls \${V_JOBNAME}.f9tsk))
+    for ((i=0; i<\${#files[@]}; i++)); do
+        mv \${V_JOBNAME}.f9tsk/fort.9.tsk\${i} \${V_JOBNAME}.f9tsk/fort.20.tsk\${i}
+    done
+fi
 ----------------------------------------------------------------------------------------
 
 EOF
