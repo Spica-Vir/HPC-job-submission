@@ -344,14 +344,14 @@ export OMP_NUM_THREADS=\${V_TRED}
 export OMP_PLACES=cores
 
 # start calculation: command added below by gen_sub
-${V_GENSUB}
+\${V_GENSUB}
 
 # MultiTask wavefunction fort.9.tsk* fix
-cd ${SLURM_SUBMIT_DIR}
-if [[ -e ${V_JOBNAME}.f9tsk && -d ${V_JOBNAME}.f9tsk ]]; then
-    files=($(ls ${V_JOBNAME}.f9tsk))
-    for ((i=0; i<${#files[@]}; i++)); do
-        mv ${V_JOBNAME}.f9tsk/fort.9.tsk${i} ${V_JOBNAME}.f9tsk/fort.20.tsk${i}
+cd \${SLURM_SUBMIT_DIR}
+if [[ -e \${V_JOBNAME}.f9tsk && -d \${V_JOBNAME}.f9tsk ]]; then
+    files=(\$(ls \${V_JOBNAME}.f9tsk))
+    for ((i=0; i<\${#files[@]}; i++)); do
+        mv \${V_JOBNAME}.f9tsk/fort.9.tsk\${i} \${V_JOBNAME}.f9tsk/fort.20.tsk\${i}
     done
 fi
 ----------------------------------------------------------------------------------------
