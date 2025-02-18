@@ -34,6 +34,15 @@ in_var="header "$@""
 get_input_
 OUTDIR=${JOBFILE%/*}
 OUTPUT=${JOBNAME}.out
+if [[ ! -e ${OUTDIR} ]]; then
+    echo "ERROR: Input/output dir does not exist: ${OUTDIR}" | tee -a ${OUTDIR}/${OUTPUT}
+    exit
+fi
+ls ${SETFILE} > /dev/null 2>&1
+if [[ $? -gt 0 ]]; then
+    echo "ERROR: Settings file not found: ${SETFILE}" | tee -a ${OUTDIR}/${OUTPUT}
+    exit
+fi
 INPDIR=${OUTDIR}
 JOBTMPDIR=`echo $(grep -w -A 1 'JOB_TMPDIR' ${SETFILE} | tail -1)`
 if [[ -z ${JOBTMPDIR} || ${JOBTMPDIR} == *'default'* ]]; then # As subdirectory under the current one
@@ -49,18 +58,14 @@ elif [[ ${JOBTMPDIR} == *'nodir'* ]]; then # In current directory
 elif [[ ${JOBTMPDIR} == *'node'* ]]; then # In node temporary directory
     JOBTMPDIR=/tmp/${JOBNAME}_${SLURM_JOB_ID}
     move_file=true
-    srun_flag="srun --ntasks=${SLURM_NNODES} --distribution=arbitrary --nodelist=${SLURM_JOB_NODELIST} " # Run parallel copy file for nodes
+    nodelist=($(srun --ntasks=${SLURM_NNODES} --distribution=arbitrary --nodelist=${SLURM_JOB_NODELIST} hostname))
+    srun_flag="srun --ntasks=1 --distribution=arbitrary --nodelist=" # Run parallel copy file for nodes
 else # In a separate directory
     JOBTMPDIR=${JOBTMPDIR}/${JOBNAME}_${SLURM_JOB_ID}
     JOBTMPDIR=`realpath ${JOBTMPDIR}`
     move_file=true
     srun_flag=''
 fi
-
-# Create temporary copy of the script for execution
-
-POSTSCRIPT="Post_script_${SLURM_JOB_ID}"
-sed '1,/^#tag_copy_begin/d;/^#tag_copy_end/,$d' $0 > ${JOBTMPDIR}/${POSTSCRIPT}
 
 # Start post-processing
 
@@ -71,12 +76,15 @@ Post Processing Report
 Begining of post processing : $(date)
 EOF
 
-# Sync files from other nodes to node 0 first - JOBTMPDIR = node only
-#     The same file on other nodes will cover the one on node 0 if it is modified
+# Create temporary copy of the script for execution
 
-CHECKSCRIPT="checkfile_${SLURM_JOB_ID}"
+POSTSCRIPT="Post_script_${SLURM_JOB_ID}"
+
 if [[ ${srun_flag} != '' ]]; then
-    cat << EOF > ${JOBTMPDIR}/${CHECKSCRIPT}
+
+    # Sync files across the nodes. Script broadcast to all nodes and run in sequential
+
+    cat << EOF > ${JOBTMPDIR}/${POSTSCRIPT}
 #!/bin/bash
 JOBNAME=${JOBNAME}
 JOBTMPDIR=${JOBTMPDIR}
@@ -85,13 +93,21 @@ OUTPUT=${OUTPUT}
 SETFILE=${SETFILE}
 move_file=${move_file}
 EOF
-    sed '1,/^#tag_check_begin/d;/^#tag_check_end/,$d' $0 >> ${JOBTMPDIR}/${CHECKSCRIPT}
-    sbcast --force ${JOBTMPDIR}/${CHECKSCRIPT} ${JOBTMPDIR}/${CHECKSCRIPT}
-    ${srun_flag}chmod 777 ${JOBTMPDIR}/${CHECKSCRIPT}
-    ${srun_flag}bash ${JOBTMPDIR}/${CHECKSCRIPT}
-fi
+    sed '1,/^#tag_copy_begin/d;/^#tag_copy_end/,$d' $0 >> ${JOBTMPDIR}/${POSTSCRIPT}
+    sbcast --force ${JOBTMPDIR}/${POSTSCRIPT} ${JOBTMPDIR}/${POSTSCRIPT}
+    for i in ${nodelist[@]}; do
+        srun_cmd=`echo "${srun_flag}${i} "`
+        ${srun_cmd}chmod 777 ${JOBTMPDIR}/${POSTSCRIPT}
+        ${srun_cmd}bash ${JOBTMPDIR}/${POSTSCRIPT}
+    done
+else
 
-source ${JOBTMPDIR}/${POSTSCRIPT}
+    # Sync files from the node0.
+
+    sed '1,/^#tag_copy_begin/d;/^#tag_copy_end/,$d' $0 > ${JOBTMPDIR}/${POSTSCRIPT}
+    source ${JOBTMPDIR}/${POSTSCRIPT}
+
+fi
 
 # Calculation summary
 
@@ -143,105 +159,6 @@ exit
 # Copied content: After #tag_copy is are copied in temporary directory
 
 #tag_copy_begin
-echo "Syncing local files to output dir from NODE0 ($(hostname))"
-cd ${JOBTMPDIR}
-
-cat << EOF | tee -a ${OUTDIR}/${OUTPUT}
---------------------------------------------
-List of saved files from NODE0 ($(hostname))
-  TEMPORARY            SAVED
-EOF
-
-# Read POST_CALC list
-
-LINE_POSTCALC=`grep -nw 'POST_CALC' ${SETFILE}`
-LINE_POSTCALC=`echo "scale=0;${LINE_POSTCALC%%:*}+4" | bc`
-
-# Read table, substitute variable flags and spaces for saved name in JOBTMPDIR
-
-SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
-
-# Read table, substitute variable flags and spaces for temporary name in JOBTMPDIR
-
-TMP_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,22,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
-
-while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
-
-    # List files, to get all matched files in 'TMP_NAME' settings
-
-    if [[ ${TMP_NAME: -1} == '/' ]]; then
-        filelist=($(ls ${TMP_NAME} 2>/dev/null)) 2>/dev/null
-        for ((i=0; i<${#filelist[@]}; i++)); do
-            filelist[$i]=`echo "${TMP_NAME}${filelist[$i]}"`
-        done
-    else
-        # DO NOT USE. Leads to duplicate file issues in sub-folders.
-        # filelist=`find ${JOBTMPDIR} -name "${TMP_NAME}"`
-        filelist=$(ls ${TMP_NAME} 2>/dev/null)
-        filelist=(${filelist//${JOBTMPDIR}\//})
-    fi
-
-    # Make subdir for files stored in sub-folders
-
-    if [[ ${SAVED_NAME: -1} == '/' && ${#filelist[@]} -ge 1 ]]; then
-        mkdir -p "${OUTDIR}/${SAVED_NAME}"
-    fi
-    for file in ${filelist[@]}; do
-
-        # Make sure the file is not empty
-
-        if [[ ! -s ${JOBTMPDIR}/${file} ]]; then
-            continue
-        fi
-
-        SAVED_NAME_REAL=${SAVED_NAME}
-
-        # If SAVED_NAME is '*', keep the original name
-
-        if [[ ${SAVED_NAME} == *'*'* ]]; then
-            SAVED_NAME_REAL=${file##*/}
-        fi
-
-        # If SAVED_NAME ends with '/', update it
-
-        if [[  ${SAVED_NAME: -1} == '/' ]]; then
-            SAVED_NAME_REAL=`echo "${SAVED_NAME}${file##*/}"`
-        fi
-
-        # Copy files - overwrite the old ones
-        # Judge by modification time
-
-        if [[ -e ${OUTDIR}/${SAVED_NAME_REAL} && -s ${OUTDIR}/${SAVED_NAME_REAL} ]]; then
-            echo "Warning! Duplicate file detected in out directory: ${OUTDIR}/${SAVED_NAME_REAL}." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
-            # saved file time
-            stime=`stat -c %Y ${OUTDIR}/${SAVED_NAME_REAL}`
-            # node file time
-            ntime=`stat -c %Y ${JOBTMPDIR}/${file}`
-            if [[ ${stime} -gt ${ntime} ]]; then
-                # Donot overwrite
-                echo "  The saved file is kept because it is the latest version." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
-                continue
-            else
-                # overwite
-                echo "  The file will be covered by the new entry ${JOBTMPDIR}/${file}." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
-            fi
-        fi
-        echo "${file} ${SAVED_NAME_REAL}" | awk '{printf("  %-21s%-52s"),$1,$2}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
-        ls -l ${JOBTMPDIR}/${file} | awk '{printf("  %-8s %s %s %s\n"),$5,$6,$7,$8}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
-        cp -r ${JOBTMPDIR}/${file} ${OUTDIR}/${SAVED_NAME_REAL}
-    done
-    # for empty files in subfolder
-    if [[ ${SAVED_NAME: -1} == '/' && ! $(ls "${OUTDIR}/${SAVED_NAME}") ]]; then
-        rm -r "${OUTDIR}/${SAVED_NAME}"
-    fi
-
-    LINE_POSTCALC=`echo "scale=0;${LINE_POSTCALC%%:*}+1" | bc`
-    SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
-    TMP_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,22,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
-done
-#tag_copy_end
-
-#tag_check_begin
 echo "Syncing local files to output dir from NODE $(hostname)"
 cd ${JOBTMPDIR}
 
@@ -307,22 +224,36 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
             SAVED_NAME_REAL=`echo "${SAVED_NAME}${file##*/}"`
         fi
 
-        # Copy files - do not overwrite the old ones (only sync newly generated/modified files from other nodes)
-        # Cannot judge by modification time
+        # Move files - overwrite the saved one if the tmp one is newly modified
+        # Judge by modification time
+        # To compare modification date, must use 'mv'
 
         if [[ -e ${OUTDIR}/${SAVED_NAME_REAL} && -s ${OUTDIR}/${SAVED_NAME_REAL} ]]; then
-            echo "Warning! Duplicate file detected in out directory: ${OUTDIR}/${SAVED_NAME_REAL}." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
-            echo "  The saved file is kept." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
-            continue
+            # saved file time
+            stime=`stat -c %Y ${OUTDIR}/${SAVED_NAME_REAL}`
+            # node file time
+            ntime=`stat -c %Y ${JOBTMPDIR}/${file}`
+            if [[ ${stime} -gt ${ntime} ]]; then
+                # Donot overwrite
+                echo "WARNING! Duplicated file: ${SAVED_NAME_REAL} is the latest and kept." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
+                continue
+            else
+                # overwite
+                echo "WARNING! Duplicated file: ${SAVED_NAME_REAL} is covered by ${file}." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
+            fi
         fi
         echo "${file} ${SAVED_NAME_REAL}" | awk '{printf("  %-21s%-52s"),$1,$2}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
         ls -l ${JOBTMPDIR}/${file} | awk '{printf("  %-8s %s %s %s\n"),$5,$6,$7,$8}' 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
-        cp -r ${JOBTMPDIR}/${file} ${OUTDIR}/${SAVED_NAME_REAL}
+        mv ${JOBTMPDIR}/${file} ${OUTDIR}/${SAVED_NAME_REAL}
     done
+    # for empty files in subfolder
+    if [[ ${SAVED_NAME: -1} == '/' && ! $(ls "${OUTDIR}/${SAVED_NAME}") ]]; then
+        rm -r "${OUTDIR}/${SAVED_NAME}"
+    fi
 
     LINE_POSTCALC=`echo "scale=0;${LINE_POSTCALC%%:*}+1" | bc`
     SAVED_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,1,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
     TMP_NAME=`awk 'NR=="'${LINE_POSTCALC}'"{printf("%s", substr($0,22,21))}' ${SETFILE} | sed "s/\[job.*\]/${JOBNAME}/g" | sed "s/\s//g"`
 done
-#tag_check_end
+#tag_copy_end
 

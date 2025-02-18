@@ -180,8 +180,45 @@ In the current implementation, 'settings' is the only file in local environment,
 
 1. Left blank for 'default' : The temporary directory will be created as a sub-directory in the input directory, with name 'jobname\_`${SLURM_JOB_ID}`/'  
 2. 'nodir' : The job will be run in the current directory and no copy/delete happens. Applicable if the code has bulit-in temporary file management system or requires minimum I/O (usually the case for serial jobs).
-3. 'node' : Node-specific temporary files are distributed to the node memory '/tmp/jobname\_`${SLURM_JOB_ID}`/'. Recommanded for large jobs. If the job is killed by the user, temporary files cannot be saved.  
-4. A given directory, such as `${EPHEMERAL}` : The temporary directory will be created as a sub-directory under the given one, with the name 'jobname\_`${SLURM_JOB_ID}`/'.
+3. 'node' : Node-specific temporary files are distributed to the node memory '/tmp/jobname\_`${SLURM_JOB_ID}`/'. Recommanded for large jobs. If the job is killed by the user, temporary files cannot be saved.
+5. A given directory, such as `${EPHEMERAL}` : The temporary directory will be created as a sub-directory under the given one, with the name 'jobname\_`${SLURM_JOB_ID}`/'.
+
+
+*Comments on the 'node' option*
+
+It is suggested to slightly increase 'TIME\_OUT' when using large number of nodes, because directories on every node are scanned in serial to find the latest modificaions of the file when job terminates. Here is an example output run on two nodes:
+
+```
+ ============================================
+ Post Processing Report
+ --------------------------------------------
+ Begining of post processing : Tue 18 Feb 2025 06:58:35 PM GMT
+ --------------------------------------------
+ List of saved files from NODE nid002448
+   TEMPORARY            SAVED
+ WARNING! Duplicated file: rerestart.gui is covered by fort.34.
+   fort.34              rerestart.gui                                         6514     Feb 18 18:50
+   FREQINFO.DAT.tsk0    rerestart.freqtsk/FREQINFO.DAT.tsk0                   18235986 Feb 18 18:50
+   FREQINFO.DAT.tsk1    rerestart.freqtsk/FREQINFO.DAT.tsk1                   18235986 Feb 18 18:50
+   FREQINFO.DAT.tsk2    rerestart.freqtsk/FREQINFO.DAT.tsk2                   18235986 Feb 18 18:55
+   FREQINFO.DAT.tsk3    rerestart.freqtsk/FREQINFO.DAT.tsk3                   18235986 Feb 18 18:55
+   fort.13              rerestart.f13                                         3569544  Feb 18 18:50
+ --------------------------------------------
+ List of saved files from NODE nid002413
+   TEMPORARY            SAVED
+ WARNING! Duplicated file: rerestart.gui is covered by fort.34.
+   fort.34              rerestart.gui                                         6514     Feb 18 18:50
+   SCFOUT.LOG           rerestart.SCFLOG                                      35040    Feb 18 18:50
+ WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk0 is covered by FREQINFO.DAT.tsk0.
+   FREQINFO.DAT.tsk0    rerestart.freqtsk/FREQINFO.DAT.tsk0                   18235986 Feb 18 18:55
+ WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk1 is covered by FREQINFO.DAT.tsk1.
+   FREQINFO.DAT.tsk1    rerestart.freqtsk/FREQINFO.DAT.tsk1                   18235986 Feb 18 18:55
+ WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk2 is the latest and kept.
+ WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk3 is the latest and kept.
+ WARNING! Duplicated file: rerestart.f13 is covered by fort.13.                                                                                            
+   fort.13              rerestart.f13                                         3569544  Feb 18 18:50
+ --------------------------------------------
+```
 
 **EXE\_TABLE** 
 For each job submission script, multiple executables can be placed in the same directory, 'EXEDIR'. The corresponding commands to launch the executables are listed in 'EXE\_TABLE'. The following table gives information of each column. 
