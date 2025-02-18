@@ -233,7 +233,7 @@ while [[ ${TMP_NAME} != '---------'* && ${move_file} == true ]]; do
             stime=`stat -c %Y ${OUTDIR}/${SAVED_NAME_REAL}`
             # node file time
             ntime=`stat -c %Y ${JOBTMPDIR}/${file}`
-            if [[ ${stime} -gt ${ntime} ]]; then
+            if [[ ${stime} -ge ${ntime} ]]; then
                 # Donot overwrite
                 echo "WARNING! Duplicated file: ${SAVED_NAME_REAL} is the latest and kept." 2>&1 | tee -a ${OUTDIR}/${OUTPUT}
                 continue

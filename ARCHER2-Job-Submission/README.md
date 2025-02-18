@@ -192,31 +192,29 @@ It is suggested to slightly increase 'TIME\_OUT' when using large number of node
  ============================================
  Post Processing Report
  --------------------------------------------
- Begining of post processing : Tue 18 Feb 2025 06:58:35 PM GMT
- --------------------------------------------
- List of saved files from NODE nid002448
-   TEMPORARY            SAVED
- WARNING! Duplicated file: rerestart.gui is covered by fort.34.
-   fort.34              rerestart.gui                                         6514     Feb 18 18:50
-   FREQINFO.DAT.tsk0    rerestart.freqtsk/FREQINFO.DAT.tsk0                   18235986 Feb 18 18:50
-   FREQINFO.DAT.tsk1    rerestart.freqtsk/FREQINFO.DAT.tsk1                   18235986 Feb 18 18:50
-   FREQINFO.DAT.tsk2    rerestart.freqtsk/FREQINFO.DAT.tsk2                   18235986 Feb 18 18:55
-   FREQINFO.DAT.tsk3    rerestart.freqtsk/FREQINFO.DAT.tsk3                   18235986 Feb 18 18:55
-   fort.13              rerestart.f13                                         3569544  Feb 18 18:50
+ Begining of post processing : Tue 18 Feb 2025 09:34:39 PM
  --------------------------------------------
  List of saved files from NODE nid002413
    TEMPORARY            SAVED
  WARNING! Duplicated file: rerestart.gui is covered by fort.34.
-   fort.34              rerestart.gui                                         6514     Feb 18 18:50
-   SCFOUT.LOG           rerestart.SCFLOG                                      35040    Feb 18 18:50
- WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk0 is covered by FREQINFO.DAT.tsk0.
-   FREQINFO.DAT.tsk0    rerestart.freqtsk/FREQINFO.DAT.tsk0                   18235986 Feb 18 18:55
- WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk1 is covered by FREQINFO.DAT.tsk1.
-   FREQINFO.DAT.tsk1    rerestart.freqtsk/FREQINFO.DAT.tsk1                   18235986 Feb 18 18:55
- WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk2 is the latest and kept.
- WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk3 is the latest and kept.
- WARNING! Duplicated file: rerestart.f13 is covered by fort.13.                                                                                            
-   fort.13              rerestart.f13                                         3569544  Feb 18 18:50
+   fort.34              rerestart.gui                                         6514     Feb 18 21:27
+   SCFOUT.LOG           rerestart.SCFLOG                                      35040    Feb 18 21:28
+   FREQINFO.DAT.tsk0    rerestart.freqtsk/FREQINFO.DAT.tsk0                   18235986 Feb 18 21:33
+   FREQINFO.DAT.tsk1    rerestart.freqtsk/FREQINFO.DAT.tsk1                   18235986 Feb 18 21:33
+   FREQINFO.DAT.tsk2    rerestart.freqtsk/FREQINFO.DAT.tsk2                   18235986 Feb 18 21:27
+   FREQINFO.DAT.tsk3    rerestart.freqtsk/FREQINFO.DAT.tsk3                   18235986 Feb 18 21:27
+   fort.13              rerestart.f13                                         3569544  Feb 18 21:28
+ --------------------------------------------
+ List of saved files from NODE nid002448
+   TEMPORARY            SAVED
+ WARNING! Duplicated file: rerestart.gui is the latest and kept.
+ WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk0 is the latest and kept.
+ WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk1 is the latest and kept.
+ WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk2 is covered by FREQINFO.DAT.tsk2.
+   FREQINFO.DAT.tsk2    rerestart.freqtsk/FREQINFO.DAT.tsk2                   18235986 Feb 18 21:33
+ WARNING! Duplicated file: rerestart.freqtsk/FREQINFO.DAT.tsk3 is covered by FREQINFO.DAT.tsk3.
+   FREQINFO.DAT.tsk3    rerestart.freqtsk/FREQINFO.DAT.tsk3                   18235986 Feb 18 21:33
+ WARNING! Duplicated file: rerestart.f13 is the latest and kept.
  --------------------------------------------
 ```
 
