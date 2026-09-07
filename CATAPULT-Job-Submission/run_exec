@@ -65,14 +65,14 @@ echo "Printed output filename $OUTDIR/$OUTPUT"
 # List of available formats & executables
 # Set executing command & MPI
 
-XDIR=$(grep -w -A 1 'EXEDIR' "$SETFILE" | tail -1)
+XDIR=$(grep -w -A 1 'EXEDIR' "$SETFILE" | tail -1 | xargs)
 if [[ $XDIR == *'module load'* ]]; then
     $XDIR 2>&1
 else
     export PATH="$XDIR:$PATH"
 fi
 
-MDIR=$(grep -w -A 1 'MPIDIR' "$SETFILE" | tail -1)
+MDIR=$(grep -w -A 1 'MPIDIR' "$SETFILE" | tail -1 | xargs)
 if [[ ! -z $MDIR ]]; then
     if [[ $MDIR == *'module load'* ]]; then
         $MDIR 2>&1
@@ -86,7 +86,7 @@ echo "MPI command: $EXECOMMAND"
 
 # Set temporary directory
 
-JOBTMPDIR=$(grep -w -A 1 'JOB_TMPDIR' "$SETFILE" | tail -1)
+JOBTMPDIR=$(grep -w -A 1 'JOB_TMPDIR' "$SETFILE" | tail -1 | xargs)
 if [[ -z $JOBTMPDIR || $JOBTMPDIR == *'default'* ]]; then # As subdirectory under the current one
     JOBTMPDIR=$(dirname $JOBFILE)/${JOBNAME}_$SLURM_JOB_ID
     JOBTMPDIR=$(realpath $JOBTMPDIR)

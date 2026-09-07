@@ -1,0 +1,138 @@
+# Job submission scripts
+SUBMISSION_EXT
+.slurm
+
+NCPU_PER_NODE
+96
+
+MEM_PER_NODE
+384
+
+NTHREAD_PER_PROC
+ 1
+
+NGPU_PER_NODE
+ 0
+
+GPU_TYPE
+
+BUDGET_CODE
+
+QOS
+normal
+
+PARTITION
+normal
+
+TIME_OUT
+1
+
+JOB_TMPDIR
+ /home/zhouhuanyu/scratch
+
+
+# Executables
+EXEDIR
+ module load vasp/6.5.0-mkl
+
+MPIDIR
+ 
+
+EXE_TABLE                                                               [jobname]
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+LABEL      MPI & OPTION                                                 EXECUTABLE & OPTION                                          DEFINITION
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+std        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_std                                                     Standard parallel VASP
+ncl        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_ncl                                                     Non-collinear parallel VASP
+gam        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_gam                                                     Gamma-only parallel VASP
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+# file formats table
+PRE_CALC    [jobname]    [jobname]/[refname]
+-----------------------------------------------------------------------------------
+SAVED                TEMPORARY            DEFINITION
+-----------------------------------------------------------------------------------
+[job].in.h5          vaspin.h5            Input file in H5 format
+[job].pp             POTCAR               Pseudopotential file
+[job].kpt            KPOINTS              K point grid
+[job].in             INCAR                Input parameters
+[job].vasp           POSCAR               Geometry input
+-----------------------------------------------------------------------------------
+
+REF_FILE    [refname]    [jobname]/[refname]
+-----------------------------------------------------------------------------------
+KEYWORD              TEMPORATY            DEFINITION
+-----------------------------------------------------------------------------------
+[ref].wave.h5        vaspwave.h5          Wavefunction file in H5 format
+[ref].wave           WAVECAR              Wavefunction file
+[ref].chg            CHGCAR               Charge density file
+-----------------------------------------------------------------------------------
+
+POST_CALC   [jobname]    [jobname]
+-----------------------------------------------------------------------------------
+SAVED                TEMPORARY            DEFINITION
+-----------------------------------------------------------------------------------
+[job].traj.vasp      XDATCAR              Ionic configuration for each output step of MD
+[job].dwave          WAVEDER              Derivative of wave functions with respect to k point
+[job].wave.h5        vaspwave.h5          Wavefunction file in H5 format
+[job].wave           WAVECAR              Wavefunction file
+[job].out.h5         vaspout.h5           Output file in H5 format
+[job].xml            vasprun.xml          Output file in XML format
+[job].tmp            TMPCAR               Temporary file
+[job].md.out         REPORT               MD output
+[job].corr           PCDAT                Pair correlation function
+[job].par.chg        PARCHG               Partial charge densities
+[job].out            OUTCAR               Output file
+[job].oszi           OSZICAR              Information on each electronic and ionic SCF step
+[job].pot            LOCPOT               Local potential file
+[job].1bz.kpt        IBZKPT               Explicit 1st Brillouin zone k-points
+[job].elf            ELFCAR               Electron localization function file
+[job].eigen          EIGENVAL             Eigenvalue file
+[job].dos            DOSCAR               Density of states file
+[job].opt.vasp       CONTCAR              Optimized atomic positions
+[job].chg            CHGCAR               Charge density file
+[job].plt.chg        CHG                  Charge density file for visualization
+-----------------------------------------------------------------------------------
+                         
+
+JOB_SUBMISSION_TEMPLATE
+----------------------------------------------------------------------------------------
+#!/bin/bash
+#SBATCH --nodes=${V_ND}
+#SBATCH --ntasks-per-node=${V_PROC}
+#SBATCH --cpus-per-task=${V_TRED}
+#SBATCH --mem=${V_MEM}
+#SBATCH --time=${V_TWT}
+#SBATCH --output=${V_JOBNAME}.log
+#SBATCH --error=${V_JOBNAME}.log
+
+# Replace [budget code] below with your full project code
+#SBATCH --partition=${V_PARTITION}
+#SBATCH --qos=${V_QOS}
+#SBATCH --export=none
+
+echo "============================================"
+echo "SLURM Job Report"
+echo "--------------------------------------------"
+echo "  Start Date : $(date)"
+echo "  SLURM Job ID : $SLURM_JOB_ID"
+echo "  Status"
+squeue -j $SLURM_JOB_ID 2>&1
+echo "============================================"
+echo ""
+
+# number of cores per node used
+export NCORES=${V_NCPU}
+# number of processes
+export NPROCESSES=${V_TPROC}
+
+# Set number of threads and OMP level
+export OMP_NUM_THREADS=${V_TRED}
+export OMP_PLACES=cores
+
+module purge
+# start calculation: command added below by gen_sub
+${V_GENSUB}
+----------------------------------------------------------------------------------------
+

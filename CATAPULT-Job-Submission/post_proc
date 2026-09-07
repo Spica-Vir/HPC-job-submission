@@ -43,7 +43,7 @@ if [[ $? -gt 0 ]]; then
     exit
 fi
 INPDIR=$OUTDIR
-JOBTMPDIR=$(grep -w -A 1 'JOB_TMPDIR' "$SETFILE" | tail -1)
+JOBTMPDIR=$(grep -w -A 1 'JOB_TMPDIR' "$SETFILE" | tail -1 | xargs)
 if [[ -z $JOBTMPDIR || $JOBTMPDIR == *'default'* ]]; then # As subdirectory under the current one
     JOBTMPDIR=$(dirname $JOBFILE)/${JOBNAME}_$SLURM_JOB_ID
     JOBTMPDIR=$(realpath $JOBTMPDIR)
