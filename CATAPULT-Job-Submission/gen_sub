@@ -7,6 +7,8 @@
 # ND      : int, optional, number of nodes
 # NC      : int, optional, total number of cores
 # NT      : int, optional, number of threads per process
+# NG      : int, optional, number of GPUs per node
+# MEM     : int, optional, memory request per node in GB
 # WT      : str, walltime in hh:mm
 # jobname : str, input .d12 or .d3 file
 # refname : str, optional, name of the previous run
@@ -16,16 +18,16 @@
 
 function get_input_ {
 
-    # List of flags: -set, -x, -nd, -nc, -nt, -wt, -in, -ref, -name, -help. -mem is accepted but not used.
+    # List of flags: -set, -x, -nd, -nc, -nt, -ng, -mem, -wt, -in, -ref, -name, -help. -mem is accepted but not used.
 
-    param_list=$(getopt -a -l help,x:,set:,nd:,nc:,nt:,mem:,wt:,in:,ref:,name: -n "$0" -- ${in_var} 2> /dev/null) 
+    param_list=$(getopt -a -l help,x:,set:,nd:,nc:,nt:,ng:,mem:,wt:,in:,ref:,name: -n "$0" -- $in_var 2> /dev/null) 
     cat << EOF
     INPUT parameters:
-        ${param_list}
+        $param_list
 
 EOF
 
-    eval set -- "${param_list}"
+    eval set -- "$param_list"
     while [[ true ]]; do
         case $1 in
         --help )
@@ -44,6 +46,8 @@ EOF
             shift; NC=$1 ;;
         --nt )
             shift; NT=$1 ;;
+        --ng )
+            shift; NG=$1 ;;
         --mem )
             shift; MEM=$1 ;;
         --wt )
@@ -68,14 +72,14 @@ EOF
     check_SETFILE_
     check_EXELABEL_
     check_INFILE_
-    if [[ ! -z ${REFNAME} ]]; then
+    if [[ ! -z $REFNAME ]]; then
         check_REFNAME_
     else
         for ((i=0; i<${#EXELABEL[@]}; i++)); do
             REFNAME+=('no')
         done
     fi
-    check_NDCT_
+    check_NDCTG_
     # check_MEM_
     check_WT_
     if [[ ${#EXELABEL[@]} -gt 1 ]]; then
@@ -85,14 +89,14 @@ EOF
     cat << EOF
 Formatted INPUT parameters:
 -----------------------------------------
-    Number of nodes     = ${ND}
-    N CPU per node      = ${NCPU}
-    N threads           = ${TRED}
+    Number of nodes     = $ND
+    N CPU per node      = $NCPU
+    N threads           = $TRED
     Executable label(s) = ${EXELABEL[@]}
     Input file(s)       = ${INFILE[@]}
     Walltime            = ${WT[@]}
     Reference job(s)    = ${REFNAME[@]}
-    Settings            = ${SETFILE}
+    Settings            = $SETFILE
 -----------------------------------------
 
 EOF
@@ -101,12 +105,12 @@ EOF
 # Check settings file
 
 function check_SETFILE_ {
-    if [[ ! -e ${SETFILE} || ! -s ${SETFILE} ]]; then
+    if [[ ! -e $SETFILE || ! -s $SETFILE ]]; then
         cat << EOF
     ERROR:
         File 'settings' not found.
 
-        Specified directory : ${SETFILE}
+        Specified directory : $SETFILE
 
 EOF
         print_HOWTO_SETFILE_
@@ -132,7 +136,7 @@ function check_EXELABEL_ {
 
     # No -x input
 
-    if [[ -z ${EXELABEL} ]]; then
+    if [[ -z $EXELABEL ]]; then
         cat << EOF
     ERROR:
         Executable label must be specified by '-x' flag.
@@ -145,27 +149,27 @@ EOF
     # Executable label not found
 
     for exe in ${EXELABEL[@]}; do
-        line_exe=`grep -nw 'EXE_TABLE' ${SETFILE}`
-        line_exe=`echo "scale=0;${line_exe%%:*}+4" | bc`
-        avail_exe=`echo $(awk 'NR=="'${line_exe}'"{printf("%s", substr($0,1,11))}' ${SETFILE})`
+        line_exe=$(grep -nw 'EXE_TABLE' $SETFILE)
+        line_exe=$(( ${line_exe%%:*} + 4 ))
+        avail_exe=$(awk 'NR=="'$line_exe'"{printf("%s", substr($0,1,11))}' "$SETFILE")
         found_exe=false
-        while [[ ${avail_exe} != '---------'* ]]; do
-            echo ${exe} | grep -i -E "^${avail_exe}$" > /dev/null 2>&1
+        while [[ $avail_exe != '---------'* ]]; do
+            echo $exe | grep -i -E "^$avail_exe$" > /dev/null 2>&1
             if [[ $? -eq 0 ]]; then
                 found_exe=true
-                MPICOMMAND+=("`echo $(awk 'NR=="'${line_exe}'"{printf("%s", substr($0,12,61))}' ${SETFILE})`")
-                COMMAND+=("`echo $(awk 'NR=="'${line_exe}'"{printf("%s", substr($0,73,61))}' ${SETFILE})`")
+                MPICOMMAND+=("$(awk 'NR=="'$line_exe'"{printf("%s", substr($0,12,61))}' "$SETFILE")")
+                COMMAND+=("$(awk 'NR=="'$line_exe'"{printf("%s", substr($0,73,61))}' "$SETFILE")")
                 break
             fi
-            line_exe=`echo "scale=0;${line_exe}+1" | bc`
-            avail_exe=`echo $(awk 'NR=="'${line_exe}'"{printf("%s", substr($0,1,11))}' ${SETFILE})`
+            line_exe=$(( line_exe + 1 ))
+            avail_exe=$(awk 'NR=="'$line_exe'"{printf("%s", substr($0,1,11))}' "$SETFILE")
         done
-        if [[ ${found_exe} != true ]]; then
+        if [[ $found_exe != true ]]; then
             cat << EOF
     ERROR:
-        Label not found. Check 'EXE_TABLE' of ${SETFILE}.
+        Label not found. Check 'EXE_TABLE' of $SETFILE.
 
-        Executable label : ${exe}
+        Executable label : $exe
 
 EOF
             exit
@@ -181,7 +185,7 @@ function print_HOWTO_EXELABEL_ {
     -x flag
 
     Label of executable + in-line option, case insensitive.
-    Defined in the 'EXE_TABLE' of ${SETFILE}. 
+    Defined in the 'EXE_TABLE' of $SETFILE. 
 
 EOF
 }
@@ -192,7 +196,7 @@ function check_INFILE_ {
 
     # No -in input / number of -in not consistent with number of -x
 
-    if [[ -z ${INFILE} || ${#INFILE[@]} -ne ${#EXELABEL[@]} ]]; then
+    if [[ -z $INFILE || ${#INFILE[@]} -ne ${#EXELABEL[@]} ]]; then
                 cat << EOF
     ERROR:
         Input files must be specified by '-in' flag and consistent
@@ -207,14 +211,14 @@ EOF
 
         # Specified input not found / empty
 
-        file=${INFILE[${i}]}
-        file=${INPDIR}/${file##*/}
-        if [[ ! -e ${file} || ! -s ${file} ]]; then
+        file=${INFILE[$i]}
+        file=$INPDIR/${file##*/}
+        if [[ ! -e $file || ! -s $file ]]; then
             cat << EOF
     ERROR:
         Input file does not exit / is empty. 
 
-        Supposed input : ${file}
+        Supposed input : $file
 
 EOF
             exit
@@ -223,17 +227,17 @@ EOF
         # output exists
 
         output=${file%.*}.out
-        if [[ -e ${output} && -s ${output} ]]; then
+        if [[ -e $output && -s $output ]]; then
             cat << EOF
     ERROR:
         Output file exists. Move it to a safe place or remove it. 
 
-        Output : ${output}
+        Output : $output
 
 EOF
             exit
         fi
-        echo "Calculation output will be found in ${output}"
+        echo "Calculation output will be found in $output"
     done
 
     # set jobname if only one input is generated
@@ -241,7 +245,7 @@ EOF
     if [[ ${#INFILE[@]} -eq 1 ]]; then
         JOBNAME=${INFILE[0]%.*}
         JOBNAME=${JOBNAME##*/}
-        echo "Name of the single job SLURM file : ${JOBNAME}.slurm"
+        echo "Name of the single job SLURM file : $JOBNAME.slurm"
     fi
 }
 
@@ -277,19 +281,19 @@ EOF
         exit
     fi
 
-    # Wheter the file(s) with string ${REFNAME} exist
+    # Wheter the file(s) with string $REFNAME exist
 
     for (( i = 0; i < ${#REFNAME[@]}; i++ )); do
         ref=${REFNAME[$i]}
-        if [[ ${ref} == 'no' ]]; then
+        if [[ $ref == 'no' ]]; then
             continue
         else
-            if [[ -z $(find ${INPDIR} -maxdepth 1 -name "*${ref}*") ]]; then
+            if [[ -z $(find $INPDIR -maxdepth 1 -name "*$ref*") ]]; then
                 cat << EOF
    ERROR:
-        ${ref}* not found in ${INPDIR}/ and its 1st level sub-directories.
+        $ref* not found in $INPDIR/ and its 1st level sub-directories.
 
-        Refname -ref  : ${ref}
+        Refname -ref  : $ref
 
 EOF
                 exit
@@ -320,20 +324,24 @@ EOF
 
 # Check number of nodes
 
-function check_NDCT_ {
+function check_NDCTG_ {
 
     # Get defaults
     # CPU per node
 
-    DNCPU=`echo $(grep -w -A 1 'NCPU_PER_NODE' ${SETFILE} | tail -1)`
+    DNCPU=$(grep -w -A 1 'NCPU_PER_NODE' "$SETFILE" | tail -1)
 
     # threads per process
 
-    DTRED=`echo $(grep -w -A 1 'NTHREAD_PER_PROC' ${SETFILE} | tail -1)`
+    DTRED=$(grep -w -A 1 'NTHREAD_PER_PROC' "$SETFILE" | tail -1)
+
+    # GPU per node
+
+    DNGPU=$(grep -w -A 1 'NGPU_PER_NODE' "$SETFILE" | tail -1)
 
     # Check nd and nc. If non-integeter is used, a format change is done without warnings
     # No -nd and no -nc
-    if [[ -z ${ND} && -z ${NC} ]]; then
+    if [[ -z $ND && -z $NC ]]; then
         cat << EOF
     WARNING:
         Reasonable number of nodes/cores MUST BE specified. 
@@ -341,99 +349,131 @@ function check_NDCT_ {
 
 EOF
         ND=1
-        NCPU=${DNCPU}
+        NCPU=$DNCPU
     # No -nd but has -nc
-    elif [[ -z ${ND} && ! -z ${NC} ]]; then
-        NC=`echo | awk '{printf "%i\n", '${NC}'}'`
-        if [[ ${NC} -le ${DNCPU} ]]; then
+    elif [[ -z $ND && ! -z $NC ]]; then
+        NC=$(awk '{printf "%i\n", '"$NC"'}')
+        if [[ $NC -le $DNCPU ]]; then
             ND=1
-            NCPU=${NC}
+            NCPU=$NC
         else
-            intmulti=`echo | awk '{printf "%i\n", '${NC}'/'${DNCPU}'}'`
-            ncnew=`echo | awk '{printf "%i\n", '${intmulti}'*'${DNCPU}'}'`
-            if [[ ${ncnew} -eq ${NC} ]]; then # nc will not be rounded
-                NCPU=${NC}
-                ND=${intmulti}
+            intmulti=$(awk '{printf "%i\n", '"$NC"'/'"$DNCPU"'}')
+            ncnew=$(awk '{printf "%i\n", '"$intmulti"'*'"$DNCPU"'}')
+            if [[ $ncnew -eq $NC ]]; then # nc will not be rounded
+                NCPU=$NC
+                ND=$intmulti
             else # nc will be rounded
-                ND=`echo | awk '{printf "%i\n", '${intmulti}'+1}'`
-                ncpunode=`echo | awk '{printf "%i\n", '${NC}'/'${ND}'}'`
-                NCPU=`echo | awk '{printf "%i\n", '${ND}'*'${ncpunode}'}'`
+                ND=$(awk '{printf "%i\n", '"$intmulti"'+1}')
+                ncpunode=$(awk '{printf "%i\n", '"$NC"'/'"$ND"'}')
+                NCPU=$(awk '{printf "%i\n", '"$ND"'*'"$ncpunode"'}')
                 cat << EOF
     WARNING:
-        -nc = ${NC} does not fit the default NCPU_PER_NODE.
-        -nd = ${ND} and -nc = ${NCPU} is set
+        -nc = "$NC" does not fit the default NCPU_PER_NODE.
+        -nd = "$ND" and -nc = "$NCPU" is set
 
 EOF
             fi
         fi
     # No -nc but has -nd
-    elif [[ ! -z ${ND} && -z ${NC} ]]; then
-        ND=`echo | awk '{printf "%i\n", '${ND}'}'`
-        NCPU=`echo | awk '{printf "%i\n", '${ND}'*'${DNCPU}'}'`
+    elif [[ ! -z $ND && -z $NC ]]; then
+        ND=$(awk '{printf "%i\n", '"$ND"'}')
+        NCPU=$(awk '{printf "%i\n", '"$ND"'*'"$DNCPU"'}')
     # -nc and -nd
     else
-        ND=`echo | awk '{printf "%i\n", '${ND}'}'`
-        ncpunode=`echo | awk '{printf "%i\n", '${NC}'/'${ND}'}'`
-        if [[ ${ncpunode} -gt ${DNCPU} ]]; then
-            NCPU=`echo | awk '{printf "%i\n", '${DNCPU}'*'${ND}'}'`
+        ND=$(awk '{printf "%i\n", '"$ND"'}')
+        ncpunode=$(awk '{printf "%i\n", '"$NC"'/'"$ND"'}')
+        if [[ $ncpunode -gt $DNCPU ]]; then
+            NCPU=$(awk '{printf "%i\n", '"$DNCPU"'*'"$ND"'}')
             cat << EOF
     WARNING:
-        nc = ${NC}, nd = ${ND} larger than the default NCPU_PER_NODE.
-        nd = ${ND}, nc = ${NPU}
+        nc = "$NC", nd = "$ND" larger than the default NCPU_PER_NODE.
+        nd = "$ND", nc = "$NCPU"
 
 EOF
         else
-            NCPU=`echo | awk '{printf "%i\n", '${NC}'}'`
+            NCPU=$(awk '{printf "%i\n", '"$NC"'}')
         fi
     fi
 
     # Reduce NCPU to number of cpus per node
 
-    NCPU=`echo | awk '{printf "%i\n", '${NCPU}'/'${ND}'}'`
+    NCPU=$(awk '{printf "%i\n", '"$NCPU"'/'"$ND"'}')
 
     # Check nt
 
-    if [[ -z ${NT} ]]; then
-        TRED=${DTRED}
+    if [[ -z $NT ]]; then
+        TRED=$DTRED
     else
-        TRED=`echo | awk '{printf "%i\n", '${NT}'}'`
+        TRED=$(awk '{printf "%i\n", '"$NT"'}')
     fi
 
     # processes per node = NCPU/NT, sub CPU threading is not allowed.
 
-    PROC=`echo | awk '{printf "%i\n", '${NCPU}'/'${TRED}'}'`
-    if [[ ${PROC} -lt 1 ]]; then
+    PROC=$(awk '{printf "%i\n", '"$NCPU"'/'"$TRED"'}')
+    if [[ $PROC -lt 1 ]]; then
         cat << EOF
     ERROR:
         Sub-CPU threading is not allowed.
 
 EOF
-        print_HOWTO_ND_
+        print_HOWTO_NDCTG_
         exit
     fi
 
     # NCPU must be the integer multiply of threads
 
-    proc_check=`echo | awk '{printf "%i\n", '${NCPU}'%'${TRED}'}'`
-    if [[ ${proc_check} -ne 0 ]]; then
+    proc_check=$(awk '{printf "%i\n", '"$NCPU"'%'"$TRED"'}')
+    if [[ $proc_check -ne 0 ]]; then
         cat << EOF
     ERROR:
-        Number of CPU per node = ${NCPU}, must be the
-        integer multiply of threads per process = ${TRED}.
+        Number of CPU per node = "$NCPU", must be the
+        integer multiply of threads per process = "$TRED".
 
 EOF
-        print_HOWTO_ND_
+        print_HOWTO_NDCTG_
         exit
     fi
 
     # total number of processes = PROC*ND
 
-    TPROC=`echo | awk '{printf "%i\n", '${NCPU}'/'${TRED}'*'${ND}'}'`
+    TPROC=$(awk '{printf "%i\n", '"$NCPU"'/'"$TRED"'*'"$ND"'}')
+
+    # Check ng
+
+    if [[ -z $DNGPU ]]; then
+        NGPU=0
+        return 0
+    fi
+
+    # check the consistency with ND
+
+    if [[ $DNGPU -eq 0 ]]; then
+        NGPU=0
+        return 0
+    fi
+
+    if [[ -z $NG ]]; then
+        NGPU=$(awk '{printf "%i\n", '"$DNGPU"'*'"$ND"'}')
+    else
+        ngmax=$(awk '{printf "%i\n", '"$DNGPU"'*'"$ND"'}')
+        if [[ $NG -gt $ngmax ]]; then # ng exceeds max value allowed
+            cat << EOF
+    ERROR:
+        -ng = "$NG" requires more GPUs per node than the default NGPU_PER_NODE.
+        Either increase -nd or reduce -ng, or change 'NGPU_PER_NODE' keyword.
+EOF
+            print_HOWTO_NDCTG_
+            exit
+        else
+            NGPU="$NG"
+        fi
+    fi
+
 }
 
 # Instruction for ND
 
-function print_HOWTO_ND_ {
+function print_HOWTO_NDCTG_ {
     cat << EOF
     -------------------------------------------
     -nd -nc flags
@@ -445,51 +485,55 @@ function print_HOWTO_ND_ {
     Number of threads per PROCESS.
     Multi/Sub-CPU threading is not allowed
 
+    -ng flag
+
+    Total number of GPUs, an integer.
+
 EOF
 }
 
-# # Check memory, useless for ARCHER2
+# Check memory
 
-# function check_MEM_ {
+function check_MEM_ {
 
-#     # read default memeory request
+    # read default memeory request
 
-#     DMEM=`echo $(grep -w -A 1 'MEM_PER_NODE' ${SETFILE} | tail -1)`
-#     DMEM=${DMEM%G*}
-#     DMEM=${DMEM%g*}
+    DMEM=$(grep -w -A 1 'MEM_PER_NODE' $SETFILE | tail -1)
+    DMEM=${DMEM%G*}
+    DMEM=${DMEM%g*}
 
-#     # check input
+    # check input
 
-#     if [[ -z ${MEM} ]]; then
-#         MEM=${DMEM}
-#     else
-#         MEM=${MEM%G*}
-#         MEM=${MEM%g*}
-#         MEM=`echo | awk '{printf "%i\n", '${MEM}'}'`
-#     fi
+    if [[ -z $MEM ]]; then
+        MEM=$DMEM
+    else
+        MEM=${MEM%G*}
+        MEM=${MEM%g*}
+        MEM=$(awk '{printf "%i\n", '$MEM'}')
+    fi
 
-#     if [[ ${MEM} -gt ${DMEM} ]]; then
-#         cat << EOF
-#     ERROR:
-#         -mem = ${MEM} is larger than the default maximum ${DMEM}.
-#         Check your input or change 'MEM_PER_NODE' keyword.
-# EOF
-#         print_HOWTO_MEM_
-#         exit
-#     fi
-# }
+    if [[ $MEM -gt $DMEM ]]; then
+        cat << EOF
+    ERROR:
+        -mem = $MEM is larger than the default maximum $DMEM.
+        Check your input or change 'MEM_PER_NODE' keyword.
+EOF
+        print_HOWTO_MEM_
+        exit
+    fi
+}
 
-# # Instruction for MEM, useless for ARCHER2
+# Instruction for MEM
 
-# function print_HOWTO_MEM_ {
-#     cat << EOF
-#     -------------------------------------------
-#     -mem flag
+function print_HOWTO_MEM_ {
+    cat << EOF
+    -------------------------------------------
+    -mem flag
 
-#     Set the memory request per node in GB.
+    Set the memory request per node in GB.
 
-# EOF
-# }
+EOF
+}
 
 # Check walltime
 
@@ -497,7 +541,7 @@ function check_WT_ {
 
     # Whether '-wt' is set and consistent with '-x'
 
-    if [[ -z ${WT} || ${#WT[@]} -ne ${#EXELABEL[@]} ]]; then
+    if [[ -z $WT || ${#WT[@]} -ne ${#EXELABEL[@]} ]]; then
         cat << EOF
     ERROR:
        Walltime '-wt' needs to be set and consistent with '-x' flags.
@@ -510,19 +554,19 @@ EOF
     # Check walltime format
 
     for (( i = 0; i < ${#WT[@]}; i++ )); do
-        separator=`echo ${WT} | grep ':'`
-        if [[ -z ${separator} ]]; then
+        separator=$(printf '%s' "$WT" | grep ':')
+        if [[ -z $separator ]]; then
             cat << EOF
     WARNING:
         Separator not specified, any number will be regarded as minutes.
 
 EOF
-            hh=`printf "%02d\n" $(echo "scale=0; ${WT}%60" | bc)`
-            mm=`printf "%02d\n" $(echo "scale=0; ${WT}-${hh}*60" | bc)`
-            WT=`echo "${hh}:${mm}"`
+            hh=$(printf "%02d\n" $(( WT % 60 )))
+            mm=$(printf "%02d\n" $(( WT - hh * 60 )))
+            WT="$hh:$mm"
         fi
 
-        CHECK_IF_WT_HAS_A_hhmm_FORMAT=`echo ${WT} | awk 'BEGIN{S="YES"};{
+        CHECK_IF_WT_HAS_A_hhmm_FORMAT=$(printf '%s' "$WT" | awk 'BEGIN{S="YES"};{
             c=length($1)-match($1,":");
             if(c!=2){S="NO";exit}};{
             gsub(":","",$1);
@@ -532,14 +576,14 @@ EOF
                     S="NO";
                     exit
                 }
-            }};END{print S}'`
+            }};END{print S}')
 
-        if [[ ${CHECK_IF_WT_HAS_A_hhmm_FORMAT} == "NO" ]]; then
+        if [[ $CHECK_IF_WT_HAS_A_hhmm_FORMAT == "NO" ]]; then
             cat << EOF
     ERROR:
         Format of '-wt' flag is hh:mm 
 
-        Walltime : ${WT}
+        Walltime : $WT
 
 EOF
             exit
@@ -565,13 +609,13 @@ EOF
 # Set a universial name for multiple jobs
 
 function set_multijob_name_ {
-    if [[ -z ${TMPJOBNAME} ]]; then
+    if [[ -z $TMPJOBNAME ]]; then
         JOBNAME=${INFILE[0]%.*}_et_al
         JOBNAME=${JOBNAME##*/}
     else
-        JOBNAME=${TMPJOBNAME}
+        JOBNAME=$TMPJOBNAME
     fi
-    echo "Name of the multi-job SLURM file : ${JOBNAME}.slurm"
+    echo "Name of the multi-job SLURM file : $JOBNAME.slurm"
 }
 
 # Instruction for -name flag
@@ -625,8 +669,8 @@ EOF
 
     print_HOWTO_NAME_
     print_HOWTO_SETFILE_
-    print_HOWTO_ND_
-    # print_HOWTO_MEM_
+    print_HOWTO_NDCTG_
+    print_HOWTO_MEM_
     print_HOWTO_EXELABEL_
     print_HOWTO_INFILE_
     print_HOWTO_REFNAME_
@@ -640,8 +684,8 @@ function generate_subfile_ {
     check_executable_
     get_subtemplate_
     get_subinfo_
-    cat << EOF > ${JOBNAME}.${SUB_EXT}
-${TEMPT}
+    cat << EOF > "$JOBNAME"."$SUB_EXT"
+$TEMPT
 EOF
 
     # Calculate the timeout for calculations and calculate total walltime
@@ -650,79 +694,81 @@ EOF
     for time in ${WT[@]}; do
         thr=${time%:*}
         tmn=${time#*:}
-        tt=`echo "scale=0;${thr}*60+${tmn}+${tt}" | bc`
-        tout=`echo "scale=0;${thr}*60+${tmn}-${TOUT_PER_JOB}" | bc`
-        TOUT+=("${tout}m")
+        tt=$(( thr*60 + tmn + tt ))
+        tout=$(( thr*60 + tmn - TOUT_PER_JOB ))
+        TOUT+=("$tout"m)
     done
-    ttmn=`echo "scale=0; ${tt}%60" | bc`
-    tthr=`echo "scale=0; (${tt}-${ttmn})/60" | bc`
-    TWT=`echo "$(printf "%02d\n" ${tthr}):$(printf "%02d\n" ${ttmn}):00"`
+    ttmn=$((tt % 60))
+    tthr=$(( (tt - ttmn) / 60 ))
+    TWT="$(printf "%02d\n" "$tthr"):$(printf "%02d\n" "$ttmn"):00"
 
     # Generate job executation and post processing commands
     ############## Command template ################
-    # timeout ${TOUT} ${SCRIPTDIR}/${SCRIPT} -set ${SETFILE} -in ${INFILE} -ref ${REFNAME} -- ${MPICOMMAND} ${COMMAND} 
-    # ${SCRIPTDIR}/${POSCRIPT} -in ${INFILE} -set ${SETFILE}
+    # timeout $TOUT $SCRIPTDIR/$SCRIPT -set $SETFILE -in $INFILE -ref $REFNAME -- $MPICOMMAND $COMMAND 
+    # $SCRIPTDIR/$POSCRIPT -in $INFILE -set $SETFILE
     #
-    # if [[ -f ./${JOBNAME}.run ]];then
-    # chmod 755 ./${JOBNAME}.run
-    # ./${JOBNAME}.run
+    # if [[ -f ./$JOBNAME.run ]];then
+    # chmod 755 ./$JOBNAME.run
+    # ./$JOBNAME.run
     # fi
     ################################################
 
     GENSUB=''
     for (( i = 0; i < ${#INFILE[@]}; i++ )); do
-        GENSUB=`echo "${GENSUB}timeout ${TOUT[$i]} ${SCRIPTDIR}/${SCRIPT} -set ${SETFILE} -in ${INFILE[$i]} -ref ${REFNAME[$i]} -- '${MPICOMMAND[$i]} ${COMMAND[$i]}'\n"`
-        GENSUB=`echo "${GENSUB}${SCRIPTDIR}/${POSCRIPT} -in ${INFILE[$i]} -set ${SETFILE}\n"`
+        printf -v line 'timeout %s %s/%s -set %s -in %s -ref %s -- '\''%s %s'\''\n' "${TOUT[$i]}" "$SCRIPTDIR" "$SCRIPT" "$SETFILE" "${INFILE[$i]}" "${REFNAME[$i]}" "${MPICOMMAND[$i]}" "${COMMAND[$i]}"
+        GENSUB+=$line
+        printf -v line '%s/%s -in %s -set %s\n' "$SCRIPTDIR" "$POSCRIPT" "${INFILE[$i]}" "$SETFILE"
+        GENSUB+=$line
     done
 
     # Substitute SLURM setup variables in template 
     ## Gensub command might contain variables, must be printed first
     ## Compatibility
-    flag=`grep '${V_GENSUB}' ${JOBNAME}.${SUB_EXT}`
-    if [[ -z ${flag} ]]; then
-        echo -e "${GENSUB}" >> ${JOBNAME}.${SUB_EXT}
+    flag=$(grep '\${V_GENSUB}' "$JOBNAME"."$SUB_EXT")
+    if [[ -z $flag ]]; then
+        printf '%b' "$GENSUB" >> "$JOBNAME"."$SUB_EXT"
     else
-        sed -i "s|\${V_GENSUB}|${GENSUB}|g" ${JOBNAME}.${SUB_EXT}
+        sed -i "s|\${V_GENSUB}|$GENSUB|g" "$JOBNAME"."$SUB_EXT"
     fi
-    sed -i "s|\${V_JOBNAME}|${JOBNAME}|g" ${JOBNAME}.${SUB_EXT}
-    sed -i "s|\${V_ND}|${ND}|g" ${JOBNAME}.${SUB_EXT}
-    # sed -i "s|\${V_NCPU}|${NCPU}|g" ${JOBNAME}.${SUB_EXT}
-    # sed -i "s|\${V_MEM}|${MEM}GB|g" ${JOBNAME}.${SUB_EXT}
-    sed -i "s|\${V_PROC}|${PROC}|g" ${JOBNAME}.${SUB_EXT}
-    sed -i "s|\${V_TRED}|${TRED}|g" ${JOBNAME}.${SUB_EXT}
-    # sed -i "s|\${V_NGPU}|${NGPU}|g" ${JOBNAME}.${SUB_EXT}
-    # sed -i "s|\${V_TGPU}|${TGPU}|g" ${JOBNAME}.${SUB_EXT}
-    sed -i "s|\${V_TWT}|${TWT}|g" ${JOBNAME}.${SUB_EXT}
-    # sed -i "s|\${V_TPROC}|${TPROC}|g" ${JOBNAME}.${SUB_EXT}
-    sed -i "s|\${V_BUDGET}|${BUDGET}|g" ${JOBNAME}.${SUB_EXT}
-    sed -i "s|\${V_QOS}|${QOS}|g" ${JOBNAME}.${SUB_EXT}
-    sed -i "s|\${V_PARTITION}|${PARTITION}|g" ${JOBNAME}.${SUB_EXT}
+    sed -i "s|\${V_JOBNAME}|$JOBNAME|g" "$JOBNAME"."$SUB_EXT"
+    sed -i "s|\${V_ND}|$ND|g" "$JOBNAME"."$SUB_EXT"
+    # sed -i "s|\${V_NCPU}|$NCPU|g" "$JOBNAME"."$SUB_EXT"
+    sed -i "s|\${V_MEM}|"$MEM"GB|g" "$JOBNAME"."$SUB_EXT"
+    sed -i "s|\${V_PROC}|$PROC|g" "$JOBNAME"."$SUB_EXT"
+    sed -i "s|\${V_TRED}|$TRED|g" "$JOBNAME"."$SUB_EXT"
+    sed -i "s|\${V_NGPU}|$NGPU|g" "$JOBNAME"."$SUB_EXT"
+    # sed -i "s|\${V_TGPU}|$TGPU|g" "$JOBNAME"."$SUB_EXT"
+    sed -i "s|\${V_TWT}|$TWT|g" "$JOBNAME"."$SUB_EXT"
+    # sed -i "s|\${V_TPROC}|$TPROC|g" "$JOBNAME"."$SUB_EXT"
+    # sed -i "s|\${V_BUDGET}|$BUDGET|g" "$JOBNAME"."$SUB_EXT"
+    sed -i "s|\${V_QOS}|$QOS|g" "$JOBNAME"."$SUB_EXT"
+    sed -i "s|\${V_PARTITION}|$PARTITION|g" "$JOBNAME"."$SUB_EXT"
 }
 
 # check job execution scripts
 
 function check_scripts_ {
-    ls ${SCRIPTDIR}/${SCRIPT} > /dev/null 2>&1
+    ls $SCRIPTDIR/$SCRIPT > /dev/null 2>&1
     if [[ $? -ne 0 ]]; then
         cat << EOF
     ERROR:
         Job execution script not found.
 
-        Path          : ${SCRIPTDIR}/${SCRIPT}
-        Settings file : ${SETFILE}
+        Path          : $SCRIPTDIR/$SCRIPT
+        Settings file : $SETFILE
 
 EOF
         exit
     fi
 
-    ls ${SCRIPTDIR}/${POSCRIPT} > /dev/null 2>&1
+    ls $SCRIPTDIR/$POSCRIPT > /dev/null 2>&1
     if [[ $? -ne 0 ]]; then
         cat << EOF
     ERROR:
         Post processing script not found.
 
-        Path          : ${SCRIPTDIR}/${SCRIPT}
-        Settings file : ${SETFILE}
+        Path          : $SCRIPTDIR/$SCRIPT
+        Settings file : $SETFILE
 
 EOF
         exit
@@ -732,23 +778,23 @@ EOF
 # check executables
 
 function check_executable_ {
-    XDIR=`echo $(grep -w -A 1 'EXEDIR' ${SETFILE} | tail -1)`
+    XDIR=$(grep -w -A 1 'EXEDIR' "$SETFILE" | tail -1)
     for (( i = 0; i < ${#COMMAND[@]}; i++ )); do
         cmd=${COMMAND[$i]}
 
         # command existance
 
-        if [[ ${XDIR} == *'module load'* ]]; then
-            ${XDIR} > /dev/null 2>&1
+        if [[ $XDIR == *'module load'* ]]; then
+            $XDIR > /dev/null 2>&1
             which ${cmd%% *} > /dev/null 2>&1
             if [[ $? -ne 0 ]]; then
                 cat << EOF
     ERROR:
         Simulation executable not found.
 
-        Command    : ${cmd}
+        Command    : $cmd
         Executable : ${cmd%% *}
-        Module     : ${XDIR}
+        Module     : $XDIR
 
 EOF
                 exit
@@ -757,17 +803,17 @@ EOF
             # substitute jobname
 
             inpname=${INFILE[$i]%.*}
-            COMMAND[$i]=`echo "${cmd}" | sed "s/\[job.*\]/${inpname}/g"`
+            COMMAND[$i]=$(printf '%s' "$cmd" | sed "s/\[job.*\]/$inpname/g")
         else
-            ls ${XDIR}/${cmd%% *} > /dev/null 2>&1 
+            ls $XDIR/${cmd%% *} > /dev/null 2>&1 
             if [[ $? -ne 0 ]]; then
                 cat << EOF
     ERROR:
         Simulation command not found.
 
-        Command    : ${cmd}
+        Command    : $cmd
         Executable : ${cmd%% *}
-        Directory  : ${XDIR}
+        Directory  : $XDIR
 
 EOF
                 exit
@@ -776,7 +822,7 @@ EOF
             # substitute jobname
 
             inpname=${INFILE[$i]%.*}
-            COMMAND[$i]=`echo "${XDIR}/${cmd}" | sed "s/\[job.*\]/${inpname}/g"`
+            COMMAND[$i]=$(printf '%s' "$XDIR/$cmd" | sed "s/\[job.*\]/$inpname/g")
         fi
 
     done
@@ -796,39 +842,29 @@ function get_subinfo_ {
 
     # extension for submission file
 
-    SUB_EXT=`echo $(grep -w -A 1 'SUBMISSION_EXT' ${SETFILE} | tail -1)`
+    SUB_EXT=$(grep -w -A 1 'SUBMISSION_EXT' "$SETFILE" | tail -1)
     SUB_EXT=${SUB_EXT#*.}
 
-    # number of GPUs per node
+    # # type of GPUs
 
-    # NGPU=`echo $(grep -w -A 1 'NGPU_PER_NODE' ${SETFILE} | tail -1)`
-    # if [[ ${NGPU} -eq 0 ]]; then
-    #     NGPU=""
-    #     TGPU=""
-    # else
-    #     NGPU=`echo ":ngpus=${NGPU}"`
-
-    # # type of GPUs per node
-
-    #     TGPU=`echo $(grep -w -A 1 'GPU_TYPE' ${SETFILE} | tail -1)`
-    #     TGPU=`echo ":gpu_type=${TGPU}"`
+    #     TGPU=$(grep -w -A 1 'GPU_TYPE' "$SETFILE" | tail -1)
     # fi
 
     # Time spared for post processing
 
-    TOUT_PER_JOB=`echo $(grep -w -A 1 'TIME_OUT' ${SETFILE} | tail -1)`
+    TOUT_PER_JOB=$(grep -w -A 1 'TIME_OUT' "$SETFILE" | tail -1)
 
-    # Budget code
+    # # Budget code
 
-    BUDGET=`echo $(grep -w -A 1 'BUDGET_CODE' ${SETFILE} | tail -1)`
+    # BUDGET=$(grep -w -A 1 'BUDGET_CODE' "$SETFILE" | tail -1)
 
     # QOS
 
-    QOS=`echo $(grep -w -A 1 'QOS' ${SETFILE} | tail -1)`
+    QOS=$(grep -w -A 1 'QOS' "$SETFILE" | tail -1)
 
     # Partition of service
 
-    PARTITION=`echo $(grep -w -A 1 'PARTITION' ${SETFILE} | tail -1)`
+    PARTITION=$(grep -w -A 1 'PARTITION' "$SETFILE" | tail -1)
 }
 
 # get submission file template and necessary information
@@ -837,43 +873,43 @@ function get_subtemplate_ {
 
     # template file
 
-    BG_TEMP=`grep -nw 'JOB_SUBMISSION_TEMPLATE' ${SETFILE}`
-    BG_TEMP=`echo "scale=0;${BG_TEMP%%:*}+2" | bc`
+    BG_TEMP=$(grep -nw 'JOB_SUBMISSION_TEMPLATE' "$SETFILE")
+    BG_TEMP=$(( ${BG_TEMP%%:*}+2 ))
 
-    line_endflag=${BG_TEMP}
-    endflag=`awk NR==${line_endflag}'{print}' ${SETFILE}`
+    line_endflag=$BG_TEMP
+    endflag=$(sed -n "$line_endflag"p "$SETFILE")
 
-    while [[ ${endflag} != '------------'* ]]; do
-        line_endflag=`echo "scale=0;${line_endflag}+1" | bc`
-        endflag=`awk NR==${line_endflag}'{print}' ${SETFILE}`
+    while [[ $endflag != '------------'* ]]; do
+        line_endflag=$(( line_endflag + 1 ))
+        endflag=$(sed -n "$line_endflag"p "$SETFILE")
     done
 
-    ED_TEMP=`echo "scale=0;${line_endflag}-1" | bc`
-    TEMPT=`sed -n "${BG_TEMP},${ED_TEMP}p" ${SETFILE}`
+    ED_TEMP=$(( line_endflag - 1 ))
+    TEMPT=$(sed -n "$BG_TEMP","$ED_TEMP"p "$SETFILE")
 }
 
 # Main I/O function
 in_var="header "$@""
-SCRIPTDIR=`dirname $0`
+SCRIPTDIR=$(dirname "$0")
 
 get_input_
 generate_subfile_
 
 cat << EOF
-File ${JOBNAME}.${SUB_EXT} has been generated.
+File "$JOBNAME"."$SUB_EXT" has been generated.
 
 Job information:
 ----------------------------------------------------------------
-    SLURM file                    = ${JOBNAME}.${SUB_EXT}
-    Job submission script         = ${SCRIPTDIR}/${SCRIPT}
-    Post processing script        = ${SCRIPTDIR}/${POSCRIPT}
-    Settings script               = ${SETFILE}
-    Number of nodes               = ${ND}
-    Commands                      = ${COMMAND[@]}
-    Input directory               = ${INPDIR}
-    Input file(s)                 = ${INFILE[@]}
-    Readl running walltime        = ${TOUT[@]}
-    Reference job(s)              = ${REFNAME[@]}
+    SLURM file                    = "$JOBNAME"."$SUB_EXT"
+    Job submission script         = "$SCRIPTDIR"/$SCRIPT"
+    Post processing script        = "$SCRIPTDIR"/"$POSCRIPT"
+    Settings script               = "$SETFILE"
+    Number of nodes               = "$ND"
+    Commands                      = "${COMMAND[@]}"
+    Input directory               = "$INPDIR"
+    Input file(s)                 = "${INFILE[@]}"
+    Readl running walltime        = "${TOUT[@]}"
+    Reference job(s)              = "${REFNAME[@]}"
 ----------------------------------------------------------------
 EOF
 

@@ -5,22 +5,20 @@
 function print_ALIAS_HOWTO_ {
     cat << EOF
     -------------------------------------------
-    ARCHER2 Quantum-Esppresso 7 job submission script HOWTO
+    Imperial HPC GULP6 job submitter HOWTO
     -------------------------------------------
     Use 'source ~/.bashrc' to activate pre-defined
     commands
 
     Pre-defined commands
-        PWqe7    : Run parallel crystal calculations
-        PHqe7    : Run OpenMP parallel crystal calculations
-        CPqe7    : Run massive parallel crystal calculations
-        PPqe7    : Run OpenMP massive parallel crystal calculations
-        Xqe7     : Run user defined commands (Advanced)
-        SETqe7   : Quick reference of settings file
-        HELPqe7  : Print help file
+        Pglp6    : Run parallel GULP calculations
+        Xglp6    : Run user defined commands (Advanced)
+        SETglp6  : Quick reference of settings file
+        HELPglp6 : Print help file
 
     Example code:
-        PWqe7 -in mgo.in -wt 02:00 -nd 2
+        Pglp6 -in mgo.gin -wt 02:00 -nd 1
+        Xglp6 -name free-energy -nd 1 -x pgulp -in 0k0g.gin -wt 00:30 -x pgulp -in 100k0g.gin -wt 00:30
 
 EOF
 }
