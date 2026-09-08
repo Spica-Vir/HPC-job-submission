@@ -34,8 +34,11 @@ export OMP_PLACES=cores
 
 module purge
 # start calculation: command added below by gen_sub
-timeout 4m /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/run_exec -set /home/zhouhuanyu/etc/runVASP6/settings -in fccSi.in -ref no -- 'unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std'
+timeout 4m /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/run_exec -set /home/zhouhuanyu/etc/runVASP6/settings -in fccSi.in -ref no -- 'export UCX_WARN_UNUSED_ENV_VARS=n; mpirun -np 4 vasp_std'
 /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/post_proc -in fccSi.in -set /home/zhouhuanyu/etc/runVASP6/settings
-timeout 4m /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/run_exec -set /home/zhouhuanyu/etc/runVASP6/settings -in fccSi_band.in -ref fccSi -- 'unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std'
+timeout 4m /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/run_exec -set /home/zhouhuanyu/etc/runVASP6/settings -in fccSi_band.in -ref fccSi -- 'export UCX_WARN_UNUSED_ENV_VARS=n; mpirun -np 4 vasp_std'
 /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/post_proc -in fccSi_band.in -set /home/zhouhuanyu/etc/runVASP6/settings
 
+
+sed -i '/Warning: ieee/d' *.out
+sed -i '/FORTRAN STOP/d' *.out

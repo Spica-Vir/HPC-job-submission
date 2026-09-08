@@ -42,9 +42,9 @@ EXE_TABLE                                                               [jobname
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 LABEL      MPI & OPTION                                                 EXECUTABLE & OPTION                                          DEFINITION
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-std        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_std                                                     Standard parallel VASP
-ncl        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_ncl                                                     Non-collinear parallel VASP
-gam        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_gam                                                     Gamma-only parallel VASP
+std        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun -np ${V_TPROC}     vasp_std                                                     Standard parallel VASP
+ncl        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun -np ${V_TPROC}     vasp_ncl                                                     Non-collinear parallel VASP
+gam        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun -np ${V_TPROC}     vasp_gam                                                     Gamma-only parallel VASP
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -137,5 +137,7 @@ export OMP_PLACES=cores
 module purge
 # start calculation: command added below by gen_sub
 ${V_GENSUB}
-----------------------------------------------------------------------------------------
 
+sed -i '/Warning: ieee/d' *.out
+sed -i '/FORTRAN STOP/d' *.out
+----------------------------------------------------------------------------------------

@@ -1,10 +1,10 @@
 Running Job Report
 --------------------------------------------
-DATE START : Tue Sep  8 15:41:02 CST 2026
+DATE START : Tue Sep  8 15:56:47 CST 2026
 
 Pre-Calc Summary
 --------------------------------------------
-  date:                Tue Sep  8 15:41:02 CST 2026
+  date:                Tue Sep  8 15:56:47 CST 2026
   hostname:            cn01
   system:              Linux cn01 5.14.0-570.25.1.el9_6.x86_64 #1 SMP PREEMPT_DYNAMIC Mon Jul 7 18:09:10 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
   user:                zhouhuanyu
@@ -12,16 +12,16 @@ Pre-Calc Summary
   QOS:                 short
   input:               /home/zhouhuanyu/testVASP/
   output:              /home/zhouhuanyu/testVASP/fccSi.out
-  temporary directory: /scratch/zhouhuanyu/fccSi_562191
+  temporary directory: /scratch/zhouhuanyu/fccSi_562196
   executable script:   /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/run_exec
   executable dir:      module load vasp/6.6.0-nvhpc26.5-cuda13.2-vtst-ioptcell
-  mpi + exe command:    unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std
+  mpi + exe command:    export UCX_WARN_UNUSED_ENV_VARS=n; mpirun -np 4 vasp_std
 -------------------------------------------
 
 SLURM Job Status
 -------------------------------------------
                JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
-            562191    normal fccSi_ba zhouhuan  R       0:24      1 cn01
+            562196    normal fccSi_ba zhouhuan  R       0:03      1 cn01
 -------------------------------------------
 
 Find input data: /home/zhouhuanyu/testVASP/fccSi.in
@@ -33,15 +33,15 @@ All files are synchonised.
 Job Ready to Go
 -------------------------------------------
   Job name               : fccSi
-  ID                     : 562191
-  Command                :  unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std >> /home/zhouhuanyu/testVASP/fccSi.out 2>&1
-  Temporary dir          : /scratch/zhouhuanyu/fccSi_562191
+  ID                     : 562196
+  Command                :  export UCX_WARN_UNUSED_ENV_VARS=n; mpirun -np 4 vasp_std >> /home/zhouhuanyu/testVASP/fccSi.out 2>&1
+  Temporary dir          : /scratch/zhouhuanyu/fccSi_562196
   List of files (Node 0) : total 3
--rw-r--r-- 1 zhouhuanyu zhouhuanyu     92 Sep  8 15:41 INCAR
--rw-r--r-- 1 zhouhuanyu zhouhuanyu   7904 Sep  8 15:41 Job_script_562191
--rw-r--r-- 1 zhouhuanyu zhouhuanyu     46 Sep  8 15:41 KPOINTS
--rw-r--r-- 1 zhouhuanyu zhouhuanyu     72 Sep  8 15:41 POSCAR
--rw-r--r-- 1 zhouhuanyu zhouhuanyu 156808 Sep  8 15:41 POTCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu     92 Sep  8 15:56 INCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu   7904 Sep  8 15:56 Job_script_562196
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu     46 Sep  8 15:56 KPOINTS
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu     72 Sep  8 15:56 POSCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 156808 Sep  8 15:56 POTCAR
   Input script           :
 general:
  System = fcc Si
@@ -50,14 +50,6 @@ general:
  ISMEAR = 0; SIGMA = 0.1;
 -------------------------------------------
 
-[1788853264.858847] [cn01:1561500:0]          parser.c:2359 UCX  WARN  unused environment variable: UCX_CUDA_IPC_ENABLE_MNNVL
-[1788853264.858847] [cn01:1561500:0]          parser.c:2359 UCX  WARN  (set UCX_WARN_UNUSED_ENV_VARS=n to suppress this warning)
-[1788853264.858847] [cn01:1561501:0]          parser.c:2359 UCX  WARN  unused environment variable: UCX_CUDA_IPC_ENABLE_MNNVL
-[1788853264.858847] [cn01:1561501:0]          parser.c:2359 UCX  WARN  (set UCX_WARN_UNUSED_ENV_VARS=n to suppress this warning)
-[1788853264.858847] [cn01:1561503:0]          parser.c:2359 UCX  WARN  unused environment variable: UCX_CUDA_IPC_ENABLE_MNNVL
-[1788853264.858847] [cn01:1561503:0]          parser.c:2359 UCX  WARN  (set UCX_WARN_UNUSED_ENV_VARS=n to suppress this warning)
-[1788853264.858847] [cn01:1561502:0]          parser.c:2359 UCX  WARN  unused environment variable: UCX_CUDA_IPC_ENABLE_MNNVL
-[1788853264.858847] [cn01:1561502:0]          parser.c:2359 UCX  WARN  (set UCX_WARN_UNUSED_ENV_VARS=n to suppress this warning)
  running    4 mpi-ranks, with    1 threads/rank, on    1 nodes
  distrk:  each k-point on    4 cores,    1 groups
  distr:  one band on    1 cores,    4 groups
@@ -83,67 +75,47 @@ DAV:   7    -0.487740198962E+01    0.72798E-02   -0.89202E-03  1056   0.409E-01 
 DAV:   8    -0.487738471765E+01    0.17272E-04   -0.28841E-05  1064   0.347E-02
    1 F= -.48773847E+01 E0= -.48758538E+01  d E =-.306176E-02
  writing wavefunctions
-Warning: ieee_invalid is signaling
-Warning: ieee_divide_by_zero is signaling
-Warning: ieee_underflow is signaling
-Warning: ieee_inexact is signaling
-FORTRAN STOP
-Warning: ieee_invalid is signaling
-Warning: ieee_divide_by_zero is signaling
-Warning: ieee_underflow is signaling
-Warning: ieee_inexact is signaling
-FORTRAN STOP
-Warning: ieee_invalid is signaling
-Warning: ieee_divide_by_zero is signaling
-Warning: ieee_underflow is signaling
-Warning: ieee_inexact is signaling
-FORTRAN STOP
-Warning: ieee_invalid is signaling
-Warning: ieee_divide_by_zero is signaling
-Warning: ieee_underflow is signaling
-Warning: ieee_inexact is signaling
-FORTRAN STOP
 
-DATE END   : Tue Sep  8 15:41:06 CST 2026
+DATE END   : Tue Sep  8 15:56:49 CST 2026
 Script run_exec done.
 ============================================
 
 ============================================
 Post Processing Report
 --------------------------------------------
-Begining of post processing : Tue Sep  8 15:41:06 CST 2026
+Begining of post processing : Tue Sep  8 15:56:49 CST 2026
 --------------------------------------------
 List of saved files from NODE cn01
   TEMPORARY            SAVED
-  CHG                  fccSi.plt.chg                                         97052    Sep 8 15:41
-  CHGCAR               fccSi.chg                                             146387   Sep 8 15:41
-  CONTCAR              fccSi.opt.vasp                                        411      Sep 8 15:41
-  DOSCAR               fccSi.dos                                             11075    Sep 8 15:41
-  EIGENVAL             fccSi.eigen                                           20299    Sep 8 15:41
-  IBZKPT               fccSi.1bz.kpt                                         4257     Sep 8 15:41
-  OSZICAR              fccSi.oszi                                            832      Sep 8 15:41
+  CHG                  fccSi.plt.chg                                         97052    Sep 8 15:56
+  CHGCAR               fccSi.chg                                             146387   Sep 8 15:56
+  CONTCAR              fccSi.opt.vasp                                        411      Sep 8 15:56
+  DOSCAR               fccSi.dos                                             11075    Sep 8 15:56
+  EIGENVAL             fccSi.eigen                                           20299    Sep 8 15:56
+  IBZKPT               fccSi.1bz.kpt                                         4257     Sep 8 15:56
+  OSZICAR              fccSi.oszi                                            832      Sep 8 15:56
 WARNING! Duplicated file: fccSi.out is the latest and kept.
-  PCDAT                fccSi.corr                                            234      Sep 8 15:41
-  vasprun.xml          fccSi.xml                                             62394    Sep 8 15:41
-  WAVECAR              fccSi.wave                                            558624   Sep 8 15:41
-  XDATCAR              fccSi.traj.vasp                                       254      Sep 8 15:41
+  PCDAT                fccSi.corr                                            234      Sep 8 15:56
+  vasprun.xml          fccSi.xml                                             62394    Sep 8 15:56
+  WAVECAR              fccSi.wave                                            558624   Sep 8 15:56
+  XDATCAR              fccSi.traj.vasp                                       254      Sep 8 15:56
 --------------------------------------------
 
 Temporary Directory Disk Info
 --------------------------------------------
-  Temporary directory      : /scratch/zhouhuanyu/fccSi_562191
+  Temporary directory      : /scratch/zhouhuanyu/fccSi_562196
 
   Disk usage (df -h)
 Filesystem            Size  Used Avail Use% Mounted on
 172.16.0.10:/scratch   52T   18T   35T  35% /scratch
 
   Usage by folders (du -m)
-1	/scratch/zhouhuanyu/fccSi_562191
+1	/scratch/zhouhuanyu/fccSi_562196
 
   Detailed file list of Node 0(ls -l .)
     see /home/zhouhuanyu/testVASP/fccSi_band.log file
 --------------------------------------------
 
-End of post processing : Tue Sep  8 15:41:06 CST 2026
+End of post processing : Tue Sep  8 15:56:50 CST 2026
 Script post_proc done.
 ===========================================
