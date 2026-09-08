@@ -1,17 +1,20 @@
 #!/bin/bash
 
 # Basic input format
-# gen_sub -set setfile -x jobtype -in input -ref refname -nd ND -nc NC -nt NT -wt WT -- 
-# setfile : str, path to the settings file
-# jobtype : str, pcrys / mppcrys / scrys / pprop /sprop
-# ND      : int, optional, number of nodes
-# NC      : int, optional, total number of cores
-# NT      : int, optional, number of threads per process
-# NG      : int, optional, number of GPUs per node
-# MEM     : int, optional, memory request per node in GB
-# WT      : str, walltime in hh:mm
-# jobname : str, input .d12 or .d3 file
-# refname : str, optional, name of the previous run
+# gen_sub -set SETFILE -name JOBNAME -x EXELABEL -qos QOS -partition PARTITION -nd ND -nc NC -nt NT -ng NG -mem MEM -in INFILE -ref REFNAME -wt WT -- 
+# SETFILE   : str, path to the settings file that define the variables
+# JOBNAME   : str, optional, name of the job submission file (default: basename of the first input file)
+# EXELABEL  : str, executable lables; see the `LABEL` column of `EXE_TABLE`
+# QOS       : str, optional, quality of service (default: the first entry of `QOS`)
+# PARTITION : str, optional, job partition (default: the first entry of `PARTITION`)
+# ND        : int, optional, total number of nodes (default: 1)
+# NC        : int, optional, total number of cores (default: `ND * NCPU_PER_NODE`)
+# NT        : int, optional, number of threads per process (default: `NTHREAD_PER_PROC`)
+# NG        : int, optional, total number of GPUs (default: `ND * NGPU_PER_NODE`)
+# MEM       : int, optional, total memory request in GB (default: `ND * MEM_PER_NODE`)
+# WT        : str, walltime in `hh:mm`
+# INFILE    : str, input file
+# REFNAME   : str, optional, name of the previous run
 # The sequence of input parameters can be changed.
 
 # get inputs in command line style
@@ -57,7 +60,7 @@ EOF
         --wt )
             shift; WT+=($1) ;;
         --name )
-            shift; TMPJOBNAME=$1 ;;
+            shift; JOBNAME=$1 ;;
         -- )
             break ;;
         * )
@@ -688,11 +691,11 @@ EOF
 # Set a universial name for multiple jobs
 
 function set_multijob_name_ {
-    if [[ -z $TMPJOBNAME ]]; then
+    if [[ -z $JOBNAME ]]; then
         JOBNAME=${INFILE[0]%.*}_et_al
         JOBNAME=${JOBNAME##*/}
     else
-        JOBNAME=$TMPJOBNAME
+        JOBNAME=$JOBNAME
     fi
     echo "Name of the multi-job SLURM file : $JOBNAME.slurm"
 }
