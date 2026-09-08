@@ -124,7 +124,7 @@ $(df -h $JOBTMPDIR 2>&1)
 $(du -m $JOBTMPDIR 2>&1)
 
   Detailed file list of Node 0(ls -l .)
-    see $OUTDIR/$JOBNAME.log file
+    see $OUTDIR/${SLURM_JOB_NAME%.*}.log file
 EOF
 
 cat << EOF
@@ -151,7 +151,9 @@ else
     ${srun_flag}rm $JOBTMPDIR/Job_script_$SLURM_JOB_ID $JOBTMPDIR/Post_script_$SLURM_JOB_ID
 fi
 
-mv slurm-$SLURM_JOB_ID.out $JOBNAME.log
+if [[ -e slurm-$SLURM_JOB_ID.out ]]; then
+    mv slurm-$SLURM_JOB_ID.out ${SLURM_JOB_NAME%.*}.log
+fi
 
 exit
 
@@ -243,7 +245,7 @@ while [[ $TMP_NAME != '---------'* && $move_file == true ]]; do
         fi
         echo "$file $SAVED_NAME_REAL" | awk '{printf("  %-21s%-52s"),$1,$2}' 2>&1 | tee -a $OUTDIR/$OUTPUT
         ls -l $JOBTMPDIR/$file | awk '{printf("  %-8s %s %s %s\n"),$5,$6,$7,$8}' 2>&1 | tee -a $OUTDIR/$OUTPUT
-        mv $JOBTMPDIR/$file $OUTDIR/$SAVED_NAME_REAL
+        cp $JOBTMPDIR/$file $OUTDIR/$SAVED_NAME_REAL
     done
     # for empty files in subfolder
     if [[ ${SAVED_NAME: -1} == '/' && ! $(ls "$OUTDIR/$SAVED_NAME") ]]; then

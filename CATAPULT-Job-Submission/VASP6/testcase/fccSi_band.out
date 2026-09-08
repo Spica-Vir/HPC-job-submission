@@ -1,0 +1,128 @@
+Running Job Report
+--------------------------------------------
+DATE START : Tue Sep  8 12:16:25 CST 2026
+
+Pre-Calc Summary
+--------------------------------------------
+  date:                Tue Sep  8 12:16:25 CST 2026
+  hostname:            cn09
+  system:              Linux cn09 5.14.0-570.25.1.el9_6.x86_64 #1 SMP PREEMPT_DYNAMIC Mon Jul 7 18:09:10 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+  user:                zhouhuanyu
+  queue:               normal
+  QOS:                 short
+  input:               /home/zhouhuanyu/testVASP/
+  output:              /home/zhouhuanyu/testVASP/fccSi_band.out
+  temporary directory: /scratch/zhouhuanyu/fccSi_band_562149
+  executable script:   /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/run_exec
+  executable dir:      module load vasp/6.5.0-mkl
+  mpi + exe command:    unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std
+-------------------------------------------
+
+SLURM Job Status
+-------------------------------------------
+               JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+            562149    normal fccSi_ba zhouhuan  R       0:07      1 cn09
+-------------------------------------------
+
+Find input data: /home/zhouhuanyu/testVASP/fccSi_band.in
+Find input data: /home/zhouhuanyu/testVASP/fccSi_band.kpt
+Find input reference: /home/zhouhuanyu/testVASP/fccSi.chg
+Find input reference: /home/zhouhuanyu/testVASP/fccSi.opt.vasp
+Find input reference: /home/zhouhuanyu/testVASP/fccSi.pp
+Find input reference: /home/zhouhuanyu/testVASP/fccSi.wave
+All files are synchonised.
+
+Job Ready to Go
+-------------------------------------------
+  Job name               : fccSi_band
+  ID                     : 562149
+  Command                :  unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std >> /home/zhouhuanyu/testVASP/fccSi_band.out 2>&1
+  Temporary dir          : /scratch/zhouhuanyu/fccSi_band_562149
+  List of files (Node 0) : total 28
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 146385 Sep  8 12:16 CHGCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    110 Sep  8 12:16 INCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu   7904 Sep  8 12:16 Job_script_562149
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    325 Sep  8 12:16 KPOINTS
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    409 Sep  8 12:16 POSCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 156808 Sep  8 12:16 POTCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 558624 Sep  8 12:16 WAVECAR
+  Input script           :
+general:
+ System = fcc Si 
+ ICHARG=11 #charge read file
+ ENCUT  =    240
+ ISMEAR = 0; SIGMA = 0.1;
+ LORBIT=11
+-------------------------------------------
+
+ running    4 mpi-ranks, on    1 nodes
+ distrk:  each k-point on    4 cores,    1 groups
+ distr:  one band on    1 cores,    4 groups
+ vasp.6.5.0 16Dec24 (build Jun 22 2025 20:26:12) complex                        
+  
+ POSCAR found type information on POSCAR Si
+ POSCAR found :  1 types and       1 ions
+ scaLAPACK will be used
+ LDA part: xc-table for (Slater+PW92), standard interpolation
+ found WAVECAR, reading the header
+  number of k-points has changed, file:    56 present:    40
+  trying to continue reading WAVECAR, but it might fail
+ WARNING: stress and forces are not correct
+ POSCAR, INCAR and KPOINTS ok, starting setup
+ FFT: planning ... GRIDC
+ FFT: planning ... GRID_SOFT
+ FFT: planning ... GRID
+ reading WAVECAR
+ the WAVECAR file was read successfully
+ charge-density read from file: fcc                                     
+ entering main loop
+       N       E                     dE             d eps       ncg     rms          rms(c)
+DAV:   1    -0.523497021698E+01   -0.52350E+01   -0.15765E+02   904   0.196E+01
+DAV:   2    -0.535882114683E+01   -0.12385E+00   -0.12383E+00   760   0.570E+00
+DAV:   3    -0.535915936141E+01   -0.33821E-03   -0.33822E-03   976   0.181E-01
+DAV:   4    -0.535915941444E+01   -0.53024E-07   -0.53446E-07   720   0.179E-03
+   1 F= -.53591594E+01 E0= -.53590768E+01  d E =-.165312E-03
+ writing wavefunctions
+
+DATE END   : Tue Sep  8 12:16:27 CST 2026
+Script run_exec done.
+============================================
+
+============================================
+Post Processing Report
+--------------------------------------------
+Begining of post processing : Tue Sep  8 12:16:27 CST 2026
+--------------------------------------------
+List of saved files from NODE cn09
+  TEMPORARY            SAVED
+  CHG                  fccSi_band.plt.chg                                    97050    Sep 8 12:16
+  CHGCAR               fccSi_band.chg                                        146385   Sep 8 12:16
+  CONTCAR              fccSi_band.opt.vasp                                   409      Sep 8 12:16
+  DOSCAR               fccSi_band.dos                                        47263    Sep 8 12:16
+  EIGENVAL             fccSi_band.eigen                                      14553    Sep 8 12:16
+  OSZICAR              fccSi_band.oszi                                       473      Sep 8 12:16
+WARNING! Duplicated file: fccSi_band.out is the latest and kept.
+  PCDAT                fccSi_band.corr                                       234      Sep 8 12:16
+  vasprun.xml          fccSi_band.xml                                        151540   Sep 8 12:16
+  WAVECAR              fccSi_band.wave                                       399648   Sep 8 12:16
+  XDATCAR              fccSi_band.traj.vasp                                  247      Sep 8 12:16
+--------------------------------------------
+
+Temporary Directory Disk Info
+--------------------------------------------
+  Temporary directory      : /scratch/zhouhuanyu/fccSi_band_562149
+
+  Disk usage (df -h)
+Filesystem            Size  Used Avail Use% Mounted on
+172.16.0.10:/scratch   52T   18T   35T  35% /scratch
+
+  Usage by folders (du -m)
+1	/scratch/zhouhuanyu/fccSi_band_562149
+
+  Detailed file list of Node 0(ls -l .)
+    see /home/zhouhuanyu/testVASP/fccSi_band.log file
+--------------------------------------------
+
+End of post processing : Tue Sep  8 12:16:28 CST 2026
+Script post_proc done.
+===========================================

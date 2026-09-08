@@ -12,17 +12,16 @@ NTHREAD_PER_PROC
  1
 
 NGPU_PER_NODE
- 0
 
 GPU_TYPE
 
 BUDGET_CODE
 
 QOS
-normal
+normal short interactive
 
 PARTITION
-normal
+normal gpu
 
 TIME_OUT
 1
@@ -53,46 +52,48 @@ PRE_CALC    [jobname]    [jobname]/[refname]
 -----------------------------------------------------------------------------------
 SAVED                TEMPORARY            DEFINITION
 -----------------------------------------------------------------------------------
-[job].in.h5          vaspin.h5            Input file in H5 format
-[job].pp             POTCAR               Pseudopotential file
-[job].kpt            KPOINTS              K point grid
 [job].in             INCAR                Input parameters
 [job].vasp           POSCAR               Geometry input
+[job].kpt            KPOINTS              K point grid
+[job].pp             POTCAR               Pseudopotential file
+[job].in.h5          vaspin.h5            Input file in H5 format
 -----------------------------------------------------------------------------------
 
 REF_FILE    [refname]    [jobname]/[refname]
 -----------------------------------------------------------------------------------
 KEYWORD              TEMPORATY            DEFINITION
 -----------------------------------------------------------------------------------
-[ref].wave.h5        vaspwave.h5          Wavefunction file in H5 format
-[ref].wave           WAVECAR              Wavefunction file
 [ref].chg            CHGCAR               Charge density file
+[ref].opt.vasp       POSCAR               Optimized atomic positions
+[ref].pp             POTCAR               Pseudopotential file
+[ref].wave           WAVECAR              Wavefunction file
+[ref].wave.h5        vaspwave.h5          Wavefunction file in H5 format
 -----------------------------------------------------------------------------------
 
 POST_CALC   [jobname]    [jobname]
 -----------------------------------------------------------------------------------
 SAVED                TEMPORARY            DEFINITION
 -----------------------------------------------------------------------------------
-[job].traj.vasp      XDATCAR              Ionic configuration for each output step of MD
-[job].dwave          WAVEDER              Derivative of wave functions with respect to k point
-[job].wave.h5        vaspwave.h5          Wavefunction file in H5 format
-[job].wave           WAVECAR              Wavefunction file
-[job].out.h5         vaspout.h5           Output file in H5 format
-[job].xml            vasprun.xml          Output file in XML format
-[job].tmp            TMPCAR               Temporary file
-[job].md.out         REPORT               MD output
-[job].corr           PCDAT                Pair correlation function
-[job].par.chg        PARCHG               Partial charge densities
-[job].out            OUTCAR               Output file
-[job].oszi           OSZICAR              Information on each electronic and ionic SCF step
-[job].pot            LOCPOT               Local potential file
-[job].1bz.kpt        IBZKPT               Explicit 1st Brillouin zone k-points
-[job].elf            ELFCAR               Electron localization function file
-[job].eigen          EIGENVAL             Eigenvalue file
-[job].dos            DOSCAR               Density of states file
-[job].opt.vasp       CONTCAR              Optimized atomic positions
-[job].chg            CHGCAR               Charge density file
 [job].plt.chg        CHG                  Charge density file for visualization
+[job].chg            CHGCAR               Charge density file
+[job].opt.vasp       CONTCAR              Optimized atomic positions
+[job].dos            DOSCAR               Density of states file
+[job].eigen          EIGENVAL             Eigenvalue file
+[job].elf            ELFCAR               Electron localization function file
+[job].1bz.kpt        IBZKPT               Explicit 1st Brillouin zone k-points
+[job].pot            LOCPOT               Local potential file
+[job].oszi           OSZICAR              Information on each electronic and ionic SCF step
+[job].out            OUTCAR               Output file
+[job].par.chg        PARCHG               Partial charge densities
+[job].corr           PCDAT                Pair correlation function
+[job].md.out         REPORT               MD output
+[job].tmp            TMPCAR               Temporary file
+[job].xml            vasprun.xml          Output file in XML format
+[job].out.h5         vaspout.h5           Output file in H5 format
+[job].wave           WAVECAR              Wavefunction file
+[job].wave.h5        vaspwave.h5          Wavefunction file in H5 format
+[job].dwave          WAVEDER              Derivative of wave functions with respect to k point
+[job].traj.vasp      XDATCAR              Ionic configuration for each output step of MD
 -----------------------------------------------------------------------------------
                          
 

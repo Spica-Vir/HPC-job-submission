@@ -18,9 +18,9 @@
 
 function get_input_ {
 
-    # List of flags: -set, -x, -nd, -nc, -nt, -ng, -mem, -wt, -in, -ref, -name, -help. -mem is accepted but not used.
+    # List of flags: -set, -qos, -partition, -x, -nd, -nc, -nt, -ng, -mem, -wt, -in, -ref, -name, -help.
 
-    param_list=$(getopt -a -l help,x:,set:,nd:,nc:,nt:,ng:,mem:,wt:,in:,ref:,name: -n "$0" -- $in_var 2> /dev/null) 
+    param_list=$(getopt -a -l help,x:,set:,qos:,partition:,nd:,nc:,nt:,ng:,mem:,wt:,in:,ref:,name: -n "$0" -- $in_var 2> /dev/null) 
     cat << EOF
     INPUT parameters:
         $param_list
@@ -34,6 +34,10 @@ EOF
             print_HOWTO_; exit ;;
         --set )
             shift; SETFILE=$1 ;;
+        --qos )
+            shift; QOS=$1 ;;
+        --partition )
+            shift; PARTITION=$1 ;;
         --x ) 
             shift; EXELABEL+=($1) ;;
         --in ) 
@@ -70,6 +74,8 @@ EOF
     INPDIR=$(realpath ${INFILE[0]})
     INPDIR=${INPDIR%/*}
     check_SETFILE_
+    check_QOS_
+    check_PARTITION_
     check_EXELABEL_
     check_INFILE_
     if [[ ! -z $REFNAME ]]; then
@@ -95,11 +101,12 @@ Job setups:
     N CPU per node         = $NCPU
     N threads              = $TRED
     N GPU                  = $NGPU (if a GPU queue is requested)
+    Memory per node        = $MEM GB
     Executable label(s)    = ${EXELABEL[@]}
     Commands               = ${COMMAND[@]}
     Input directory        = $INPDIR
     Input file(s)          = ${INFILE[@]}
-    Walltime               = ${WT[@]}
+    Walltime (hh:mm)       = ${WT[@]}
     Reference job(s)       = ${REFNAME[@]}
 ----------------------------------------------------------------
 EOF
@@ -129,6 +136,80 @@ function print_HOWTO_SETFILE_ {
     -set flag
 
     Set the path to the 'settings' file, mandatory.
+
+EOF
+}
+
+# Check quality of service
+
+function check_QOS_ {
+    qoslist=($(grep -w -A 1 'QOS' "$SETFILE" | tail -1 | xargs))
+
+    if [[ -z $QOS ]]; then
+        QOS=${qoslist[0]}
+    else
+        for q in ${qoslist[@]}; do
+            echo $QOS | grep -i -E "^$q$" > /dev/null 2>&1
+            if [[ $? -eq 0 ]]; then
+                return 0
+            fi
+        done
+        cat << EOF
+    ERROR:
+        Unknown Quality of Service specification. Check 'QOS' of $SETFILE.
+
+EOF
+        print_HOWTO_QOS_
+        exit
+    fi
+}
+
+# Instruction for -- qos
+
+function print_HOWTO_QOS_ {
+    cat << EOF
+    -------------------------------------------
+    -qos flag
+
+    Set the Quality of Service (QOS) for the job.
+    The first value of 'QOS' in the settings file is used as default.
+
+EOF
+}
+
+# Check job partition
+
+function check_PARTITION_ {
+    partlist=($(grep -w -A 1 'PARTITION' "$SETFILE" | tail -1 | xargs))
+
+    if [[ -z $PARTITION ]]; then
+        PARTITION=${partlist[0]}
+    else
+        for p in ${partlist[@]}; do
+            echo $PARTITION | grep -i -E "^$p$" > /dev/null 2>&1
+            if [[ $? -eq 0 ]]; then
+                return 0
+            fi
+        done
+        cat << EOF
+    ERROR: 
+        Unknown partition specification. Check 'PARTITION' of $SETFILE.
+
+EOF
+        print_HOWTO_PARTITION_
+        exit
+    fi
+}
+
+# Instruction for -- partition
+
+function print_HOWTO_PARTITION_ {
+    cat << EOF
+    -------------------------------------------
+    -partition flag
+
+    Set the partition for the job.
+    The first value of 'PARTITION' in the settings file is used as default.
 
 EOF
 }
@@ -667,6 +748,8 @@ EOF
 
     print_HOWTO_NAME_
     print_HOWTO_SETFILE_
+    print_HOWTO_QOS_
+    print_HOWTO_PARTITION_
     print_HOWTO_NDCTG_
     print_HOWTO_MEM_
     print_HOWTO_EXELABEL_
@@ -733,10 +816,10 @@ EOF
     sed -i "s|\${V_PROC}|$PROC|g" "$JOBNAME"."$SUB_EXT"
     sed -i "s|\${V_TRED}|$TRED|g" "$JOBNAME"."$SUB_EXT"
     sed -i "s|\${V_NGPU}|$NGPU|g" "$JOBNAME"."$SUB_EXT"
-    # sed -i "s|\${V_TGPU}|$TGPU|g" "$JOBNAME"."$SUB_EXT"
+    sed -i "s|\${V_TGPU}|$TGPU|g" "$JOBNAME"."$SUB_EXT"
     sed -i "s|\${V_TWT}|$TWT|g" "$JOBNAME"."$SUB_EXT"
     sed -i "s|\${V_TPROC}|$TPROC|g" "$JOBNAME"."$SUB_EXT"
-    # sed -i "s|\${V_BUDGET}|$BUDGET|g" "$JOBNAME"."$SUB_EXT"
+    sed -i "s|\${V_BUDGET}|$BUDGET|g" "$JOBNAME"."$SUB_EXT"
     sed -i "s|\${V_QOS}|$QOS|g" "$JOBNAME"."$SUB_EXT"
     sed -i "s|\${V_PARTITION}|$PARTITION|g" "$JOBNAME"."$SUB_EXT"
 }
@@ -841,26 +924,17 @@ function get_subinfo_ {
     SUB_EXT=$(grep -w -A 1 'SUBMISSION_EXT' "$SETFILE" | tail -1 | xargs)
     SUB_EXT=${SUB_EXT#*.}
 
-    # # type of GPUs
+    # type of GPUs
 
-    #     TGPU=$(grep -w -A 1 'GPU_TYPE' "$SETFILE" | tail -1 | xargs)
-    # fi
+    TGPU=$(grep -w -A 1 'GPU_TYPE' "$SETFILE" | tail -1 | xargs)
 
     # Time spared for post processing
 
     TOUT_PER_JOB=$(grep -w -A 1 'TIME_OUT' "$SETFILE" | tail -1 | xargs)
 
-    # # Budget code
+    # Budget code
 
-    # BUDGET=$(grep -w -A 1 'BUDGET_CODE' "$SETFILE" | tail -1 | xargs)
-
-    # QOS
-
-    QOS=$(grep -w -A 1 'QOS' "$SETFILE" | tail -1 | xargs)
-
-    # Partition of service
-
-    PARTITION=$(grep -w -A 1 'PARTITION' "$SETFILE" | tail -1 | xargs)
+    BUDGET=$(grep -w -A 1 'BUDGET_CODE' "$SETFILE" | tail -1 | xargs)
 }
 
 # get submission file template and necessary information

@@ -205,10 +205,10 @@ function set_settings {
     sed -i "/NCPU_PER_NODE/a\96" $SETFILE
     sed -i "/MEM_PER_NODE/a\384" $SETFILE
     sed -i "/NTHREAD_PER_PROC/a\ 1" $SETFILE
-    sed -i "/NGPU_PER_NODE/a\ 0" $SETFILE
+    # sed -i "/NGPU_PER_NODE/a\ 1" $SETFILE
     # sed -i "/BUDGET_CODE/a\ $BUDGET_CODE" $SETFILE
-    sed -i "/QOS/a\normal" $SETFILE
-    sed -i "/PARTITION/a\normal" $SETFILE
+    sed -i "/QOS/a\normal short interactive" $SETFILE
+    sed -i "/PARTITION/a\normal gpu" $SETFILE
     sed -i "/TIME_OUT/a\1" $SETFILE
     sed -i "/JOB_TMPDIR/a\ $HOME/scratch" $SETFILE
     sed -i "/EXEDIR/a\ $EXEDIR" $SETFILE
@@ -219,54 +219,61 @@ function set_settings {
     LINE_EXE=$(grep -nw 'EXE_TABLE' $SETFILE)
     LINE_EXE=$(( ${LINE_EXE%%:*}+3 ))
     # Use unset I_MPI_PMI_LIBRARY to suppress Intel MPI warnings
-    sed -i "${LINE_EXE}a\gam        unset I_MPI_PMI_LIBRARY; mpirun -np \${V_TPROC}               vasp_gam                                                     Gamma-only parallel VASP" $SETFILE
-    sed -i "${LINE_EXE}a\ncl        unset I_MPI_PMI_LIBRARY; mpirun -np \${V_TPROC}               vasp_ncl                                                     Non-collinear parallel VASP" $SETFILE
-    sed -i "${LINE_EXE}a\std        unset I_MPI_PMI_LIBRARY; mpirun -np \${V_TPROC}               vasp_std                                                     Standard parallel VASP" $SETFILE
+    sed -i "$LINE_EXE"a'\
+std        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_std                                                     Standard parallel VASP\
+ncl        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_ncl                                                     Non-collinear parallel VASP\
+gam        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_gam                                                     Gamma-only parallel VASP' $SETFILE
+
     # Input file table
 
     LINE_PRE=$(grep -nw 'PRE_CALC' $SETFILE)
     LINE_PRE=$(( ${LINE_PRE%%:*}+3 ))
-    sed -i "${LINE_PRE}a\[job].vasp           POSCAR               Geometry input" $SETFILE
-    sed -i "${LINE_PRE}a\[job].in             INCAR                Input parameters" $SETFILE
-    sed -i "${LINE_PRE}a\[job].kpt            KPOINTS              K point grid" $SETFILE
-    sed -i "${LINE_PRE}a\[job].pp             POTCAR               Pseudopotential file" $SETFILE
-    sed -i "${LINE_PRE}a\[job].in.h5          vaspin.h5            Input file in H5 format" $SETFILE
+    sed -i "$LINE_PRE"a'\
+[job].in             INCAR                Input parameters\
+[job].vasp           POSCAR               Geometry input\
+[job].kpt            KPOINTS              K point grid\
+[job].pp             POTCAR               Pseudopotential file\
+[job].in.h5          vaspin.h5            Input file in H5 format' $SETFILE
 
     # Reference file table
 
     LINE_REF=$(grep -nw 'REF_FILE' $SETFILE)
     LINE_REF=$(( ${LINE_REF%%:*}+3 ))
-    sed -i "${LINE_REF}a\[ref].chg            CHGCAR               Charge density file" $SETFILE
-    sed -i "${LINE_REF}a\[ref].wave           WAVECAR              Wavefunction file" $SETFILE
-    sed -i "${LINE_REF}a\[ref].wave.h5        vaspwave.h5          Wavefunction file in H5 format" $SETFILE
+    sed -i "$LINE_REF"a'\
+[ref].chg            CHGCAR               Charge density file\
+[ref].opt.vasp       POSCAR               Optimized atomic positions\
+[ref].pp             POTCAR               Pseudopotential file\
+[ref].wave           WAVECAR              Wavefunction file\
+[ref].wave.h5        vaspwave.h5          Wavefunction file in H5 format' $SETFILE
 
     # Post-processing file table
 
     LINE_POST=$(grep -nw 'POST_CALC' $SETFILE)
     LINE_POST=$(( ${LINE_POST%%:*}+3 ))
-
-    sed -i "${LINE_POST}a\[job].plt.chg        CHG                  Charge density file for visualization" $SETFILE
-    sed -i "${LINE_POST}a\[job].chg            CHGCAR               Charge density file" $SETFILE
-    sed -i "${LINE_POST}a\[job].opt.vasp       CONTCAR              Optimized atomic positions" $SETFILE
-    sed -i "${LINE_POST}a\[job].dos            DOSCAR               Density of states file" $SETFILE
-    sed -i "${LINE_POST}a\[job].eigen          EIGENVAL             Eigenvalue file" $SETFILE
-    sed -i "${LINE_POST}a\[job].elf            ELFCAR               Electron localization function file" $SETFILE
-    sed -i "${LINE_POST}a\[job].1bz.kpt        IBZKPT               Explicit 1st Brillouin zone k-points" $SETFILE
-    sed -i "${LINE_POST}a\[job].pot            LOCPOT               Local potential file" $SETFILE
-    sed -i "${LINE_POST}a\[job].oszi           OSZICAR              Information on each electronic and ionic SCF step" $SETFILE
-    sed -i "${LINE_POST}a\[job].out            OUTCAR               Output file" $SETFILE
-    sed -i "${LINE_POST}a\[job].par.chg        PARCHG               Partial charge densities" $SETFILE
-    sed -i "${LINE_POST}a\[job].corr           PCDAT                Pair correlation function" $SETFILE
-    sed -i "${LINE_POST}a\[job].md.out         REPORT               MD output" $SETFILE
-    sed -i "${LINE_POST}a\[job].tmp            TMPCAR               Temporary file" $SETFILE
-    sed -i "${LINE_POST}a\[job].xml            vasprun.xml          Output file in XML format" $SETFILE
-    sed -i "${LINE_POST}a\[job].out.h5         vaspout.h5           Output file in H5 format" $SETFILE
-    sed -i "${LINE_POST}a\[job].wave           WAVECAR              Wavefunction file" $SETFILE
-    sed -i "${LINE_POST}a\[job].wave.h5        vaspwave.h5          Wavefunction file in H5 format" $SETFILE
-    sed -i "${LINE_POST}a\[job].dwave          WAVEDER              Derivative of wave functions with respect to k point" $SETFILE
-    sed -i "${LINE_POST}a\[job].traj.vasp      XDATCAR              Ionic configuration for each output step of MD" $SETFILE
+    sed -i "$LINE_POST"a'\
+[job].plt.chg        CHG                  Charge density file for visualization\
+[job].chg            CHGCAR               Charge density file\
+[job].opt.vasp       CONTCAR              Optimized atomic positions\
+[job].dos            DOSCAR               Density of states file\
+[job].eigen          EIGENVAL             Eigenvalue file\
+[job].elf            ELFCAR               Electron localization function file\
+[job].1bz.kpt        IBZKPT               Explicit 1st Brillouin zone k-points\
+[job].pot            LOCPOT               Local potential file\
+[job].oszi           OSZICAR              Information on each electronic and ionic SCF step\
+[job].out            OUTCAR               Output file\
+[job].par.chg        PARCHG               Partial charge densities\
+[job].corr           PCDAT                Pair correlation function\
+[job].md.out         REPORT               MD output\
+[job].tmp            TMPCAR               Temporary file\
+[job].xml            vasprun.xml          Output file in XML format\
+[job].out.h5         vaspout.h5           Output file in H5 format\
+[job].wave           WAVECAR              Wavefunction file\
+[job].wave.h5        vaspwave.h5          Wavefunction file in H5 format\
+[job].dwave          WAVEDER              Derivative of wave functions with respect to k point\
+[job].traj.vasp      XDATCAR              Ionic configuration for each output step of MD' $SETFILE
 
     # Job submission file template - should be placed at the end of file
+
     cat << EOF >> $SETFILE
 ----------------------------------------------------------------------------------------
 #!/bin/bash

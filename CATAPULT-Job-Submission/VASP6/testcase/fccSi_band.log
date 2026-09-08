@@ -1,0 +1,296 @@
+============================================
+SLURM Job Report
+--------------------------------------------
+  Start Date : Tue Sep  8 12:16:21 CST 2026
+  SLURM Job ID : 562149
+  Status
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+            562149    normal fccSi_ba zhouhuan  R       0:03      1 cn09
+============================================
+
+Printed output filename /home/zhouhuanyu/testVASP/fccSi.out
+Loading modulefiles version 2021.11
+MPI command:  unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std
+Temporary directory : /scratch/zhouhuanyu/fccSi_562149
+============================================
+Job Executation Report
+--------------------------------------------
+Job Executation Script
+--------------------------------------------
+/scratch/zhouhuanyu/fccSi_562149/Job_script_562149
+--------------------------------------------
+
+Running Job Report
+--------------------------------------------
+DATE START : Tue Sep  8 12:16:22 CST 2026
+
+SLURM NODEFILE Info
+--------------------------------------------
+cn09
+--------------------------------------------
+
+Pre-Calc Summary
+--------------------------------------------
+  date:                Tue Sep  8 12:16:22 CST 2026
+  hostname:            cn09
+  system:              Linux cn09 5.14.0-570.25.1.el9_6.x86_64 #1 SMP PREEMPT_DYNAMIC Mon Jul 7 18:09:10 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+  user:                zhouhuanyu
+  queue:               normal
+  QOS:                 short
+  input:               /home/zhouhuanyu/testVASP/
+  output:              /home/zhouhuanyu/testVASP/fccSi.out
+  temporary directory: /scratch/zhouhuanyu/fccSi_562149
+  executable script:   /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/run_exec
+  executable dir:      module load vasp/6.5.0-mkl
+  mpi + exe command:    unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std
+-------------------------------------------
+
+SLURM Job Status
+-------------------------------------------
+               JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+            562149    normal fccSi_ba zhouhuan  R       0:04      1 cn09
+-------------------------------------------
+
+Find input data: /home/zhouhuanyu/testVASP/fccSi.in
+Input fccSi.in copied as fccSi_562149/INCAR.
+Find input data: /home/zhouhuanyu/testVASP/fccSi.vasp
+Input fccSi.vasp copied as fccSi_562149/POSCAR.
+Find input data: /home/zhouhuanyu/testVASP/fccSi.kpt
+Input fccSi.kpt copied as fccSi_562149/KPOINTS.
+Find input data: /home/zhouhuanyu/testVASP/fccSi.pp
+Input fccSi.pp copied as fccSi_562149/POTCAR.
+All files are synchonised.
+
+Job Ready to Go
+-------------------------------------------
+  Job name               : fccSi
+  ID                     : 562149
+  Command                :  unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std >> /home/zhouhuanyu/testVASP/fccSi.out 2>&1
+  Temporary dir          : /scratch/zhouhuanyu/fccSi_562149
+  List of files (Node 0) : total 11
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu     92 Sep  8 12:16 INCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu   7904 Sep  8 12:16 Job_script_562149
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu     46 Sep  8 12:16 KPOINTS
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu     72 Sep  8 12:16 POSCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 156808 Sep  8 12:16 POTCAR
+  Input script           :
+general:
+ System = fcc Si
+ ISTART = 0 ; ICHARG=2
+ ENCUT  =    240
+ ISMEAR = 0; SIGMA = 0.1;
+-------------------------------------------
+
+Entering temporary directory...
+Launching the job...
+
+DATE END   : Tue Sep  8 12:16:24 CST 2026
+Script run_exec done.
+============================================
+
+============================================
+Post Processing Report
+--------------------------------------------
+Begining of post processing : Tue Sep  8 12:16:24 CST 2026
+Syncing local files to output dir from NODE cn09
+--------------------------------------------
+List of saved files from NODE cn09
+  TEMPORARY            SAVED
+  CHG                  fccSi.plt.chg                                         97050    Sep 8 12:16
+  CHGCAR               fccSi.chg                                             146385   Sep 8 12:16
+  CONTCAR              fccSi.opt.vasp                                        409      Sep 8 12:16
+  DOSCAR               fccSi.dos                                             11073    Sep 8 12:16
+  EIGENVAL             fccSi.eigen                                           20297    Sep 8 12:16
+  IBZKPT               fccSi.1bz.kpt                                         4257     Sep 8 12:16
+  OSZICAR              fccSi.oszi                                            832      Sep 8 12:16
+WARNING! Duplicated file: fccSi.out is the latest and kept.
+  PCDAT                fccSi.corr                                            234      Sep 8 12:16
+  vasprun.xml          fccSi.xml                                             61553    Sep 8 12:16
+  WAVECAR              fccSi.wave                                            558624   Sep 8 12:16
+  XDATCAR              fccSi.traj.vasp                                       247      Sep 8 12:16
+--------------------------------------------
+
+Temporary Directory Disk Info
+--------------------------------------------
+  Temporary directory      : /scratch/zhouhuanyu/fccSi_562149
+
+  Disk usage (df -h)
+Filesystem            Size  Used Avail Use% Mounted on
+172.16.0.10:/scratch   52T   18T   35T  35% /scratch
+
+  Usage by folders (du -m)
+1	/scratch/zhouhuanyu/fccSi_562149
+
+  Detailed file list of Node 0(ls -l .)
+    see /home/zhouhuanyu/testVASP/fccSi_band.log file
+total 905
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu  97050 Sep  8 12:16 CHG
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 146385 Sep  8 12:16 CHGCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    409 Sep  8 12:16 CONTCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu  11073 Sep  8 12:16 DOSCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu  20297 Sep  8 12:16 EIGENVAL
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu   4257 Sep  8 12:16 IBZKPT
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu     92 Sep  8 12:16 INCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu   7904 Sep  8 12:16 Job_script_562149
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu     46 Sep  8 12:16 KPOINTS
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    832 Sep  8 12:16 OSZICAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu  74370 Sep  8 12:16 OUTCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    234 Sep  8 12:16 PCDAT
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu     72 Sep  8 12:16 POSCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 156808 Sep  8 12:16 POTCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu   3620 Sep  8 12:16 Post_script_562149
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu      0 Sep  8 12:16 REPORT
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 558624 Sep  8 12:16 WAVECAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    247 Sep  8 12:16 XDATCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu  61553 Sep  8 12:16 vasprun.xml
+--------------------------------------------
+
+End of post processing : Tue Sep  8 12:16:25 CST 2026
+Script post_proc done.
+===========================================
+Printed output filename /home/zhouhuanyu/testVASP/fccSi_band.out
+Loading modulefiles version 2021.11
+MPI command:  unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std
+Temporary directory : /scratch/zhouhuanyu/fccSi_band_562149
+============================================
+Job Executation Report
+--------------------------------------------
+Job Executation Script
+--------------------------------------------
+/scratch/zhouhuanyu/fccSi_band_562149/Job_script_562149
+--------------------------------------------
+
+Running Job Report
+--------------------------------------------
+DATE START : Tue Sep  8 12:16:25 CST 2026
+
+SLURM NODEFILE Info
+--------------------------------------------
+cn09
+--------------------------------------------
+
+Pre-Calc Summary
+--------------------------------------------
+  date:                Tue Sep  8 12:16:25 CST 2026
+  hostname:            cn09
+  system:              Linux cn09 5.14.0-570.25.1.el9_6.x86_64 #1 SMP PREEMPT_DYNAMIC Mon Jul 7 18:09:10 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+  user:                zhouhuanyu
+  queue:               normal
+  QOS:                 short
+  input:               /home/zhouhuanyu/testVASP/
+  output:              /home/zhouhuanyu/testVASP/fccSi_band.out
+  temporary directory: /scratch/zhouhuanyu/fccSi_band_562149
+  executable script:   /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/run_exec
+  executable dir:      module load vasp/6.5.0-mkl
+  mpi + exe command:    unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std
+-------------------------------------------
+
+SLURM Job Status
+-------------------------------------------
+               JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+            562149    normal fccSi_ba zhouhuan  R       0:07      1 cn09
+-------------------------------------------
+
+Find input data: /home/zhouhuanyu/testVASP/fccSi_band.in
+Input fccSi_band.in copied as fccSi_band_562149/INCAR.
+Find input data: /home/zhouhuanyu/testVASP/fccSi_band.kpt
+Input fccSi_band.kpt copied as fccSi_band_562149/KPOINTS.
+Find input reference: /home/zhouhuanyu/testVASP/fccSi.chg
+Input fccSi.chg copied as fccSi_band_562149/CHGCAR.
+Find input reference: /home/zhouhuanyu/testVASP/fccSi.opt.vasp
+Input fccSi.opt.vasp copied as fccSi_band_562149/POSCAR.
+Find input reference: /home/zhouhuanyu/testVASP/fccSi.pp
+Input fccSi.pp copied as fccSi_band_562149/POTCAR.
+Find input reference: /home/zhouhuanyu/testVASP/fccSi.wave
+Input fccSi.wave copied as fccSi_band_562149/WAVECAR.
+All files are synchonised.
+
+Job Ready to Go
+-------------------------------------------
+  Job name               : fccSi_band
+  ID                     : 562149
+  Command                :  unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std >> /home/zhouhuanyu/testVASP/fccSi_band.out 2>&1
+  Temporary dir          : /scratch/zhouhuanyu/fccSi_band_562149
+  List of files (Node 0) : total 28
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 146385 Sep  8 12:16 CHGCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    110 Sep  8 12:16 INCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu   7904 Sep  8 12:16 Job_script_562149
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    325 Sep  8 12:16 KPOINTS
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    409 Sep  8 12:16 POSCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 156808 Sep  8 12:16 POTCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 558624 Sep  8 12:16 WAVECAR
+  Input script           :
+general:
+ System = fcc Si 
+ ICHARG=11 #charge read file
+ ENCUT  =    240
+ ISMEAR = 0; SIGMA = 0.1;
+ LORBIT=11
+-------------------------------------------
+
+Entering temporary directory...
+Launching the job...
+
+DATE END   : Tue Sep  8 12:16:27 CST 2026
+Script run_exec done.
+============================================
+
+============================================
+Post Processing Report
+--------------------------------------------
+Begining of post processing : Tue Sep  8 12:16:27 CST 2026
+Syncing local files to output dir from NODE cn09
+--------------------------------------------
+List of saved files from NODE cn09
+  TEMPORARY            SAVED
+  CHG                  fccSi_band.plt.chg                                    97050    Sep 8 12:16
+  CHGCAR               fccSi_band.chg                                        146385   Sep 8 12:16
+  CONTCAR              fccSi_band.opt.vasp                                   409      Sep 8 12:16
+  DOSCAR               fccSi_band.dos                                        47263    Sep 8 12:16
+  EIGENVAL             fccSi_band.eigen                                      14553    Sep 8 12:16
+  OSZICAR              fccSi_band.oszi                                       473      Sep 8 12:16
+WARNING! Duplicated file: fccSi_band.out is the latest and kept.
+  PCDAT                fccSi_band.corr                                       234      Sep 8 12:16
+  vasprun.xml          fccSi_band.xml                                        151540   Sep 8 12:16
+  WAVECAR              fccSi_band.wave                                       399648   Sep 8 12:16
+  XDATCAR              fccSi_band.traj.vasp                                  247      Sep 8 12:16
+--------------------------------------------
+
+Temporary Directory Disk Info
+--------------------------------------------
+  Temporary directory      : /scratch/zhouhuanyu/fccSi_band_562149
+
+  Disk usage (df -h)
+Filesystem            Size  Used Avail Use% Mounted on
+172.16.0.10:/scratch   52T   18T   35T  35% /scratch
+
+  Usage by folders (du -m)
+1	/scratch/zhouhuanyu/fccSi_band_562149
+
+  Detailed file list of Node 0(ls -l .)
+    see /home/zhouhuanyu/testVASP/fccSi_band.log file
+total 833
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu  97050 Sep  8 12:16 CHG
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 146385 Sep  8 12:16 CHGCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    409 Sep  8 12:16 CONTCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu  47263 Sep  8 12:16 DOSCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu  14553 Sep  8 12:16 EIGENVAL
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    110 Sep  8 12:16 INCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu   7904 Sep  8 12:16 Job_script_562149
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    325 Sep  8 12:16 KPOINTS
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    473 Sep  8 12:16 OSZICAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu  57721 Sep  8 12:16 OUTCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    234 Sep  8 12:16 PCDAT
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    409 Sep  8 12:16 POSCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 156808 Sep  8 12:16 POTCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu  69490 Sep  8 12:16 PROCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu   3620 Sep  8 12:16 Post_script_562149
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu      0 Sep  8 12:16 REPORT
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 399648 Sep  8 12:16 WAVECAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    247 Sep  8 12:16 XDATCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 151540 Sep  8 12:16 vasprun.xml
+--------------------------------------------
+
+End of post processing : Tue Sep  8 12:16:28 CST 2026
+Script post_proc done.
+===========================================
