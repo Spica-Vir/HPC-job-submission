@@ -1,27 +1,27 @@
 Running Job Report
 --------------------------------------------
-DATE START : Tue Sep  8 12:16:25 CST 2026
+DATE START : Tue Sep  8 15:41:06 CST 2026
 
 Pre-Calc Summary
 --------------------------------------------
-  date:                Tue Sep  8 12:16:25 CST 2026
-  hostname:            cn09
-  system:              Linux cn09 5.14.0-570.25.1.el9_6.x86_64 #1 SMP PREEMPT_DYNAMIC Mon Jul 7 18:09:10 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+  date:                Tue Sep  8 15:41:06 CST 2026
+  hostname:            cn01
+  system:              Linux cn01 5.14.0-570.25.1.el9_6.x86_64 #1 SMP PREEMPT_DYNAMIC Mon Jul 7 18:09:10 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
   user:                zhouhuanyu
   queue:               normal
   QOS:                 short
   input:               /home/zhouhuanyu/testVASP/
   output:              /home/zhouhuanyu/testVASP/fccSi_band.out
-  temporary directory: /scratch/zhouhuanyu/fccSi_band_562149
+  temporary directory: /scratch/zhouhuanyu/fccSi_band_562191
   executable script:   /home/zhouhuanyu/GitHub/HPC-job-submission/CATAPULT-Job-Submission/run_exec
-  executable dir:      module load vasp/6.5.0-mkl
+  executable dir:      module load vasp/6.6.0-nvhpc26.5-cuda13.2-vtst-ioptcell
   mpi + exe command:    unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std
 -------------------------------------------
 
 SLURM Job Status
 -------------------------------------------
                JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
-            562149    normal fccSi_ba zhouhuan  R       0:07      1 cn09
+            562191    normal fccSi_ba zhouhuan  R       0:28      1 cn01
 -------------------------------------------
 
 Find input data: /home/zhouhuanyu/testVASP/fccSi_band.in
@@ -35,17 +35,17 @@ All files are synchonised.
 Job Ready to Go
 -------------------------------------------
   Job name               : fccSi_band
-  ID                     : 562149
+  ID                     : 562191
   Command                :  unset I_MPI_PMI_LIBRARY; mpirun -np 4 vasp_std >> /home/zhouhuanyu/testVASP/fccSi_band.out 2>&1
-  Temporary dir          : /scratch/zhouhuanyu/fccSi_band_562149
+  Temporary dir          : /scratch/zhouhuanyu/fccSi_band_562191
   List of files (Node 0) : total 28
--rw-r--r-- 1 zhouhuanyu zhouhuanyu 146385 Sep  8 12:16 CHGCAR
--rw-r--r-- 1 zhouhuanyu zhouhuanyu    110 Sep  8 12:16 INCAR
--rw-r--r-- 1 zhouhuanyu zhouhuanyu   7904 Sep  8 12:16 Job_script_562149
--rw-r--r-- 1 zhouhuanyu zhouhuanyu    325 Sep  8 12:16 KPOINTS
--rw-r--r-- 1 zhouhuanyu zhouhuanyu    409 Sep  8 12:16 POSCAR
--rw-r--r-- 1 zhouhuanyu zhouhuanyu 156808 Sep  8 12:16 POTCAR
--rw-r--r-- 1 zhouhuanyu zhouhuanyu 558624 Sep  8 12:16 WAVECAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 146387 Sep  8 15:41 CHGCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    110 Sep  8 15:41 INCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu   7904 Sep  8 15:41 Job_script_562191
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    325 Sep  8 15:41 KPOINTS
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu    411 Sep  8 15:41 POSCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 156808 Sep  8 15:41 POTCAR
+-rw-r--r-- 1 zhouhuanyu zhouhuanyu 558624 Sep  8 15:41 WAVECAR
   Input script           :
 general:
  System = fcc Si 
@@ -55,15 +55,24 @@ general:
  LORBIT=11
 -------------------------------------------
 
- running    4 mpi-ranks, on    1 nodes
+[1788853268.373639] [cn01:1562092:0]          parser.c:2359 UCX  WARN  unused environment variable: UCX_CUDA_IPC_ENABLE_MNNVL
+[1788853268.373639] [cn01:1562092:0]          parser.c:2359 UCX  WARN  (set UCX_WARN_UNUSED_ENV_VARS=n to suppress this warning)
+[1788853268.373639] [cn01:1562090:0]          parser.c:2359 UCX  WARN  unused environment variable: UCX_CUDA_IPC_ENABLE_MNNVL
+[1788853268.373639] [cn01:1562090:0]          parser.c:2359 UCX  WARN  (set UCX_WARN_UNUSED_ENV_VARS=n to suppress this warning)
+[1788853268.373639] [cn01:1562089:0]          parser.c:2359 UCX  WARN  unused environment variable: UCX_CUDA_IPC_ENABLE_MNNVL
+[1788853268.373639] [cn01:1562089:0]          parser.c:2359 UCX  WARN  (set UCX_WARN_UNUSED_ENV_VARS=n to suppress this warning)
+[1788853268.373646] [cn01:1562091:0]          parser.c:2359 UCX  WARN  unused environment variable: UCX_CUDA_IPC_ENABLE_MNNVL
+[1788853268.373646] [cn01:1562091:0]          parser.c:2359 UCX  WARN  (set UCX_WARN_UNUSED_ENV_VARS=n to suppress this warning)
+ running    4 mpi-ranks, with    1 threads/rank, on    1 nodes
  distrk:  each k-point on    4 cores,    1 groups
  distr:  one band on    1 cores,    4 groups
- vasp.6.5.0 16Dec24 (build Jun 22 2025 20:26:12) complex                        
-  
+ vasp.6.6.0 06Mar2026 (build Jul 10 2026 14:02:08) complex                       
  POSCAR found type information on POSCAR Si
  POSCAR found :  1 types and       1 ions
- scaLAPACK will be used
+ scaLAPACK will be used selectively (only on CPU)
  LDA part: xc-table for (Slater+PW92), standard interpolation
+ POSCAR found type information on POSCAR Si
+ POSCAR found :  1 types and       1 ions
  found WAVECAR, reading the header
   number of k-points has changed, file:    56 present:    40
   trying to continue reading WAVECAR, but it might fail
@@ -74,55 +83,76 @@ general:
  FFT: planning ... GRID
  reading WAVECAR
  the WAVECAR file was read successfully
- charge-density read from file: fcc                                     
+ charge density read from file: CHGCAR, 
+ fcc                                     
  entering main loop
        N       E                     dE             d eps       ncg     rms          rms(c)
-DAV:   1    -0.523497021698E+01   -0.52350E+01   -0.15765E+02   904   0.196E+01
-DAV:   2    -0.535882114683E+01   -0.12385E+00   -0.12383E+00   760   0.570E+00
-DAV:   3    -0.535915936141E+01   -0.33821E-03   -0.33822E-03   976   0.181E-01
-DAV:   4    -0.535915941444E+01   -0.53024E-07   -0.53446E-07   720   0.179E-03
+DAV:   1    -0.523497020698E+01   -0.52350E+01   -0.15765E+02   904   0.196E+01
+DAV:   2    -0.535882114649E+01   -0.12385E+00   -0.12383E+00   760   0.570E+00
+DAV:   3    -0.535915936142E+01   -0.33821E-03   -0.33822E-03   976   0.181E-01
+DAV:   4    -0.535915941444E+01   -0.53022E-07   -0.53446E-07   720   0.179E-03
    1 F= -.53591594E+01 E0= -.53590768E+01  d E =-.165312E-03
  writing wavefunctions
+Warning: ieee_invalid is signaling
+Warning: ieee_divide_by_zero is signaling
+Warning: ieee_underflow is signaling
+Warning: ieee_inexact is signaling
+FORTRAN STOP
+Warning: ieee_invalid is signaling
+Warning: ieee_divide_by_zero is signaling
+Warning: ieee_underflow is signaling
+Warning: ieee_inexact is signaling
+FORTRAN STOP
+Warning: ieee_invalid is signaling
+Warning: ieee_divide_by_zero is signaling
+Warning: ieee_underflow is signaling
+Warning: ieee_inexact is signaling
+FORTRAN STOP
+Warning: ieee_invalid is signaling
+Warning: ieee_divide_by_zero is signaling
+Warning: ieee_underflow is signaling
+Warning: ieee_inexact is signaling
+FORTRAN STOP
 
-DATE END   : Tue Sep  8 12:16:27 CST 2026
+DATE END   : Tue Sep  8 15:41:09 CST 2026
 Script run_exec done.
 ============================================
 
 ============================================
 Post Processing Report
 --------------------------------------------
-Begining of post processing : Tue Sep  8 12:16:27 CST 2026
+Begining of post processing : Tue Sep  8 15:41:09 CST 2026
 --------------------------------------------
-List of saved files from NODE cn09
+List of saved files from NODE cn01
   TEMPORARY            SAVED
-  CHG                  fccSi_band.plt.chg                                    97050    Sep 8 12:16
-  CHGCAR               fccSi_band.chg                                        146385   Sep 8 12:16
-  CONTCAR              fccSi_band.opt.vasp                                   409      Sep 8 12:16
-  DOSCAR               fccSi_band.dos                                        47263    Sep 8 12:16
-  EIGENVAL             fccSi_band.eigen                                      14553    Sep 8 12:16
-  OSZICAR              fccSi_band.oszi                                       473      Sep 8 12:16
+  CHG                  fccSi_band.plt.chg                                    97052    Sep 8 15:41
+  CHGCAR               fccSi_band.chg                                        146387   Sep 8 15:41
+  CONTCAR              fccSi_band.opt.vasp                                   411      Sep 8 15:41
+  DOSCAR               fccSi_band.dos                                        47265    Sep 8 15:41
+  EIGENVAL             fccSi_band.eigen                                      14555    Sep 8 15:41
+  OSZICAR              fccSi_band.oszi                                       473      Sep 8 15:41
 WARNING! Duplicated file: fccSi_band.out is the latest and kept.
-  PCDAT                fccSi_band.corr                                       234      Sep 8 12:16
-  vasprun.xml          fccSi_band.xml                                        151540   Sep 8 12:16
-  WAVECAR              fccSi_band.wave                                       399648   Sep 8 12:16
-  XDATCAR              fccSi_band.traj.vasp                                  247      Sep 8 12:16
+  PCDAT                fccSi_band.corr                                       234      Sep 8 15:41
+  vasprun.xml          fccSi_band.xml                                        152381   Sep 8 15:41
+  WAVECAR              fccSi_band.wave                                       399648   Sep 8 15:41
+  XDATCAR              fccSi_band.traj.vasp                                  254      Sep 8 15:41
 --------------------------------------------
 
 Temporary Directory Disk Info
 --------------------------------------------
-  Temporary directory      : /scratch/zhouhuanyu/fccSi_band_562149
+  Temporary directory      : /scratch/zhouhuanyu/fccSi_band_562191
 
   Disk usage (df -h)
 Filesystem            Size  Used Avail Use% Mounted on
 172.16.0.10:/scratch   52T   18T   35T  35% /scratch
 
   Usage by folders (du -m)
-1	/scratch/zhouhuanyu/fccSi_band_562149
+1	/scratch/zhouhuanyu/fccSi_band_562191
 
   Detailed file list of Node 0(ls -l .)
     see /home/zhouhuanyu/testVASP/fccSi_band.log file
 --------------------------------------------
 
-End of post processing : Tue Sep  8 12:16:28 CST 2026
+End of post processing : Tue Sep  8 15:41:09 CST 2026
 Script post_proc done.
 ===========================================

@@ -15,6 +15,10 @@ function print_ALIAS_HOWTO_ {
         Pvasp6_g   : Run parallel Gamma-only VASP calculations
         Pvasp6_nc  : Run parallel non-collinear VASP calculations
         Xvasp6     : Run user defined commands (Advanced)
+        Gvasp6     : Run parallel standard VASP calculations on GPU
+        Gvasp6_g   : Run parallel Gamma-only VASP calculations on GPU
+        Gvasp6_nc  : Run parallel non-collinear VASP calculations on GPU
+        XGvasp6     : Run user defined commands on GPU (Advanced)
         SETvasp6   : Quick reference of settings file
         HELPvasp6  : Print help file
 

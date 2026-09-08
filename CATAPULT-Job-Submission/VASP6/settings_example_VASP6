@@ -9,9 +9,10 @@ MEM_PER_NODE
 384
 
 NTHREAD_PER_PROC
- 1
+1
 
 NGPU_PER_NODE
+1
 
 GPU_TYPE
 
@@ -32,7 +33,7 @@ JOB_TMPDIR
 
 # Executables
 EXEDIR
- module load vasp/6.5.0-mkl
+ module load vasp/6.6.0-nvhpc26.5-cuda13.2-vtst-ioptcell
 
 MPIDIR
  
@@ -111,6 +112,7 @@ JOB_SUBMISSION_TEMPLATE
 # Replace [budget code] below with your full project code
 #SBATCH --partition=${V_PARTITION}
 #SBATCH --qos=${V_QOS}
+#SBATCH --gres=gpu:${V_NGPU}
 #SBATCH --export=none
 
 echo "============================================"

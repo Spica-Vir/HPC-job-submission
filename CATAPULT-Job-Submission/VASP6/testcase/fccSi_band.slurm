@@ -10,6 +10,7 @@
 # Replace [budget code] below with your full project code
 #SBATCH --partition=normal
 #SBATCH --qos=short
+#SBATCH --gres=gpu:0
 #SBATCH --export=none
 
 echo "============================================"

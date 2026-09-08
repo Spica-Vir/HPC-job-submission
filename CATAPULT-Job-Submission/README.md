@@ -12,13 +12,18 @@ Here the configuration of 'VASP6' is used as the example.
 
 Upper case letter(s) for job definition + lower case letters for executable + version number
 
-| COMMAND     | FLAGS                                                  | DEFINITION                                               |
-|:------------|:------------------------------------------------------:|:---------------------------------------------------------|
-| `Pvasp6`    | -in -nd -nc -nt -mem -wt -ref -qos -partition          | Run parallel VASP6 standard version                      |
-| `Pvasp6_nc` | -in -nd -nc -nt -mem -wt -ref -qos -partition          | Run parallel VASP6 non-collinear version                 |
-| `Xvasp6`    | -x -name -in -nd -nc -nt -mem -wt -ref -qos -partition | Run user-defined multiple jobs (see advanced section)    |
-| `SETvasp6`  | No flag                                                | Print the local (user-defined) 'settings' file on screen |
-| `HELPvasp6` | No flag                                                | Print instructions on screen                             |
+| COMMAND     | FLAGS                                                  | DEFINITION                                                   |
+|:------------|:------------------------------------------------------:|:-------------------------------------------------------------|
+| `Pvasp6`    | -in -nd -nc -nt -mem -wt -ref -qos -partition          | Run parallel VASP6 standard version                          |
+| `Pvasp6_nc` | -in -nd -nc -nt -mem -wt -ref -qos -partition          | Run parallel VASP6 non-collinear version                     |
+| `Pvasp6_g`  | -in -nd -nc -nt -mem -wt -ref -qos -partition          | Run parallel VASP6 Gamma-only version                        |
+| `Xvasp6`    | -x -name -in -nd -nc -nt -mem -wt -ref -qos -partition | Run user-defined multiple jobs (see advanced section)        |
+| `Gvasp6`    | -in -nd -nc -nt -mem -wt -ref -qos                     | Run parallel VASP6 standard version on GPU                   |
+| `Gvasp6_nc` | -in -nd -nc -nt -mem -wt -ref -qos                     | Run parallel VASP6 non-collinear version on GPU              |
+| `Gvasp6_g`  | -in -nd -nc -nt -mem -wt -ref -qos                     | Run parallel VASP6 Gamma-only version on GPU                 |
+| `XGvasp6`   | -x -name -in -nd -nc -nt -mem -wt -ref -qos            | Run user-defined multiple jobs on GPU (see advanced section) |
+| `SETvasp6`  | No flag                                                | Print the local (user-defined) 'settings' file on screen     |
+| `HELPvasp6` | No flag                                                | Print instructions on screen                                 |
 
 ### Command-line flags
 
@@ -401,6 +406,10 @@ module load vasp/6.5.0-mkl (shared module)
 **Commands**  
 
 `Pvasp6` `Pvasp6_g` `Pvasp6_nc` `Xvasp6` `SETvasp6` `HELPvasp6`
+
+The following commands are defined for GPU VASP, but are invaild with the default executable:
+
+`Gvasp6` `Gvasp6_g` `Gvasp6_nc` `XGvasp6`
 
 **Command used for testcase**
 

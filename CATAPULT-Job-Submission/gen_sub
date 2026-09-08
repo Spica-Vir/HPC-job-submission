@@ -103,7 +103,7 @@ Job setups:
     Number of nodes        = $ND
     N CPU per node         = $NCPU
     N threads              = $TRED
-    N GPU                  = $NGPU (if a GPU queue is requested)
+    N GPU                  = $NGPU
     Memory per node        = $MEM GB
     Executable label(s)    = ${EXELABEL[@]}
     Commands               = ${COMMAND[@]}
@@ -526,7 +526,7 @@ EOF
 
     # Check ng
 
-    if [[ -z $DNGPU ]]; then
+    if [[ -z $DNGPU || $PARTITION != "gpu" ]]; then
         NGPU=0
         return 0
     fi

@@ -204,8 +204,8 @@ function set_settings {
     sed -i "/SUBMISSION_EXT/a\.slurm" $SETFILE
     sed -i "/NCPU_PER_NODE/a\96" $SETFILE
     sed -i "/MEM_PER_NODE/a\384" $SETFILE
-    sed -i "/NTHREAD_PER_PROC/a\ 1" $SETFILE
-    # sed -i "/NGPU_PER_NODE/a\ 1" $SETFILE
+    sed -i "/NTHREAD_PER_PROC/a\1" $SETFILE
+    sed -i "/NGPU_PER_NODE/a\1" $SETFILE
     # sed -i "/BUDGET_CODE/a\ $BUDGET_CODE" $SETFILE
     sed -i "/QOS/a\normal short interactive" $SETFILE
     sed -i "/PARTITION/a\normal gpu" $SETFILE
@@ -288,6 +288,7 @@ gam        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_gam
 # Replace [budget code] below with your full project code
 #SBATCH --partition=\${V_PARTITION}
 #SBATCH --qos=\${V_QOS}
+#SBATCH --gres=gpu:\${V_NGPU}
 #SBATCH --export=none
 
 echo "============================================"
@@ -339,6 +340,10 @@ function set_commands {
     echo "alias Pvasp6_g='$CTRLDIR/gen_sub -x gam -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
     echo "alias Pvasp6_nc='$CTRLDIR/gen_sub -x ncl -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
     echo "alias Xvasp6='$CTRLDIR/gen_sub -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
+    echo "alias Gvasp6='$CTRLDIR/gen_sub -x std -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
+    echo "alias Gvasp6_g='$CTRLDIR/gen_sub -x gam -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
+    echo "alias Gvasp6_nc='$CTRLDIR/gen_sub -x ncl -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
+    echo "alias XGvasp6='$CTRLDIR/gen_sub -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
     echo "alias SETvasp6='cat $SCRIPTDIR/settings'" >> $HOME/.bashrc
     echo "alias HELPvasp6='source $CONFIGDIR/run_help gensub'" >> $HOME/.bashrc
     echo "chmod -R 'u+r+w+x' $CTRLDIR" >> $HOME/.bashrc
