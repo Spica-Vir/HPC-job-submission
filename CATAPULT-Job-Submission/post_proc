@@ -180,7 +180,7 @@ EOF
 if [[ -n "$OUTPUT_SOURCE" && "$OUTPUT_SOURCE" != "screen" ]]; then
     rm -f $OUTDIR/$JOBNAME.out
     cp -f $JOBTMPDIR/$OUTPUT_SOURCE $OUTDIR/$JOBNAME.out
-    echo "$OUTPUT_SOURCE $JOBNAME.out" | awk '{printf("  %-21s%-52s\n"),$1,$2}' 2>&1 | tee -a $OUTDIR/$OUTPUT
+    echo "$OUTPUT_SOURCE $JOBNAME.out" | awk '{printf("  %-21s%-52s"),$1,$2}' 2>&1 | tee -a $OUTDIR/$OUTPUT
     ls -l $JOBTMPDIR/$OUTPUT_SOURCE | awk '{printf("  %-8s %s %s %s\n"),$5,$6,$7,$8}' 2>&1 | tee -a $OUTDIR/$OUTPUT
 fi
 
