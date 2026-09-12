@@ -30,6 +30,9 @@ TIME_OUT
 JOB_TMPDIR
  /home/zhouhuanyu/scratch
 
+OUTPUT_SOURCE
+OUTCAR
+
 
 # Executables
 EXEDIR
@@ -42,9 +45,9 @@ EXE_TABLE                                                               [jobname
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 LABEL      MPI & OPTION                                                 EXECUTABLE & OPTION                                          DEFINITION
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-std        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun -np ${V_TPROC}     vasp_std                                                     Standard parallel VASP
-ncl        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun -np ${V_TPROC}     vasp_ncl                                                     Non-collinear parallel VASP
-gam        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun -np ${V_TPROC}     vasp_gam                                                     Gamma-only parallel VASP
+std        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun                    vasp_std                                                     Standard parallel VASP
+ncl        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun                    vasp_ncl                                                     Non-collinear parallel VASP
+gam        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun                    vasp_gam                                                     Gamma-only parallel VASP
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -84,7 +87,6 @@ SAVED                TEMPORARY            DEFINITION
 [job].1bz.kpt        IBZKPT               Explicit 1st Brillouin zone k-points
 [job].pot            LOCPOT               Local potential file
 [job].oszi           OSZICAR              Information on each electronic and ionic SCF step
-[job].out            OUTCAR               Output file
 [job].par.chg        PARCHG               Partial charge densities
 [job].corr           PCDAT                Pair correlation function
 [job].md.out         REPORT               MD output
@@ -141,3 +143,4 @@ ${V_GENSUB}
 sed -i '/Warning: ieee/d' *.out
 sed -i '/FORTRAN STOP/d' *.out
 ----------------------------------------------------------------------------------------
+

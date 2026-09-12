@@ -64,6 +64,7 @@ By default it is in the `${HOME}/etc/runVASP6/` directory.
 | `PARTITION`               | normal gpu               | Acceptable job partition. By default the code reads the first entry      |
 | `TIME_OUT`                | 1                        | Unit: min. Time spared for post processing                               |
 | `JOB_TMPDIR`              | \[depends\]              | The temporary directory for data files generated during a job            |
+| `OUTPUT_SOURCE`           | screen                   | The standard output source. Check the example of VASP if screen output is not the main source |
 | `EXEDIR`                  | \[depends\]              | Directory of executable / Module load command                            |
 | `MPIDIR`                  | -                        | Directory of MPI / Module load command, left empty if it is auto-loaded  |
 | `EXE_TABLE`               | \[Table\]                | Label (for -x flag) + MPI & executable option combinations               |
@@ -393,11 +394,11 @@ Several considerations suggested:
 
 module load vasp/6.5.0-mkl (shared module)
 
-| LABEL | ACTUAL IN-LINE COMMAND                                     |
-|:-----:|:-----------------------------------------------------------|
-| std   | unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC} vasp_std    | 
-| ncl   | unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC} vasp_std    |
-| gam   | unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC} vasp_std    |
+| LABEL | ACTUAL IN-LINE COMMAND                   |
+|:-----:|:-----------------------------------------|
+| std   | unset I_MPI_PMI_LIBRARY; mpirun vasp_std | 
+| ncl   | unset I_MPI_PMI_LIBRARY; mpirun vasp_std |
+| gam   | unset I_MPI_PMI_LIBRARY; mpirun vasp_std |
 
 **Default ephemeral directory**
 
@@ -416,3 +417,10 @@ The following commands are defined for GPU VASP, but are invaild with the defaul
 ``` console
 $ Xvasp6 -name fccSi_band -qos short -nc 4 -mem 8 -x std -in fccSi.in -wt 00:05 -ref no -x std -in fccSi_band.in -wt 00:05 -ref fccSi
 ```
+
+**Outputs**
+
+The VASP standard output to screen only contains information about computational setups and SCF iterations, which is saved as '.screen.out' files.
+The detailed information of calculations is printed into OUTCAR.
+Set `OUTPUT_SOURCE` as 'OUTCAR', then during the calcualtion, a soft link '.out' in job submission directory exists directing to OUTCAR in the temporary directory, which will be overwritten when the calcualtion terminates.
+

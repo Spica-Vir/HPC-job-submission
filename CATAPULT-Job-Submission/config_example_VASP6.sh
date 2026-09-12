@@ -131,7 +131,7 @@ EOF
     fi
 
     if [[ $EXEDIR == *'module load'* ]]; then
-        $EXEDIR > /dev/null 2>&1
+        bash -lc "$EXEDIR" > /dev/null 2>&1
         if [[ $? != 0 ]]; then
             cat << EOF
 --------------------------------------------------------------------------------
@@ -211,6 +211,7 @@ function set_settings {
     sed -i "/PARTITION/a\normal gpu" $SETFILE
     sed -i "/TIME_OUT/a\1" $SETFILE
     sed -i "/JOB_TMPDIR/a\ $HOME/scratch" $SETFILE
+    sed -i "/OUTPUT_SOURCE/a\OUTCAR" $SETFILE
     sed -i "/EXEDIR/a\ $EXEDIR" $SETFILE
     sed -i "/MPIDIR/a\ $MPIDIR" $SETFILE
 
@@ -220,9 +221,9 @@ function set_settings {
     LINE_EXE=$(( ${LINE_EXE%%:*}+3 ))
     # Use unset I_MPI_PMI_LIBRARY to suppress Intel MPI warnings
     sed -i "$LINE_EXE"a'\
-std        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_std                                                     Standard parallel VASP\
-ncl        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_ncl                                                     Non-collinear parallel VASP\
-gam        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_gam                                                     Gamma-only parallel VASP' $SETFILE
+std        unset I_MPI_PMI_LIBRARY; mpirun                              vasp_std                                                     Standard parallel VASP\
+ncl        unset I_MPI_PMI_LIBRARY; mpirun                              vasp_ncl                                                     Non-collinear parallel VASP\
+gam        unset I_MPI_PMI_LIBRARY; mpirun                              vasp_gam                                                     Gamma-only parallel VASP' $SETFILE
 
     # Input file table
 
@@ -260,7 +261,6 @@ gam        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_gam
 [job].1bz.kpt        IBZKPT               Explicit 1st Brillouin zone k-points\
 [job].pot            LOCPOT               Local potential file\
 [job].oszi           OSZICAR              Information on each electronic and ionic SCF step\
-[job].out            OUTCAR               Output file\
 [job].par.chg        PARCHG               Partial charge densities\
 [job].corr           PCDAT                Pair correlation function\
 [job].md.out         REPORT               MD output\

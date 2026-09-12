@@ -3,7 +3,7 @@ Width of columns: CODE - 21; VERSION - 11; DATE - 21; AUTHOR - 21; CONTACT - 31;
 -----------------------------------------------------------------------------------------------------------------------------------
 CODE                 VERSION    DATE                 AUTHOR               CONTACT                        ACKNOWLEDGEMENT
 -----------------------------------------------------------------------------------------------------------------------------------
-core                 v6.1       Sep.08, 26           Spica-Vir            BIT, spica.h.zhou@gmail.com    Based on IC-HPC script released by Spica-Vir, Mar.11, 22. Special thanks to G.Mallia and N.M.Harrison.
+core                 v6.2       Sep.12, 26           Spica-Vir            BIT, spica.h.zhou@gmail.com    Based on IC-HPC script released by Spica-Vir, Mar.11, 22. Special thanks to G.Mallia and N.M.Harrison.
 VASP6                v0.1       Sep.07, 26           Spica-Vir            BIT, spica.h.zhou@gmail.com
 GULP6                v0.1       Sep.07, 26           Spica-Vir            BIT, spica.h.zhou@gmail.com    Based on IC-HPC GULP6 script released by Spica-Vir.
 -----------------------------------------------------------------------------------------------------------------------------------
