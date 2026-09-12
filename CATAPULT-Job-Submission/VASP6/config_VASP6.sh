@@ -118,7 +118,7 @@ EOF
     read -p " " EXEDIR
 
     if [[ -z $EXEDIR ]]; then
-        EXEDIR='module load vasp/6.5.0-mkl'
+        EXEDIR='module load vasp/6.5.0-mkl; unset I_MPI_PMI_LIBRARY' # supress warnings from Intel MPI
     fi
 
     if [[ ! -d $EXEDIR && ($EXEDIR != *'module load'*) ]]; then
@@ -211,6 +211,7 @@ function set_settings {
     sed -i "/PARTITION/a\normal gpu" $SETFILE
     sed -i "/TIME_OUT/a\1" $SETFILE
     sed -i "/JOB_TMPDIR/a\ $HOME/scratch" $SETFILE
+    sed -i "/OUTPUT_SOURCE/a\OUTCAR" $SETFILE
     sed -i "/EXEDIR/a\ $EXEDIR" $SETFILE
     sed -i "/MPIDIR/a\ $MPIDIR" $SETFILE
 
@@ -220,9 +221,9 @@ function set_settings {
     LINE_EXE=$(( ${LINE_EXE%%:*}+3 ))
     # Use unset I_MPI_PMI_LIBRARY to suppress Intel MPI warnings
     sed -i "$LINE_EXE"a'\
-std        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_std                                                     Standard parallel VASP\
-ncl        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_ncl                                                     Non-collinear parallel VASP\
-gam        unset I_MPI_PMI_LIBRARY; mpirun -np ${V_TPROC}               vasp_gam                                                     Gamma-only parallel VASP' $SETFILE
+std        mpirun -np ${V_TPROC}                                        vasp_std                                                     Standard parallel VASP\
+ncl        mpirun -np ${V_TPROC}                                        vasp_ncl                                                     Non-collinear parallel VASP\
+gam        mpirun -np ${V_TPROC}                                        vasp_gam                                                     Gamma-only parallel VASP' $SETFILE
 
     # Input file table
 

@@ -32,7 +32,15 @@ function get_input_ {
 in_var="header "$@""
 get_input_
 OUTDIR=${JOBFILE%/*}
-OUTPUT=$JOBNAME.out
+OUTPUT_SOURCE=$(grep -w -A 1 'OUTPUT_SOURCE' "$SETFILE" | tail -1 | xargs)
+if [[ -n "$OUTPUT_SOURCE" && "$OUTPUT_SOURCE" != "screen" ]]; then
+    OUTPUT=$JOBNAME.screen.out
+    rm -f "$OUTDIR/$JOBNAME.out"
+    cp -f "$JOBTMPDIR/$OUTPUT_SOURCE" "$OUTDIR/$JOBNAME.out"
+else
+    OUTPUT=$JOBNAME.out
+fi
+
 if [[ ! -e $OUTDIR ]]; then
     echo "ERROR: Input/output dir does not exist: $OUTDIR" | tee -a $OUTDIR/$OUTPUT
     exit
@@ -168,6 +176,13 @@ cat << EOF | tee -a $OUTDIR/$OUTPUT
 List of saved files from NODE $(hostname)
   TEMPORARY            SAVED
 EOF
+
+# When screen output is not the main output, the actual output file has been copied 
+
+if [[ -n "$OUTPUT_SOURCE" && "$OUTPUT_SOURCE" != "screen" ]]; then
+    echo "$OUTPUT_SOURCE $JOBNAME.out" | awk '{printf("  %-21s%-52s\n"),$1,$2}' 2>&1 | tee -a $OUTDIR/$OUTPUT
+    ls -l $JOBTMPDIR/$OUTPUT_SOURCE | awk '{printf("  %-8s %s %s %s\n"),$5,$6,$7,$8}' 2>&1 | tee -a $OUTDIR/$OUTPUT
+fi
 
 # Read POST_CALC list
 

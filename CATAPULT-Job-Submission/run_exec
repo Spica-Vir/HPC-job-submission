@@ -53,7 +53,12 @@ get_input_
 # Input and output file directories
 
 OUTDIR=${JOBFILE%/*}
-OUTPUT=$JOBNAME.out
+OUTPUT_SOURCE=$(grep -w -A 1 'OUTPUT_SOURCE' "$SETFILE" | tail -1 | xargs)
+if [[ -n "$OUTPUT_SOURCE" && "$OUTPUT_SOURCE" != "screen" ]]; then
+    OUTPUT=$JOBNAME.screen.out
+else
+    OUTPUT=$JOBNAME.out
+fi
 
 if [[ -e $OUTDIR/$OUTPUT && -s $OUTDIR/$OUTPUT ]]; then
     echo "Warning! Output exists: $OUTDIR/$OUTPUT" | tee -a $OUTDIR/$OUTPUT
@@ -113,6 +118,13 @@ else # In a separate directory
 fi
 
 ${srun_flag}mkdir -p $JOBTMPDIR
+
+# Create a soft link to output file if the detailed info is not printed on screen
+
+if [[ -n "$OUTPUT_SOURCE" && "$OUTPUT_SOURCE" != "screen" ]]; then
+    : > "$JOBTMPDIR/$OUTPUT_SOURCE"
+    ln -sfn "$JOBTMPDIR/$OUTPUT_SOURCE" "$OUTDIR/$JOBNAME.out"
+fi
 
 # Create temporary copy of the script for execution
 

@@ -21,6 +21,8 @@ TIME_OUT
 
 JOB_TMPDIR
 
+OUTPUT_SOURCE
+
 
 # Executables
 EXEDIR
