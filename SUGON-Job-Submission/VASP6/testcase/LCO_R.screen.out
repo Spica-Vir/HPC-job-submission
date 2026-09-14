@@ -1,0 +1,220 @@
+Running Job Report
+--------------------------------------------
+DATE START : Mon 14 Sep 13:33:31 CST 2026
+
+Pre-Calc Summary
+--------------------------------------------
+  date:                Mon 14 Sep 13:33:31 CST 2026
+  hostname:            b01r05n03
+  system:              Linux b01r05n03 3.10.0-957.el7.x86_64 #1 SMP Fri Oct 25 22:34:08 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+  user:                huanyuzhou
+  queue:               xhhctdnormal
+  QOS:                 user_huanyuzhou
+  input:               /work/home/huanyuzhou/testVASP/
+  output:              /work/home/huanyuzhou/testVASP/LCO_R.screen.out
+  temporary directory: /work/share/acm4hzo7rg/HZhou/LCO_R_23937123
+  executable script:   /work/home/huanyuzhou/GitHub/HPC-job-submission/SUGON-Job-Submission/run_exec
+  executable dir:      /work/share/acm4hzo7rg/modules/vasp/6.4.2-gzbuild
+  mpi + exe command:    srun --mpi=pmi2 /work/share/acm4hzo7rg/modules/vasp/6.4.2-gzbuild/vasp_std
+-------------------------------------------
+
+SLURM Job Status
+-------------------------------------------
+               JOBID PARTITION      NAME           USER           ST       TIME  NODES NODELIST(REASON)
+          23937123 xhhctdnormal   LCO_R.slurm    huanyuzhou      R       0:01      1 b01r05n03
+-------------------------------------------
+
+Find input data: /work/home/huanyuzhou/testVASP/LCO_R.in
+Find input data: /work/home/huanyuzhou/testVASP/LCO_R.vasp
+Find input data: /work/home/huanyuzhou/testVASP/LCO_R.kpt
+Find input data: /work/home/huanyuzhou/testVASP/LCO_R.pp
+All files are synchonised.
+
+Job Ready to Go
+-------------------------------------------
+  Job name               : LCO_R
+  ID                     : 23937123
+  Command                :  srun --mpi=pmi2 /work/share/acm4hzo7rg/modules/vasp/6.4.2-gzbuild/vasp_std >> /work/home/huanyuzhou/testVASP/LCO_R.screen.out 2>&1
+  Temporary dir          : /work/share/acm4hzo7rg/HZhou/LCO_R_23937123
+  List of files (Node 0) : total 0
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg    507 Sep 14 13:33 INCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg   7904 Sep 14 13:33 Job_script_23937123
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg     63 Sep 14 13:33 KPOINTS
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg      0 Sep 14 13:33 OUTCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg    918 Sep 14 13:33 POSCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg 725363 Sep 14 13:33 POTCAR
+  Input script           :
+# set-ups
+
+SYSTEM = LaCoO3 rhombohedral LS single point
+LWAVE  = .FALSE.
+LCHARG = .FALSE.
+
+# SCF
+
+PREC    = Accurate
+ALGO    = Normal
+ENCUT   = 750
+EDIFF   = 1E-8
+NELM    = 200
+ISMEAR  = -5
+ISPIN   = 2
+MAGMOM  = 2*0 2*0 6*0
+NUPDOWN = 0
+LMAXMIX = 4
+
+# DFT
+
+GGA      = PS
+LDAU     = .TRUE.
+LDAUTYPE = 2
+LDAUL    = -1 2 -1
+LDAUU    = 0 4 0
+LDAUJ    = 0 0 0
+
+# PP
+
+LREAL   = .FALSE.
+LASPH   = .TRUE.
+ADDGRID = .TRUE.
+
+# struc
+
+ISYM   = 2
+IBRION = -1
+# ISIF   = 3
+# NSW    = 100
+# EDIFFG = -1E-3
+# POTIM  = 0.5
+-------------------------------------------
+
+srun: ROUTE: split_hostlist: hl=b01r05n03 tree_width 0
+srun: ROUTE: split_hostlist: hl=b01r05n03 tree_width 0
+srun: ROUTE: split_hostlist: hl=b01r05n03 tree_width 0
+srun: ROUTE: split_hostlist: hl=b01r05n03 tree_width 0
+ running   24 mpi-ranks, on    1 nodes
+ distrk:  each k-point on   24 cores,    1 groups
+ distr:  one band on    1 cores,   24 groups
+ vasp.6.4.2 20Jul23 (build Dec 08 2024 14:56:18) complex                        
+  
+ POSCAR found type information on POSCAR LaCoO 
+ POSCAR found :  3 types and      10 ions
+ scaLAPACK will be used
+ -----------------------------------------------------------------------------
+|                                                                             |
+|           W    W    AA    RRRRR   N    N  II  N    N   GGGG   !!!           |
+|           W    W   A  A   R    R  NN   N  II  NN   N  G    G  !!!           |
+|           W    W  A    A  R    R  N N  N  II  N N  N  G       !!!           |
+|           W WW W  AAAAAA  RRRRR   N  N N  II  N  N N  G  GGG   !            |
+|           WW  WW  A    A  R   R   N   NN  II  N   NN  G    G                |
+|           W    W  A    A  R    R  N    N  II  N    N   GGGG   !!!           |
+|                                                                             |
+|     For optimal performance we recommend to set                             |
+|       NCORE = 2 up to number-of-cores-per-socket                            |
+|     NCORE specifies how many cores store one orbital (NPAR=cpu/NCORE).      |
+|     This setting can greatly improve the performance of VASP for DFT.       |
+|     The default, NCORE=1 might be grossly inefficient on modern             |
+|     multi-core architectures or massively parallel machines. Do your        |
+|     own testing! More info at https://www.vasp.at/wiki/index.php/NCORE      |
+|     Unfortunately you need to use the default for GW and RPA                |
+|     calculations (for HF NCORE is supported but not extensively tested      |
+|     yet).                                                                   |
+|                                                                             |
+ -----------------------------------------------------------------------------
+
+ WARNING: PSMAXN for non-local potential too small
+ -----------------------------------------------------------------------------
+|                                                                             |
+|               ----> ADVICE to this user running VASP <----                  |
+|                                                                             |
+|     You enforced a specific xc type in the INCAR file but a different       |
+|     type was found in the POTCAR file.                                      |
+|     I HOPE YOU KNOW WHAT YOU ARE DOING!                                     |
+|                                                                             |
+ -----------------------------------------------------------------------------
+
+ LDA part: xc-table for Pade appr. of Perdew
+ POSCAR found type information on POSCAR LaCoO 
+ POSCAR found :  3 types and      10 ions
+ POSCAR, INCAR and KPOINTS ok, starting setup
+ FFT: planning ... GRIDC
+ FFT: planning ... GRID_SOFT
+ FFT: planning ... GRID
+ WAVECAR not read
+ entering main loop
+       N       E                     dE             d eps       ncg     rms          rms(c)
+DAV:   1     0.864094884808E+03    0.86409E+03   -0.53612E+04 12576   0.265E+03
+DAV:   2     0.248973020841E+02   -0.83920E+03   -0.70516E+03 10536   0.430E+02
+DAV:   3    -0.812315690714E+02   -0.10613E+03   -0.10044E+03 14232   0.147E+02
+DAV:   4    -0.866448312294E+02   -0.54133E+01   -0.54042E+01 15360   0.305E+01
+DAV:   5    -0.867837053680E+02   -0.13887E+00   -0.13876E+00 14736   0.366E+00    0.346E+01
+DAV:   6    -0.962402568318E+02   -0.94566E+01   -0.30054E+02 12672   0.808E+01    0.551E+01
+DAV:   7    -0.744236300517E+02    0.21817E+02   -0.18935E+02 11784   0.672E+01    0.105E+01
+DAV:   8    -0.748578763887E+02   -0.43425E+00   -0.73645E+00 14376   0.149E+01    0.512E+00
+DAV:   9    -0.751260181133E+02   -0.26814E+00   -0.29992E+00 14376   0.110E+01    0.461E+00
+DAV:  10    -0.750658196129E+02    0.60199E-01   -0.13876E+00 12336   0.858E+00    0.165E+00
+DAV:  11    -0.750943434537E+02   -0.28524E-01   -0.10818E-01 16824   0.204E+00    0.494E-01
+DAV:  12    -0.750967461941E+02   -0.24027E-02   -0.16059E-02 12456   0.535E-01    0.185E-01
+DAV:  13    -0.750969560216E+02   -0.20983E-03   -0.25500E-03 19848   0.218E-01    0.926E-02
+DAV:  14    -0.750971228451E+02   -0.16682E-03   -0.41500E-04 12960   0.900E-02    0.452E-02
+DAV:  15    -0.750971896634E+02   -0.66818E-04   -0.17819E-04 18384   0.556E-02    0.311E-02
+DAV:  16    -0.750972221662E+02   -0.32503E-04   -0.10799E-04 12312   0.366E-02    0.139E-02
+DAV:  17    -0.750972287685E+02   -0.66023E-05   -0.42368E-05 19752   0.261E-02    0.849E-03
+DAV:  18    -0.750972304318E+02   -0.16633E-05   -0.89893E-06 12456   0.100E-02    0.506E-03
+DAV:  19    -0.750972311410E+02   -0.70922E-06   -0.46218E-06 13512   0.867E-03    0.308E-03
+DAV:  20    -0.750972317743E+02   -0.63323E-06   -0.46969E-06 14136   0.588E-03    0.249E-03
+DAV:  21    -0.750972326083E+02   -0.83405E-06   -0.10634E-05 12720   0.835E-03    0.196E-03
+DAV:  22    -0.750972332342E+02   -0.62591E-06   -0.50476E-06 12360   0.554E-03    0.215E-03
+DAV:  23    -0.750972327451E+02    0.48909E-06   -0.32687E-06 11232   0.476E-03    0.198E-03
+DAV:  24    -0.750972314460E+02    0.12991E-05   -0.58538E-05 10656   0.188E-02    0.112E-03
+DAV:  25    -0.750972313832E+02    0.62830E-07   -0.51168E-06 12552   0.576E-03    0.781E-04
+DAV:  26    -0.750972314385E+02   -0.55332E-07   -0.98757E-07  9816   0.266E-03    0.640E-04
+DAV:  27    -0.750972314893E+02   -0.50837E-07   -0.38538E-07  9168   0.165E-03    0.638E-04
+DAV:  28    -0.750972314688E+02    0.20589E-07   -0.98564E-08  7824   0.933E-04    0.627E-04
+DAV:  29    -0.750972313897E+02    0.79064E-07   -0.19636E-06  9072   0.377E-03    0.475E-04
+DAV:  30    -0.750972313460E+02    0.43719E-07   -0.21944E-06 10368   0.389E-03    0.357E-04
+DAV:  31    -0.750972313473E+02   -0.12878E-08   -0.36135E-07  9336   0.156E-03    0.331E-04
+DAV:  32    -0.750972313545E+02   -0.72851E-08   -0.88421E-08  7776   0.813E-04
+   1 F= -.75097231E+02 E0= -.75097231E+02  d E =0.000000E+00  mag=    -0.0000
+srun: ROUTE: split_hostlist: hl=b01r05n03 tree_width 0
+
+DATE END   : Mon 14 Sep 13:41:11 CST 2026
+Script run_exec done.
+============================================
+
+============================================
+Post Processing Report
+--------------------------------------------
+Begining of post processing : Mon 14 Sep 13:41:11 CST 2026
+--------------------------------------------
+List of saved files from NODE b01r05n03
+  TEMPORARY            SAVED
+  OUTCAR               LCO_R.out                                             321496   Sep 14 13:41
+  CONTCAR              LCO_R.opt.vasp                                        1414     Sep 14 13:41
+  DOSCAR               LCO_R.dos                                             18297    Sep 14 13:41
+  EIGENVAL             LCO_R.eigen                                           168349   Sep 14 13:41
+  IBZKPT               LCO_R.1bz.kpt                                         12591    Sep 14 13:33
+  OSZICAR              LCO_R.oszi                                            3081     Sep 14 13:41
+  PCDAT                LCO_R.corr                                            234      Sep 14 13:33
+  vasprun.xml          LCO_R.xml                                             270804   Sep 14 13:41
+  XDATCAR              LCO_R.traj.vasp                                       611      Sep 14 13:41
+--------------------------------------------
+
+Temporary Directory Disk Info
+--------------------------------------------
+  Temporary directory      : /work/share/acm4hzo7rg/HZhou/LCO_R_23937123
+
+  Disk usage (df -h)
+Filesystem           Size  Used Avail Use% Mounted on
+HS_ParaStor_01_work  1.7T  1.1T  588G  65% /work
+
+  Usage by folders (du -m)
+2	/work/share/acm4hzo7rg/HZhou/LCO_R_23937123
+
+  Detailed file list of Node 0(ls -l .)
+    see /work/home/huanyuzhou/testVASP/LCO_R.log file
+--------------------------------------------
+
+End of post processing : Mon 14 Sep 13:41:12 CST 2026
+Script post_proc done.
+===========================================

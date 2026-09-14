@@ -25,7 +25,7 @@ function welcome_msg {
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-VASP6 job submission script for CATAPULT - Setting up
+VASP6 job submission script for SUGON - Setting up
 
 Job submission script installed date : $(date)
 Batch system                         : SLURM
@@ -111,14 +111,14 @@ function set_exe {
     or the command to load VASP6 modules
 
     Default Option
-    module load vasp/6.5.0-mkl
+    /work/share/acm4hzo7rg/modules/vasp/6.4.2-gzbuild
 
 EOF
 
     read -p " " EXEDIR
 
     if [[ -z $EXEDIR ]]; then
-        EXEDIR='module load vasp/6.5.0-mkl'
+        EXEDIR='/work/share/acm4hzo7rg/modules/vasp/6.4.2-gzbuild'
     fi
 
     if [[ ! -d $EXEDIR && ($EXEDIR != *'module load'*) ]]; then
@@ -131,7 +131,8 @@ EOF
     fi
 
     if [[ $EXEDIR == *'module load'* ]]; then
-        bash -lc "$EXEDIR" > /dev/null 2>&1
+		module purge # conflict defaults
+        $EXEDIR > /dev/null 2>&1
         if [[ $? != 0 ]]; then
             cat << EOF
 --------------------------------------------------------------------------------
@@ -151,7 +152,7 @@ function set_mpi {
     Please specify the directory of MPI executables or mpi modules
 
     Default Option
-    <empty>
+    <empty> (defined in JOB_SUBMISSION_TEMPLATE)
 
 EOF
 
@@ -171,6 +172,7 @@ EOF
     fi
 
     if [[ $MPIDIR == *'module load'* ]]; then
+		module purge # conflict defaults
         $MPIDIR > /dev/null 2>&1
         if [[ $? != 0 ]]; then
             cat << EOF
@@ -202,15 +204,15 @@ function set_settings {
 
     # Values for keywords
     sed -i "/SUBMISSION_EXT/a\.slurm" $SETFILE
-    sed -i "/NCPU_PER_NODE/a\96" $SETFILE
-    sed -i "/MEM_PER_NODE/a\384" $SETFILE
+    sed -i "/NCPU_PER_NODE/a\64" $SETFILE
+    sed -i "/MEM_PER_NODE/a\256" $SETFILE
     sed -i "/NTHREAD_PER_PROC/a\1" $SETFILE
-    sed -i "/NGPU_PER_NODE/a\1" $SETFILE
+    # sed -i "/NGPU_PER_NODE/a\1" $SETFILE
     # sed -i "/BUDGET_CODE/a\ $BUDGET_CODE" $SETFILE
-    sed -i "/QOS/a\normal short interactive" $SETFILE
-    sed -i "/PARTITION/a\normal gpu" $SETFILE
+    # sed -i "/QOS/a\normal short interactive" $SETFILE
+    sed -i "/PARTITION/a\xhhctdnormal xhacnormalb" $SETFILE
     sed -i "/TIME_OUT/a\1" $SETFILE
-    sed -i "/JOB_TMPDIR/a\ $HOME/scratch" $SETFILE
+    sed -i "/JOB_TMPDIR/a\default" $SETFILE
     sed -i "/OUTPUT_SOURCE/a\OUTCAR" $SETFILE
     sed -i "/EXEDIR/a\ $EXEDIR" $SETFILE
     sed -i "/MPIDIR/a\ $MPIDIR" $SETFILE
@@ -221,9 +223,9 @@ function set_settings {
     LINE_EXE=$(( ${LINE_EXE%%:*}+3 ))
     # Use unset I_MPI_PMI_LIBRARY to suppress Intel MPI warnings
     sed -i "$LINE_EXE"a'\
-std        unset I_MPI_PMI_LIBRARY; mpirun                              vasp_std                                                     Standard parallel VASP\
-ncl        unset I_MPI_PMI_LIBRARY; mpirun                              vasp_ncl                                                     Non-collinear parallel VASP\
-gam        unset I_MPI_PMI_LIBRARY; mpirun                              vasp_gam                                                     Gamma-only parallel VASP' $SETFILE
+std        srun --mpi=pmi2                                              vasp_std                                                     Standard parallel VASP\
+ncl        srun --mpi=pmi2                                              vasp_ncl                                                     Non-collinear parallel VASP\
+gam        srun --mpi=pmi2                                              vasp_gam                                                     Gamma-only parallel VASP' $SETFILE
 
     # Input file table
 
@@ -286,9 +288,6 @@ gam        unset I_MPI_PMI_LIBRARY; mpirun                              vasp_gam
 #SBATCH --error=\${V_JOBNAME}.log
 
 #SBATCH --partition=\${V_PARTITION}
-#SBATCH --qos=\${V_QOS}
-#SBATCH --gres=gpu:\${V_NGPU}
-#SBATCH --export=none
 
 echo "============================================"
 echo "SLURM Job Report"
@@ -300,16 +299,17 @@ squeue -j \$SLURM_JOB_ID 2>&1
 echo "============================================"
 echo ""
 
-# number of cores per node used
-export NCORES=\${V_NCPU}
-# number of processes
-export NPROCESSES=\${V_TPROC}
-
 # Set number of threads and OMP level
 export OMP_NUM_THREADS=\${V_TRED}
 export OMP_PLACES=cores
 
 module purge
+module load compiler/intel/2017.5.239
+module load mpi/intelmpi/2017.4.239
+export MKL_DEBUG_CPU_TYPE=5 #加速代码
+export MKL_CBWR=AVX2 #使cpu默认支持avx2
+export I_MPI_PIN_DOMAIN=numa #内存位置与cpu位置绑定，加速内存读取。对于内存带宽要求高的计算提速明显
+
 # start calculation: command added below by gen_sub
 \${V_GENSUB}
 ----------------------------------------------------------------------------------------
@@ -339,10 +339,10 @@ function set_commands {
     echo "alias Pvasp6_g='$CTRLDIR/gen_sub -x gam -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
     echo "alias Pvasp6_nc='$CTRLDIR/gen_sub -x ncl -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
     echo "alias Xvasp6='$CTRLDIR/gen_sub -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
-    echo "alias Gvasp6='$CTRLDIR/gen_sub -x std -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
-    echo "alias Gvasp6_g='$CTRLDIR/gen_sub -x gam -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
-    echo "alias Gvasp6_nc='$CTRLDIR/gen_sub -x ncl -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
-    echo "alias XGvasp6='$CTRLDIR/gen_sub -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
+    # echo "alias Gvasp6='$CTRLDIR/gen_sub -x std -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
+    # echo "alias Gvasp6_g='$CTRLDIR/gen_sub -x gam -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
+    # echo "alias Gvasp6_nc='$CTRLDIR/gen_sub -x ncl -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
+    # echo "alias XGvasp6='$CTRLDIR/gen_sub -partition gpu -set $SCRIPTDIR/settings'" >> $HOME/.bashrc
     echo "alias SETvasp6='cat $SCRIPTDIR/settings'" >> $HOME/.bashrc
     echo "alias HELPvasp6='source $CONFIGDIR/run_help gensub'" >> $HOME/.bashrc
     echo "chmod -R 'u+r+w+x' $CTRLDIR" >> $HOME/.bashrc

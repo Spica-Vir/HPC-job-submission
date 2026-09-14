@@ -1,0 +1,184 @@
+============================================
+SLURM Job Report
+--------------------------------------------
+  Start Date : Mon 14 Sep 13:33:30 CST 2026
+  SLURM Job ID : 23937123
+  Status
+             JOBID PARTITION      NAME           USER           ST       TIME  NODES NODELIST(REASON)
+          23937123 xhhctdnormal   LCO_R.slurm    huanyuzhou      R       0:00      1 b01r05n03
+============================================
+
+Printed output filename /work/home/huanyuzhou/testVASP/LCO_R.screen.out
+MPI command:  srun --mpi=pmi2 /work/share/acm4hzo7rg/modules/vasp/6.4.2-gzbuild/vasp_std
+Temporary directory : /work/share/acm4hzo7rg/HZhou/LCO_R_23937123
+============================================
+Job Executation Report
+--------------------------------------------
+Job Executation Script
+--------------------------------------------
+/work/share/acm4hzo7rg/HZhou/LCO_R_23937123/Job_script_23937123
+--------------------------------------------
+
+Running Job Report
+--------------------------------------------
+DATE START : Mon 14 Sep 13:33:31 CST 2026
+
+SLURM NODEFILE Info
+--------------------------------------------
+b01r05n03
+--------------------------------------------
+
+Pre-Calc Summary
+--------------------------------------------
+  date:                Mon 14 Sep 13:33:31 CST 2026
+  hostname:            b01r05n03
+  system:              Linux b01r05n03 3.10.0-957.el7.x86_64 #1 SMP Fri Oct 25 22:34:08 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+  user:                huanyuzhou
+  queue:               xhhctdnormal
+  QOS:                 user_huanyuzhou
+  input:               /work/home/huanyuzhou/testVASP/
+  output:              /work/home/huanyuzhou/testVASP/LCO_R.screen.out
+  temporary directory: /work/share/acm4hzo7rg/HZhou/LCO_R_23937123
+  executable script:   /work/home/huanyuzhou/GitHub/HPC-job-submission/SUGON-Job-Submission/run_exec
+  executable dir:      /work/share/acm4hzo7rg/modules/vasp/6.4.2-gzbuild
+  mpi + exe command:    srun --mpi=pmi2 /work/share/acm4hzo7rg/modules/vasp/6.4.2-gzbuild/vasp_std
+-------------------------------------------
+
+SLURM Job Status
+-------------------------------------------
+               JOBID PARTITION      NAME           USER           ST       TIME  NODES NODELIST(REASON)
+          23937123 xhhctdnormal   LCO_R.slurm    huanyuzhou      R       0:01      1 b01r05n03
+-------------------------------------------
+
+Find input data: /work/home/huanyuzhou/testVASP/LCO_R.in
+Input LCO_R.in copied as LCO_R_23937123/INCAR.
+Find input data: /work/home/huanyuzhou/testVASP/LCO_R.vasp
+Input LCO_R.vasp copied as LCO_R_23937123/POSCAR.
+Find input data: /work/home/huanyuzhou/testVASP/LCO_R.kpt
+Input LCO_R.kpt copied as LCO_R_23937123/KPOINTS.
+Find input data: /work/home/huanyuzhou/testVASP/LCO_R.pp
+Input LCO_R.pp copied as LCO_R_23937123/POTCAR.
+All files are synchonised.
+
+Job Ready to Go
+-------------------------------------------
+  Job name               : LCO_R
+  ID                     : 23937123
+  Command                :  srun --mpi=pmi2 /work/share/acm4hzo7rg/modules/vasp/6.4.2-gzbuild/vasp_std >> /work/home/huanyuzhou/testVASP/LCO_R.screen.out 2>&1
+  Temporary dir          : /work/share/acm4hzo7rg/HZhou/LCO_R_23937123
+  List of files (Node 0) : total 0
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg    507 Sep 14 13:33 INCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg   7904 Sep 14 13:33 Job_script_23937123
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg     63 Sep 14 13:33 KPOINTS
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg      0 Sep 14 13:33 OUTCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg    918 Sep 14 13:33 POSCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg 725363 Sep 14 13:33 POTCAR
+  Input script           :
+# set-ups
+
+SYSTEM = LaCoO3 rhombohedral LS single point
+LWAVE  = .FALSE.
+LCHARG = .FALSE.
+
+# SCF
+
+PREC    = Accurate
+ALGO    = Normal
+ENCUT   = 750
+EDIFF   = 1E-8
+NELM    = 200
+ISMEAR  = -5
+ISPIN   = 2
+MAGMOM  = 2*0 2*0 6*0
+NUPDOWN = 0
+LMAXMIX = 4
+
+# DFT
+
+GGA      = PS
+LDAU     = .TRUE.
+LDAUTYPE = 2
+LDAUL    = -1 2 -1
+LDAUU    = 0 4 0
+LDAUJ    = 0 0 0
+
+# PP
+
+LREAL   = .FALSE.
+LASPH   = .TRUE.
+ADDGRID = .TRUE.
+
+# struc
+
+ISYM   = 2
+IBRION = -1
+# ISIF   = 3
+# NSW    = 100
+# EDIFFG = -1E-3
+# POTIM  = 0.5
+-------------------------------------------
+
+Entering temporary directory...
+Launching the job...
+
+DATE END   : Mon 14 Sep 13:41:11 CST 2026
+Script run_exec done.
+============================================
+
+============================================
+Post Processing Report
+--------------------------------------------
+Begining of post processing : Mon 14 Sep 13:41:11 CST 2026
+Syncing local files to output dir from NODE b01r05n03
+--------------------------------------------
+List of saved files from NODE b01r05n03
+  TEMPORARY            SAVED
+  OUTCAR               LCO_R.out                                             321496   Sep 14 13:41
+  CONTCAR              LCO_R.opt.vasp                                        1414     Sep 14 13:41
+  DOSCAR               LCO_R.dos                                             18297    Sep 14 13:41
+  EIGENVAL             LCO_R.eigen                                           168349   Sep 14 13:41
+  IBZKPT               LCO_R.1bz.kpt                                         12591    Sep 14 13:33
+  OSZICAR              LCO_R.oszi                                            3081     Sep 14 13:41
+  PCDAT                LCO_R.corr                                            234      Sep 14 13:33
+  vasprun.xml          LCO_R.xml                                             270804   Sep 14 13:41
+  XDATCAR              LCO_R.traj.vasp                                       611      Sep 14 13:41
+--------------------------------------------
+
+Temporary Directory Disk Info
+--------------------------------------------
+  Temporary directory      : /work/share/acm4hzo7rg/HZhou/LCO_R_23937123
+
+  Disk usage (df -h)
+Filesystem           Size  Used Avail Use% Mounted on
+HS_ParaStor_01_work  1.7T  1.1T  588G  65% /work
+
+  Usage by folders (du -m)
+2	/work/share/acm4hzo7rg/HZhou/LCO_R_23937123
+
+  Detailed file list of Node 0(ls -l .)
+    see /work/home/huanyuzhou/testVASP/LCO_R.log file
+total 1499
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg      0 Sep 14 13:33 CHG
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg      0 Sep 14 13:33 CHGCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg   1414 Sep 14 13:41 CONTCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg  18297 Sep 14 13:41 DOSCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg 168349 Sep 14 13:41 EIGENVAL
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg  12591 Sep 14 13:33 IBZKPT
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg    507 Sep 14 13:33 INCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg   7904 Sep 14 13:33 Job_script_23937123
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg     63 Sep 14 13:33 KPOINTS
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg   3081 Sep 14 13:41 OSZICAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg 321496 Sep 14 13:41 OUTCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg    234 Sep 14 13:33 PCDAT
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg    918 Sep 14 13:33 POSCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg   4089 Sep 14 13:41 Post_script_23937123
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg 725363 Sep 14 13:33 POTCAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg      0 Sep 14 13:33 REPORT
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg 270804 Sep 14 13:41 vasprun.xml
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg      0 Sep 14 13:33 WAVECAR
+-rw-r--r-- 1 huanyuzhou acm4hzo7rg    611 Sep 14 13:41 XDATCAR
+--------------------------------------------
+
+End of post processing : Mon 14 Sep 13:41:12 CST 2026
+Script post_proc done.
+===========================================
