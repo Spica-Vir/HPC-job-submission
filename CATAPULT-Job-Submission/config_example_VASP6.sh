@@ -285,7 +285,6 @@ gam        unset I_MPI_PMI_LIBRARY; mpirun                              vasp_gam
 #SBATCH --output=\${V_JOBNAME}.log
 #SBATCH --error=\${V_JOBNAME}.log
 
-# Replace [budget code] below with your full project code
 #SBATCH --partition=\${V_PARTITION}
 #SBATCH --qos=\${V_QOS}
 #SBATCH --gres=gpu:\${V_NGPU}
