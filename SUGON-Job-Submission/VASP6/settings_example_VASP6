@@ -3,32 +3,30 @@ SUBMISSION_EXT
 .slurm
 
 NCPU_PER_NODE
-96
+64
 
 MEM_PER_NODE
-384
+256
 
 NTHREAD_PER_PROC
 1
 
 NGPU_PER_NODE
-1
 
 GPU_TYPE
 
 BUDGET_CODE
 
 QOS
-normal short interactive
 
 PARTITION
-normal gpu
+xhhctdnormal xhacnormalb
 
 TIME_OUT
 1
 
 JOB_TMPDIR
- /home/zhouhuanyu/scratch
+/work/share/acm4hzo7rg/HZhou
 
 OUTPUT_SOURCE
 OUTCAR
@@ -36,7 +34,7 @@ OUTCAR
 
 # Executables
 EXEDIR
- module load vasp/6.6.0-nvhpc26.5-cuda13.2-vtst-ioptcell
+ /work/share/acm4hzo7rg/modules/vasp/6.4.2-gzbuild
 
 MPIDIR
  
@@ -45,9 +43,9 @@ EXE_TABLE                                                               [jobname
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 LABEL      MPI & OPTION                                                 EXECUTABLE & OPTION                                          DEFINITION
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-std        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun                    vasp_std                                                     Standard parallel VASP
-ncl        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun                    vasp_ncl                                                     Non-collinear parallel VASP
-gam        export UCX_WARN_UNUSED_ENV_VARS=n; mpirun                    vasp_gam                                                     Gamma-only parallel VASP
+std        srun --mpi=pmi2                                              vasp_std                                                     Standard parallel VASP
+ncl        srun --mpi=pmi2                                              vasp_ncl                                                     Non-collinear parallel VASP
+gam        srun --mpi=pmi2                                              vasp_gam                                                     Gamma-only parallel VASP
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -111,11 +109,7 @@ JOB_SUBMISSION_TEMPLATE
 #SBATCH --output=${V_JOBNAME}.log
 #SBATCH --error=${V_JOBNAME}.log
 
-# Replace [budget code] below with your full project code
 #SBATCH --partition=${V_PARTITION}
-#SBATCH --qos=${V_QOS}
-#SBATCH --gres=gpu:${V_NGPU}
-#SBATCH --export=none
 
 echo "============================================"
 echo "SLURM Job Report"
@@ -127,20 +121,18 @@ squeue -j $SLURM_JOB_ID 2>&1
 echo "============================================"
 echo ""
 
-# number of cores per node used
-export NCORES=${V_NCPU}
-# number of processes
-export NPROCESSES=${V_TPROC}
-
 # Set number of threads and OMP level
 export OMP_NUM_THREADS=${V_TRED}
 export OMP_PLACES=cores
 
 module purge
+module load compiler/intel/2017.5.239
+module load mpi/intelmpi/2017.4.239
+export MKL_DEBUG_CPU_TYPE=5 #加速代码
+export MKL_CBWR=AVX2 #使cpu默认支持avx2
+export I_MPI_PIN_DOMAIN=numa #内存位置与cpu位置绑定，加速内存读取。对于内存带宽要求高的计算提速明显
+
 # start calculation: command added below by gen_sub
 ${V_GENSUB}
-
-sed -i '/Warning: ieee/d' *.out
-sed -i '/FORTRAN STOP/d' *.out
 ----------------------------------------------------------------------------------------
 
