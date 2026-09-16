@@ -778,8 +778,9 @@ EOF
     for time in ${WT[@]}; do
         thr=${time%:*}
         tmn=${time#*:}
-        tt=$(( thr*60 + tmn + tt ))
-        tout=$(( thr*60 + tmn - TOUT_PER_JOB ))
+		# numbers starting with 0 are regarded as octal digits. In some old Linux distributions, '10#' is not  available.
+        tt=$(echo "scale=0; $thr*60+$tmn+$tt" | bc) # $(( thr*60 + tmn + tt ))
+        tout=$(echo "scale=0; $thr*60+$tmn-$TOUT_PER_JOB" | bc) # $(( thr*60 + tmn - TOUT_PER_JOB ))
         TOUT+=("$tout"m)
     done
     ttmn=$((tt % 60))
